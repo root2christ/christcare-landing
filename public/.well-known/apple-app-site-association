@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["TEAM_ID.com.root2christ.christapp"],
+        "components": [
+          { "/": "/join/*" },
+          { "/": "/g/*" },
+          { "/": "/invite/*" }
+        ]
+      }
+    ]
+  }
+}
