@@ -82,7 +82,7 @@ export default function Home() {
 
         <p style={{ marginTop: 60, fontSize: 13, color: '#94a3b8' }}>
           © 2024 예닮. All rights reserved.<br />
-          help@christcare.us
+          master@christcare.us
         </p>
       </div>
     </div>
