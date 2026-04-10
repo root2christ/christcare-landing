@@ -24,15 +24,26 @@ async function sendExpoPush(tokens: string[], title: string, body: string, data?
     }
 
     let totalSent = 0;
+    const errors: any[] = [];
     for (const chunk of chunks) {
         const res = await fetch('https://exp.host/--/api/v2/push/send', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Accept-Encoding': 'gzip, deflate',
+            },
             body: JSON.stringify(chunk),
         });
-        if (res.ok) totalSent += chunk.length;
+        const resData = await res.json();
+        if (resData.data) {
+            for (const ticket of resData.data) {
+                if (ticket.status === 'ok') totalSent++;
+                else errors.push(ticket);
+            }
+        }
     }
-    return totalSent;
+    return { totalSent, errors };
 }
 
 // POST: 즉시 발송 또는 예약 저장
@@ -71,7 +82,7 @@ export async function POST(req: NextRequest) {
         }
 
         const tokenList = tokens.map((t: any) => t.token);
-        const sentCount = await sendExpoPush(tokenList, title, body);
+        const result = await sendExpoPush(tokenList, title, body);
 
         // 발송 기록 저장
         await supabase.from('push_notifications').insert({
@@ -79,10 +90,10 @@ export async function POST(req: NextRequest) {
             body,
             status: 'sent',
             sent_at: new Date().toISOString(),
-            sent_count: sentCount,
+            sent_count: result.totalSent,
         });
 
-        return NextResponse.json({ success: true, sentCount });
+        return NextResponse.json({ success: true, sentCount: result.totalSent, errors: result.errors, tokens: tokenList });
     } catch (e: any) {
         return NextResponse.json({ error: e.message || '서버 오류' }, { status: 500 });
     }
@@ -112,11 +123,11 @@ export async function GET(req: NextRequest) {
         let processed = 0;
         for (const notif of scheduled) {
             if (tokenList.length > 0) {
-                const sentCount = await sendExpoPush(tokenList, notif.title, notif.body);
+                const result = await sendExpoPush(tokenList, notif.title, notif.body);
                 await supabase.from('push_notifications').update({
                     status: 'sent',
                     sent_at: new Date().toISOString(),
-                    sent_count: sentCount,
+                    sent_count: result.totalSent,
                 }).eq('id', notif.id);
                 processed++;
             }
