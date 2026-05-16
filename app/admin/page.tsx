@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-// ⚠️ 비밀번호는 환경변수로 옮길 예정 — 현재는 fallback 보존
-// Vercel에 NEXT_PUBLIC_ADMIN_PW 환경변수 설정 시 그 값 사용
-const ADMIN_PW = process.env.NEXT_PUBLIC_ADMIN_PW || 'Seiehjw1!@';
+// 비밀번호는 서버에서만 검증 (Vercel 환경변수 pwSession)
+// 클라이언트는 입력값을 sessionStorage에 저장하고 모든 API 호출 시 함께 전송 (서버에서 매번 검증)
+const SESSION_KEY = 'admin_pw_session';
 
 type Notification = {
     id: string;
@@ -56,8 +56,21 @@ type TabKey = 'send' | 'history' | 'gift';
 export default function AdminPage() {
     const [authed, setAuthed] = useState(false);
     const [password, setPassword] = useState('');
+    const [loggingIn, setLoggingIn] = useState(false);
+    const [pwSession, setPwSession] = useState<string>(''); // 인증된 비밀번호 (API 호출용)
     const [adminEmail, setAdminEmail] = useState('master@root2christ.com');
     const [tab, setTab] = useState<TabKey>('send');
+
+    // 페이지 로드 시 sessionStorage에서 비밀번호 복원
+    useEffect(() => {
+        try {
+            const saved = sessionStorage.getItem(SESSION_KEY);
+            if (saved) {
+                setPwSession(saved);
+                setAuthed(true);
+            }
+        } catch { }
+    }, []);
 
     // ── 알림 보내기 ──
     const [title, setTitle] = useState('');
@@ -90,7 +103,7 @@ export default function AdminPage() {
 
     const loadGrantHistory = useCallback(async () => {
         try {
-            const res = await fetch(`/api/admin/gift-inventory?password=${encodeURIComponent(ADMIN_PW)}`);
+            const res = await fetch(`/api/admin/gift-inventory?password=${encodeURIComponent(pwSession)}`);
             const data = await res.json();
             setGrantHistory(data.grants || []);
         } catch { }
@@ -102,12 +115,34 @@ export default function AdminPage() {
         if (tab === 'gift') loadGrantHistory();
     }, [authed, tab, loadHistory, loadGrantHistory]);
 
-    const handleLogin = () => {
-        if (password === ADMIN_PW) {
-            setAuthed(true);
-        } else {
-            alert('비밀번호가 올바르지 않습니다.');
+    const handleLogin = async () => {
+        if (!password) return;
+        setLoggingIn(true);
+        try {
+            const res = await fetch('/api/admin/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password }),
+            });
+            if (res.ok) {
+                setPwSession(password);
+                setAuthed(true);
+                try { sessionStorage.setItem(SESSION_KEY, password); } catch { }
+                setPassword('');
+            } else {
+                alert('비밀번호가 올바르지 않습니다.');
+            }
+        } catch (e: any) {
+            alert(`오류: ${e?.message || '서버 오류'}`);
+        } finally {
+            setLoggingIn(false);
         }
+    };
+
+    const handleLogout = () => {
+        setAuthed(false);
+        setPwSession('');
+        try { sessionStorage.removeItem(SESSION_KEY); } catch { }
     };
 
     // ── 알림 보내기 ──
@@ -128,7 +163,7 @@ export default function AdminPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    password: ADMIN_PW,
+                    password: pwSession,
                     title: title.trim(),
                     body: body.trim(),
                     scheduledAt: isScheduled ? new Date(scheduledAt).toISOString() : undefined,
@@ -167,7 +202,7 @@ export default function AdminPage() {
             const res = await fetch('/api/admin/user-search', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: ADMIN_PW, query: q }),
+                body: JSON.stringify({ password: pwSession, query: q }),
             });
             const data = await res.json();
             if (res.ok) {
@@ -215,7 +250,7 @@ export default function AdminPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    password: ADMIN_PW,
+                    password: pwSession,
                     adminEmail,
                     targetUserId: selectedUser.id,
                     targetEmail: selectedUser.email,
@@ -254,10 +289,13 @@ export default function AdminPage() {
                         placeholder="비밀번호"
                         value={password}
                         onChange={e => setPassword(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                        onKeyDown={e => e.key === 'Enter' && !loggingIn && handleLogin()}
                         style={styles.input}
+                        disabled={loggingIn}
                     />
-                    <button onClick={handleLogin} style={styles.primaryBtn}>로그인</button>
+                    <button onClick={handleLogin} disabled={loggingIn} style={styles.primaryBtn}>
+                        {loggingIn ? '확인 중...' : '로그인'}
+                    </button>
                 </div>
             </div>
         );
@@ -266,7 +304,10 @@ export default function AdminPage() {
     return (
         <div style={styles.container}>
             <div style={styles.main}>
-                <h1 style={styles.pageTitle}>예닮 관리자</h1>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                    <h1 style={{ ...styles.pageTitle, marginBottom: 0 }}>예닮 관리자</h1>
+                    <button onClick={handleLogout} style={styles.refreshBtn}>로그아웃</button>
+                </div>
 
                 <div style={styles.tabRow}>
                     <button style={tab === 'send' ? styles.tabActive : styles.tab} onClick={() => setTab('send')}>
