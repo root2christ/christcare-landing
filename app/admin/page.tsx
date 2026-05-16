@@ -4,16 +4,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 
-// 관리자 이메일 힌트 (UX용)
-const ADMIN_EMAIL_HINT = 'master@root2christ.com';
+// 관리자 이메일 화이트리스트 (정확 일치 필요)
+// 환경변수 NEXT_PUBLIC_ADMIN_EMAILS (쉼표 구분) 없으면 기본값
+const ADMIN_EMAILS_CLIENT = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'master@root2christ.com')
+    .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
 
-// 관리자 이메일 도메인 화이트리스트 (클라이언트 측 빠른 검증)
-// 환경변수 NEXT_PUBLIC_ADMIN_EMAIL_DOMAINS (쉼표 구분) 없으면 기본값 사용
-const ADMIN_DOMAINS = (process.env.NEXT_PUBLIC_ADMIN_EMAIL_DOMAINS || 'root2christ.com')
-    .split(',').map(d => d.trim().toLowerCase()).filter(Boolean);
-
-// RFC 5322 단순화 이메일 정규식
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const ADMIN_EMAIL_HINT = ADMIN_EMAILS_CLIENT[0] || '';
 
 type Notification = {
     id: string;
@@ -201,24 +197,15 @@ export default function AdminPage() {
     }, [session, tab, loadHistory, loadGrantHistory]);
 
     // ── 로그인 ──
-    // 클라이언트 사전 검증 → 서버 API → admin 화이트리스트 → Magic Link
+    // 정확한 admin 이메일 일치만 통과 → 서버 호출 → Magic Link 발송
     const handleLogin = async () => {
         const email = loginEmail.trim().toLowerCase();
 
-        // 1) 이메일 형식 검증 (서버 호출 전 차단)
-        if (!EMAIL_REGEX.test(email) || email.length > 254) {
-            setLoginError('올바른 이메일 형식이 아닙니다.');
-            return;
-        }
-
-        // 2) 도메인 화이트리스트 (서버 호출 전 차단)
-        const domain = email.split('@')[1];
-        if (!ADMIN_DOMAINS.includes(domain)) {
+        if (!ADMIN_EMAILS_CLIENT.includes(email)) {
             setLoginError('관리자 이메일이 아닙니다.');
             return;
         }
 
-        // 3) 서버 호출 — 정확한 admin 이메일 검증 + Magic Link 발송
         setLoggingIn(true);
         setLoginError('');
         try {
@@ -227,12 +214,11 @@ export default function AdminPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),
             });
-            const data = await res.json();
             if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
                 setLoginError(data?.error || '요청 실패');
                 return;
             }
-            // 응답은 admin/비admin 동일 (enumeration 방지)
             setMagicLinkSent(true);
         } catch (e: any) {
             setLoginError(e?.message || '서버 오류');
@@ -380,58 +366,25 @@ export default function AdminPage() {
             <div style={styles.container}>
                 <div style={styles.loginCard}>
                     <h1 style={styles.loginTitle}>예닮 관리자</h1>
-
-                    {magicLinkSent ? (
-                        <>
-                            <div style={{ fontSize: 48, marginBottom: 16 }}>📧</div>
-                            <p style={{ ...styles.loginDesc, fontWeight: 700, color: '#1e293b' }}>
-                                요청을 받았습니다
-                            </p>
-                            <p style={{ fontSize: 13, color: '#64748b', marginBottom: 20, lineHeight: 1.6 }}>
-                                <strong>{loginEmail}</strong>이(가) 등록된 관리자 이메일이면<br/>
-                                로그인 링크가 발송됩니다.<br/>
-                                이메일함을 확인해주세요.
-                            </p>
-                            <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 16 }}>
-                                · 도착까지 1~2분 걸릴 수 있어요<br/>
-                                · 스팸함도 확인해주세요<br/>
-                                · 링크는 6시간 후 만료됩니다<br/>
-                                · 등록된 관리자가 아니면 이메일이 오지 않습니다
-                            </p>
-                            <button
-                                onClick={() => { setMagicLinkSent(false); setLoginError(''); }}
-                                style={styles.secondaryBtn}
-                            >
-                                다시 시도
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <p style={styles.loginDesc}>
-                                등록된 관리자만 접근할 수 있습니다.<br/>
-                                관리자 이메일을 입력하세요.
-                            </p>
-                            <input
-                                type="email"
-                                placeholder="관리자 이메일"
-                                value={loginEmail}
-                                onChange={e => setLoginEmail(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && !loggingIn && handleLogin()}
-                                style={styles.input}
-                                disabled={loggingIn}
-                                autoComplete="email"
-                            />
-                            {loginError && (
-                                <p style={{ color: '#ef4444', fontSize: 13, marginTop: 8, marginBottom: 8 }}>{loginError}</p>
-                            )}
-                            <button onClick={handleLogin} disabled={loggingIn} style={styles.primaryBtn}>
-                                {loggingIn ? '발송 중...' : '로그인 링크 받기'}
-                            </button>
-                            <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 16 }}>
-                                🔒 Magic Link · 비밀번호 없음 · 세션 1시간 자동 만료
-                            </p>
-                        </>
+                    <input
+                        type="email"
+                        placeholder="이메일"
+                        value={loginEmail}
+                        onChange={e => { setLoginEmail(e.target.value); setMagicLinkSent(false); setLoginError(''); }}
+                        onKeyDown={e => e.key === 'Enter' && !loggingIn && handleLogin()}
+                        style={{ ...styles.input, marginTop: 20 }}
+                        disabled={loggingIn}
+                        autoComplete="email"
+                    />
+                    {loginError && (
+                        <p style={{ color: '#ef4444', fontSize: 13, marginTop: 8, marginBottom: 0 }}>{loginError}</p>
                     )}
+                    {magicLinkSent && (
+                        <p style={{ color: '#10b981', fontSize: 13, marginTop: 8, marginBottom: 0, fontWeight: 600 }}>✓ 이메일을 확인하세요</p>
+                    )}
+                    <button onClick={handleLogin} disabled={loggingIn} style={{ ...styles.primaryBtn, marginTop: 16 }}>
+                        {loggingIn ? '...' : '로그인'}
+                    </button>
                 </div>
             </div>
         );
