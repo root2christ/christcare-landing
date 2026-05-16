@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../../lib/supabase';
+import type { Session } from '@supabase/supabase-js';
 
-// 비밀번호는 서버에서만 검증 (Vercel 환경변수 pwSession)
-// 클라이언트는 입력값을 sessionStorage에 저장하고 모든 API 호출 시 함께 전송 (서버에서 매번 검증)
-const SESSION_KEY = 'admin_pw_session';
+// 관리자 이메일 (서버에서도 화이트리스트 검증, 클라이언트는 단순 UX 안내용)
+const ADMIN_EMAIL_HINT = 'master@root2christ.com';
 
 type Notification = {
     id: string;
@@ -54,23 +55,15 @@ const BIBLE_TRANSLATIONS = [
 type TabKey = 'send' | 'history' | 'gift';
 
 export default function AdminPage() {
-    const [authed, setAuthed] = useState(false);
-    const [password, setPassword] = useState('');
-    const [loggingIn, setLoggingIn] = useState(false);
-    const [pwSession, setPwSession] = useState<string>(''); // 인증된 비밀번호 (API 호출용)
-    const [adminEmail, setAdminEmail] = useState('master@root2christ.com');
-    const [tab, setTab] = useState<TabKey>('send');
+    const [session, setSession] = useState<Session | null>(null);
+    const [checkingSession, setCheckingSession] = useState(true);
 
-    // 페이지 로드 시 sessionStorage에서 비밀번호 복원
-    useEffect(() => {
-        try {
-            const saved = sessionStorage.getItem(SESSION_KEY);
-            if (saved) {
-                setPwSession(saved);
-                setAuthed(true);
-            }
-        } catch { }
-    }, []);
+    const [loginEmail, setLoginEmail] = useState(ADMIN_EMAIL_HINT);
+    const [loginPassword, setLoginPassword] = useState('');
+    const [loggingIn, setLoggingIn] = useState(false);
+    const [loginError, setLoginError] = useState('');
+
+    const [tab, setTab] = useState<TabKey>('send');
 
     // ── 알림 보내기 ──
     const [title, setTitle] = useState('');
@@ -93,56 +86,91 @@ export default function AdminPage() {
     const [grantResult, setGrantResult] = useState('');
     const [grantHistory, setGrantHistory] = useState<GiftGrant[]>([]);
 
+    // 세션 확인
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data }) => {
+            setSession(data.session);
+            setCheckingSession(false);
+        });
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+            setSession(s);
+        });
+        return () => subscription.unsubscribe();
+    }, []);
+
+    // 공통 fetch (토큰 자동 첨부)
+    const authedFetch = useCallback(async (url: string, init?: RequestInit) => {
+        const token = session?.access_token;
+        if (!token) throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        return fetch(url, {
+            ...init,
+            headers: {
+                ...(init?.headers || {}),
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+    }, [session]);
+
     const loadHistory = useCallback(async () => {
         try {
-            const res = await fetch('/api/push');
+            const res = await fetch('/api/push'); // GET은 토큰 없어도 동작 (이력 조회)
             const data = await res.json();
             setNotifications(data.notifications || []);
         } catch { }
     }, []);
 
     const loadGrantHistory = useCallback(async () => {
+        if (!session) return;
         try {
-            const res = await fetch(`/api/admin/gift-inventory?password=${encodeURIComponent(pwSession)}`);
+            const res = await authedFetch('/api/admin/gift-inventory');
             const data = await res.json();
             setGrantHistory(data.grants || []);
         } catch { }
-    }, []);
+    }, [authedFetch, session]);
 
     useEffect(() => {
-        if (!authed) return;
+        if (!session) return;
         if (tab === 'history') loadHistory();
         if (tab === 'gift') loadGrantHistory();
-    }, [authed, tab, loadHistory, loadGrantHistory]);
+    }, [session, tab, loadHistory, loadGrantHistory]);
 
+    // ── 로그인 (Supabase Auth) ──
     const handleLogin = async () => {
-        if (!password) return;
+        if (!loginEmail.trim() || !loginPassword) {
+            setLoginError('이메일과 비밀번호를 입력해주세요.');
+            return;
+        }
         setLoggingIn(true);
+        setLoginError('');
         try {
-            const res = await fetch('/api/admin/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password }),
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: loginEmail.trim().toLowerCase(),
+                password: loginPassword,
             });
-            if (res.ok) {
-                setPwSession(password);
-                setAuthed(true);
-                try { sessionStorage.setItem(SESSION_KEY, password); } catch { }
-                setPassword('');
-            } else {
-                alert('비밀번호가 올바르지 않습니다.');
+            if (error) {
+                setLoginError(error.message || '로그인 실패');
+                return;
             }
+            // 관리자 권한 확인 (서버에서도 다시 검증되지만, UX상 즉시 안내)
+            if (!data.user?.email) {
+                setLoginError('이메일 정보 없음');
+                await supabase.auth.signOut();
+                return;
+            }
+            // 화이트리스트는 서버 검증을 신뢰. 클라이언트는 들어가게 두고 API에서 막힘.
+            setSession(data.session);
+            setLoginPassword('');
         } catch (e: any) {
-            alert(`오류: ${e?.message || '서버 오류'}`);
+            setLoginError(e?.message || '서버 오류');
         } finally {
             setLoggingIn(false);
         }
     };
 
-    const handleLogout = () => {
-        setAuthed(false);
-        setPwSession('');
-        try { sessionStorage.removeItem(SESSION_KEY); } catch { }
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        setSession(null);
     };
 
     // ── 알림 보내기 ──
@@ -159,11 +187,9 @@ export default function AdminPage() {
         setSending(true);
         setResult('');
         try {
-            const res = await fetch('/api/push', {
+            const res = await authedFetch('/api/push', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    password: pwSession,
                     title: title.trim(),
                     body: body.trim(),
                     scheduledAt: isScheduled ? new Date(scheduledAt).toISOString() : undefined,
@@ -192,17 +218,13 @@ export default function AdminPage() {
     // ── 이용권 보내기 ──
     const handleUserSearch = async () => {
         const q = userSearchQuery.trim();
-        if (q.length < 2) {
-            alert('검색어를 2자 이상 입력해주세요.');
-            return;
-        }
+        if (q.length < 2) { alert('검색어를 2자 이상 입력해주세요.'); return; }
         setSearching(true);
         setSearchResults([]);
         try {
-            const res = await fetch('/api/admin/user-search', {
+            const res = await authedFetch('/api/admin/user-search', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: pwSession, query: q }),
+                body: JSON.stringify({ query: q }),
             });
             const data = await res.json();
             if (res.ok) {
@@ -219,15 +241,9 @@ export default function AdminPage() {
     };
 
     const handleGrant = async () => {
-        if (!selectedUser) {
-            alert('대상 사용자를 먼저 선택해주세요.');
-            return;
-        }
+        if (!selectedUser) { alert('대상 사용자를 먼저 선택해주세요.'); return; }
         const qty = parseInt(quantity, 10);
-        if (!Number.isFinite(qty) || qty < 1 || qty > 99) {
-            alert('수량은 1-99 사이로 입력해주세요.');
-            return;
-        }
+        if (!Number.isFinite(qty) || qty < 1 || qty > 99) { alert('수량은 1-99 사이.'); return; }
 
         const selectedProduct = GIFTABLE_PRODUCTS.find(p => p.id === productId);
         const productLabel = selectedProduct?.needsBible
@@ -235,23 +251,15 @@ export default function AdminPage() {
             : selectedProduct?.label;
 
         if (!confirm(
-            `[발급 확인]\n\n` +
-            `대상: ${selectedUser.full_name || '(이름 없음)'} (${selectedUser.email || selectedUser.id.slice(0, 8)})\n` +
-            `상품: ${productLabel}\n` +
-            `수량: ${qty}장\n` +
-            `메모: ${note.trim() || '(없음)'}\n\n` +
-            `발급하시겠습니까?`
+            `[발급 확인]\n\n대상: ${selectedUser.full_name || '(이름 없음)'} (${selectedUser.email || selectedUser.id.slice(0, 8)})\n상품: ${productLabel}\n수량: ${qty}장\n메모: ${note.trim() || '(없음)'}\n\n발급하시겠습니까?`
         )) return;
 
         setGranting(true);
         setGrantResult('');
         try {
-            const res = await fetch('/api/admin/gift-inventory', {
+            const res = await authedFetch('/api/admin/gift-inventory', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    password: pwSession,
-                    adminEmail,
                     targetUserId: selectedUser.id,
                     targetEmail: selectedUser.email,
                     productId: selectedProduct?.needsBible ? 'bible_lifetime_' : productId,
@@ -278,24 +286,50 @@ export default function AdminPage() {
 
     // ── 렌더 ──
 
-    if (!authed) {
+    if (checkingSession) {
+        return (
+            <div style={styles.container}>
+                <div style={styles.loginCard}>
+                    <p style={{ color: '#94a3b8' }}>세션 확인 중...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!session) {
         return (
             <div style={styles.container}>
                 <div style={styles.loginCard}>
                     <h1 style={styles.loginTitle}>예닮 관리자</h1>
-                    <p style={styles.loginDesc}>관리자 비밀번호를 입력하세요</p>
+                    <p style={styles.loginDesc}>관리자 이메일과 비밀번호를 입력하세요</p>
+                    <input
+                        type="email"
+                        placeholder="이메일"
+                        value={loginEmail}
+                        onChange={e => setLoginEmail(e.target.value)}
+                        style={styles.input}
+                        disabled={loggingIn}
+                        autoComplete="username"
+                    />
                     <input
                         type="password"
                         placeholder="비밀번호"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
+                        value={loginPassword}
+                        onChange={e => setLoginPassword(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && !loggingIn && handleLogin()}
                         style={styles.input}
                         disabled={loggingIn}
+                        autoComplete="current-password"
                     />
+                    {loginError && (
+                        <p style={{ color: '#ef4444', fontSize: 13, marginTop: 8, marginBottom: 8 }}>{loginError}</p>
+                    )}
                     <button onClick={handleLogin} disabled={loggingIn} style={styles.primaryBtn}>
-                        {loggingIn ? '확인 중...' : '로그인'}
+                        {loggingIn ? '로그인 중...' : '로그인'}
                     </button>
+                    <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 16 }}>
+                        🔒 Supabase Auth로 보호됨 · 세션 1시간 자동 만료
+                    </p>
                 </div>
             </div>
         );
@@ -305,20 +339,17 @@ export default function AdminPage() {
         <div style={styles.container}>
             <div style={styles.main}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                    <h1 style={{ ...styles.pageTitle, marginBottom: 0 }}>예닮 관리자</h1>
+                    <div>
+                        <h1 style={{ ...styles.pageTitle, marginBottom: 4 }}>예닮 관리자</h1>
+                        <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>{session.user.email}</p>
+                    </div>
                     <button onClick={handleLogout} style={styles.refreshBtn}>로그아웃</button>
                 </div>
 
                 <div style={styles.tabRow}>
-                    <button style={tab === 'send' ? styles.tabActive : styles.tab} onClick={() => setTab('send')}>
-                        푸시 알림 보내기
-                    </button>
-                    <button style={tab === 'history' ? styles.tabActive : styles.tab} onClick={() => setTab('history')}>
-                        발송 이력
-                    </button>
-                    <button style={tab === 'gift' ? styles.tabActive : styles.tab} onClick={() => setTab('gift')}>
-                        이용권 보내기
-                    </button>
+                    <button style={tab === 'send' ? styles.tabActive : styles.tab} onClick={() => setTab('send')}>푸시 알림 보내기</button>
+                    <button style={tab === 'history' ? styles.tabActive : styles.tab} onClick={() => setTab('history')}>발송 이력</button>
+                    <button style={tab === 'gift' ? styles.tabActive : styles.tab} onClick={() => setTab('gift')}>이용권 보내기</button>
                 </div>
 
                 {tab === 'send' && (
@@ -383,54 +414,31 @@ export default function AdminPage() {
                             <h2 style={styles.cardTitle}>이용권 발급</h2>
                             <p style={styles.cardDesc}>대상 사용자를 검색하고 이용권을 발급합니다. 발급된 이용권은 사용자의 보관함에 추가되어 본인이 사용하거나 다른 사람에게 선물할 수 있습니다.</p>
 
-                            {/* 관리자 이메일 (감사 로그용) */}
-                            <label style={styles.label}>관리자 식별 (감사 기록용)</label>
-                            <input value={adminEmail} onChange={e => setAdminEmail(e.target.value)} style={styles.input} />
-
-                            {/* 사용자 검색 */}
                             <label style={styles.label}>대상 사용자 검색 (이메일 또는 이름)</label>
                             <div style={{ display: 'flex', gap: 8 }}>
-                                <input
-                                    placeholder="예: pastor@example.com 또는 이름 일부"
-                                    value={userSearchQuery}
-                                    onChange={e => setUserSearchQuery(e.target.value)}
-                                    onKeyDown={e => e.key === 'Enter' && handleUserSearch()}
-                                    style={{ ...styles.input, flex: 1 }}
-                                />
+                                <input placeholder="예: pastor@example.com 또는 이름 일부" value={userSearchQuery} onChange={e => setUserSearchQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleUserSearch()} style={{ ...styles.input, flex: 1 }} />
                                 <button onClick={handleUserSearch} disabled={searching} style={{ ...styles.secondaryBtn, flex: 'none', padding: '12px 20px' }}>
                                     {searching ? '검색...' : '검색'}
                                 </button>
                             </div>
 
-                            {/* 검색 결과 */}
                             {searchResults.length > 0 && (
                                 <div style={styles.searchResults}>
                                     {searchResults.map(u => (
-                                        <button
-                                            key={u.id}
-                                            onClick={() => { setSelectedUser(u); setSearchResults([]); }}
-                                            style={styles.searchResultItem}
-                                        >
-                                            <div style={{ fontWeight: 700, color: '#1e293b' }}>
-                                                {u.full_name || '(이름 없음)'}
-                                            </div>
-                                            <div style={{ fontSize: 12, color: '#64748b' }}>
-                                                {u.email || u.id}
-                                            </div>
+                                        <button key={u.id} onClick={() => { setSelectedUser(u); setSearchResults([]); }} style={styles.searchResultItem}>
+                                            <div style={{ fontWeight: 700, color: '#1e293b' }}>{u.full_name || '(이름 없음)'}</div>
+                                            <div style={{ fontSize: 12, color: '#64748b' }}>{u.email || u.id}</div>
                                         </button>
                                     ))}
                                 </div>
                             )}
 
-                            {/* 선택된 사용자 */}
                             {selectedUser && (
                                 <div style={styles.selectedUser}>
                                     <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>선택된 사용자</div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div>
-                                            <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>
-                                                {selectedUser.full_name || '(이름 없음)'}
-                                            </div>
+                                            <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>{selectedUser.full_name || '(이름 없음)'}</div>
                                             <div style={{ fontSize: 12, color: '#64748b' }}>{selectedUser.email}</div>
                                         </div>
                                         <button onClick={() => setSelectedUser(null)} style={styles.clearBtn}>변경</button>
@@ -438,7 +446,6 @@ export default function AdminPage() {
                                 </div>
                             )}
 
-                            {/* 상품 선택 */}
                             <label style={styles.label}>이용권 종류</label>
                             <select value={productId} onChange={e => setProductId(e.target.value)} style={styles.input}>
                                 {GIFTABLE_PRODUCTS.map(p => (
@@ -446,7 +453,6 @@ export default function AdminPage() {
                                 ))}
                             </select>
 
-                            {/* 성경 평생 소장권일 경우 번역본 선택 */}
                             {GIFTABLE_PRODUCTS.find(p => p.id === productId)?.needsBible && (
                                 <>
                                     <label style={styles.label}>번역본</label>
@@ -458,11 +464,9 @@ export default function AdminPage() {
                                 </>
                             )}
 
-                            {/* 수량 */}
                             <label style={styles.label}>수량 (1-99장)</label>
                             <input type="number" min={1} max={99} value={quantity} onChange={e => setQuantity(e.target.value)} style={styles.input} />
 
-                            {/* 메모 */}
                             <label style={styles.label}>메모 (선택, 사용자에게 표시됨)</label>
                             <input placeholder="예: 예수님께서 사랑하시는 목사님께 ROOT 운영팀 드림" value={note} onChange={e => setNote(e.target.value)} style={styles.input} />
 
@@ -479,7 +483,6 @@ export default function AdminPage() {
                             )}
                         </div>
 
-                        {/* 최근 발급 이력 */}
                         <div style={{ ...styles.card, marginTop: 16 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                                 <h2 style={styles.cardTitle}>최근 발급 이력</h2>
@@ -492,22 +495,14 @@ export default function AdminPage() {
                                     {grantHistory.map(g => (
                                         <div key={g.id} style={styles.historyItem}>
                                             <div style={styles.historyHeader}>
-                                                <span style={{ ...styles.statusBadge, backgroundColor: '#dbeafe', color: '#2563eb' }}>
-                                                    {g.quantity}장 발급
-                                                </span>
+                                                <span style={{ ...styles.statusBadge, backgroundColor: '#dbeafe', color: '#2563eb' }}>{g.quantity}장 발급</span>
                                                 <span style={styles.historyDate}>{new Date(g.created_at).toLocaleString('ko-KR')}</span>
                                             </div>
                                             <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', marginTop: 4 }}>
                                                 {g.product_id}{g.bible_translation ? ` (${g.bible_translation})` : ''}
                                             </div>
-                                            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
-                                                대상: {g.target_email || g.target_user_id}
-                                            </div>
-                                            {g.note && (
-                                                <div style={{ fontSize: 12, color: '#64748b', fontStyle: 'italic', marginTop: 4 }}>
-                                                    "{g.note}"
-                                                </div>
-                                            )}
+                                            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>대상: {g.target_email || g.target_user_id}</div>
+                                            {g.note && (<div style={{ fontSize: 12, color: '#64748b', fontStyle: 'italic', marginTop: 4 }}>"{g.note}"</div>)}
                                         </div>
                                     ))}
                                 </div>

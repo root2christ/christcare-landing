@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAdmin } from '../../../lib/admin-auth';
 
 const supabase = createClient(
     'https://oklgzhkkqbziwoyhypom.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbGd6aGtrcWJ6aXdveWh5cG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3OTc2OTEsImV4cCI6MjA4NDM3MzY5MX0.rTCBqVNIjdkaWcMcOGBkgQyQlDop4B3lz4kqyGSGb1c'
 );
-
-const ADMIN_PASSWORD = 'Seiehjw1!@';
 
 async function sendExpoPush(tokens: string[], title: string, body: string, data?: any) {
     const messages = tokens.map(token => ({
@@ -48,12 +47,12 @@ async function sendExpoPush(tokens: string[], title: string, body: string, data?
 
 // POST: 즉시 발송 또는 예약 저장
 export async function POST(req: NextRequest) {
-    try {
-        const { password, title, body, scheduledAt } = await req.json();
+    // 관리자 토큰 검증 (Authorization: Bearer ...)
+    const auth = await requireAdmin(req);
+    if ('response' in auth) return auth.response;
 
-        if (password !== ADMIN_PASSWORD) {
-            return NextResponse.json({ error: '인증 실패' }, { status: 401 });
-        }
+    try {
+        const { title, body, scheduledAt } = await req.json();
 
         if (!title || !body) {
             return NextResponse.json({ error: '제목과 내용을 입력해주세요' }, { status: 400 });
