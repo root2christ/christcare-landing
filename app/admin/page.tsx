@@ -74,9 +74,9 @@ export default function AdminPage() {
     const [checkingSession, setCheckingSession] = useState(true);
 
     const [loginEmail, setLoginEmail] = useState(ADMIN_EMAIL_HINT);
-    const [loginPassword, setLoginPassword] = useState('');
     const [loggingIn, setLoggingIn] = useState(false);
     const [loginError, setLoginError] = useState('');
+    const [magicLinkSent, setMagicLinkSent] = useState(false);
 
     const [tab, setTab] = useState<TabKey>('send');
 
@@ -171,32 +171,30 @@ export default function AdminPage() {
         if (tab === 'gift') loadGrantHistory();
     }, [session, tab, loadHistory, loadGrantHistory]);
 
-    // ── 로그인 (Supabase Auth) ──
+    // ── 로그인 (Magic Link — 이메일로 일회용 링크 전송) ──
     const handleLogin = async () => {
-        if (!loginEmail.trim() || !loginPassword) {
-            setLoginError('이메일과 비밀번호를 입력해주세요.');
+        const email = loginEmail.trim().toLowerCase();
+        if (!email || !email.includes('@')) {
+            setLoginError('올바른 이메일을 입력해주세요.');
             return;
         }
         setLoggingIn(true);
         setLoginError('');
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: loginEmail.trim().toLowerCase(),
-                password: loginPassword,
+            // 현재 admin 페이지 URL로 돌아오게 설정
+            const redirectTo = `${window.location.origin}/admin`;
+            const { error } = await supabase.auth.signInWithOtp({
+                email,
+                options: {
+                    emailRedirectTo: redirectTo,
+                    shouldCreateUser: false, // 미가입자는 거부 (보안)
+                },
             });
             if (error) {
-                setLoginError(error.message || '로그인 실패');
+                setLoginError(error.message || '링크 발송 실패');
                 return;
             }
-            // 관리자 권한 확인 (서버에서도 다시 검증되지만, UX상 즉시 안내)
-            if (!data.user?.email) {
-                setLoginError('이메일 정보 없음');
-                await supabase.auth.signOut();
-                return;
-            }
-            // 화이트리스트는 서버 검증을 신뢰. 클라이언트는 들어가게 두고 API에서 막힘.
-            setSession(data.session);
-            setLoginPassword('');
+            setMagicLinkSent(true);
         } catch (e: any) {
             setLoginError(e?.message || '서버 오류');
         } finally {
@@ -343,35 +341,56 @@ export default function AdminPage() {
             <div style={styles.container}>
                 <div style={styles.loginCard}>
                     <h1 style={styles.loginTitle}>예닮 관리자</h1>
-                    <p style={styles.loginDesc}>관리자 이메일과 비밀번호를 입력하세요</p>
-                    <input
-                        type="email"
-                        placeholder="이메일"
-                        value={loginEmail}
-                        onChange={e => setLoginEmail(e.target.value)}
-                        style={styles.input}
-                        disabled={loggingIn}
-                        autoComplete="username"
-                    />
-                    <input
-                        type="password"
-                        placeholder="비밀번호"
-                        value={loginPassword}
-                        onChange={e => setLoginPassword(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && !loggingIn && handleLogin()}
-                        style={styles.input}
-                        disabled={loggingIn}
-                        autoComplete="current-password"
-                    />
-                    {loginError && (
-                        <p style={{ color: '#ef4444', fontSize: 13, marginTop: 8, marginBottom: 8 }}>{loginError}</p>
+
+                    {magicLinkSent ? (
+                        <>
+                            <div style={{ fontSize: 48, marginBottom: 16 }}>📧</div>
+                            <p style={{ ...styles.loginDesc, fontWeight: 700, color: '#1e293b' }}>
+                                로그인 링크를 보냈습니다
+                            </p>
+                            <p style={{ fontSize: 13, color: '#64748b', marginBottom: 20, lineHeight: 1.6 }}>
+                                <strong>{loginEmail}</strong>으로 보낸 이메일을 확인하시고<br/>
+                                <strong>"Log in"</strong> 링크를 클릭해주세요.
+                            </p>
+                            <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 16 }}>
+                                · 이메일 도착까지 1~2분 걸릴 수 있어요<br/>
+                                · 스팸함도 확인해주세요<br/>
+                                · 링크는 6시간 후 만료됩니다
+                            </p>
+                            <button
+                                onClick={() => { setMagicLinkSent(false); setLoginError(''); }}
+                                style={styles.secondaryBtn}
+                            >
+                                다시 시도
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <p style={styles.loginDesc}>
+                                관리자 이메일을 입력하시면<br/>
+                                일회용 로그인 링크를 보내드립니다.
+                            </p>
+                            <input
+                                type="email"
+                                placeholder="관리자 이메일"
+                                value={loginEmail}
+                                onChange={e => setLoginEmail(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && !loggingIn && handleLogin()}
+                                style={styles.input}
+                                disabled={loggingIn}
+                                autoComplete="email"
+                            />
+                            {loginError && (
+                                <p style={{ color: '#ef4444', fontSize: 13, marginTop: 8, marginBottom: 8 }}>{loginError}</p>
+                            )}
+                            <button onClick={handleLogin} disabled={loggingIn} style={styles.primaryBtn}>
+                                {loggingIn ? '발송 중...' : '로그인 링크 받기'}
+                            </button>
+                            <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 16 }}>
+                                🔒 Magic Link · 비밀번호 없음 · 세션 1시간 자동 만료
+                            </p>
+                        </>
                     )}
-                    <button onClick={handleLogin} disabled={loggingIn} style={styles.primaryBtn}>
-                        {loggingIn ? '로그인 중...' : '로그인'}
-                    </button>
-                    <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 16 }}>
-                        🔒 Supabase Auth로 보호됨 · 세션 1시간 자동 만료
-                    </p>
                 </div>
             </div>
         );
