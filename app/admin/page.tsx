@@ -4,8 +4,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 
-// 관리자 이메일 (서버에서도 화이트리스트 검증, 클라이언트는 단순 UX 안내용)
+// 관리자 이메일 힌트 (UX용)
 const ADMIN_EMAIL_HINT = 'master@root2christ.com';
+
+// 관리자 이메일 도메인 화이트리스트 (클라이언트 측 빠른 검증)
+// 환경변수 NEXT_PUBLIC_ADMIN_EMAIL_DOMAINS (쉼표 구분) 없으면 기본값 사용
+const ADMIN_DOMAINS = (process.env.NEXT_PUBLIC_ADMIN_EMAIL_DOMAINS || 'root2christ.com')
+    .split(',').map(d => d.trim().toLowerCase()).filter(Boolean);
+
+// RFC 5322 단순화 이메일 정규식
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Notification = {
     id: string;
@@ -192,14 +200,25 @@ export default function AdminPage() {
         if (tab === 'gift') loadGrantHistory();
     }, [session, tab, loadHistory, loadGrantHistory]);
 
-    // ── 로그인 (서버 API로 Magic Link 발송 요청) ──
-    // 서버에서 화이트리스트 검증 → admin이면 실제 발송, 아니면 아무것도 안 함 (응답은 동일)
+    // ── 로그인 ──
+    // 클라이언트 사전 검증 → 서버 API → admin 화이트리스트 → Magic Link
     const handleLogin = async () => {
         const email = loginEmail.trim().toLowerCase();
-        if (!email || !email.includes('@')) {
-            setLoginError('올바른 이메일을 입력해주세요.');
+
+        // 1) 이메일 형식 검증 (서버 호출 전 차단)
+        if (!EMAIL_REGEX.test(email) || email.length > 254) {
+            setLoginError('올바른 이메일 형식이 아닙니다.');
             return;
         }
+
+        // 2) 도메인 화이트리스트 (서버 호출 전 차단)
+        const domain = email.split('@')[1];
+        if (!ADMIN_DOMAINS.includes(domain)) {
+            setLoginError('관리자 이메일이 아닙니다.');
+            return;
+        }
+
+        // 3) 서버 호출 — 정확한 admin 이메일 검증 + Magic Link 발송
         setLoggingIn(true);
         setLoginError('');
         try {
@@ -213,8 +232,7 @@ export default function AdminPage() {
                 setLoginError(data?.error || '요청 실패');
                 return;
             }
-            // 항상 동일한 성공 응답 (admin이든 아니든)
-            // → admin이면 실제로 이메일 옴, 아니면 안 옴
+            // 응답은 admin/비admin 동일 (enumeration 방지)
             setMagicLinkSent(true);
         } catch (e: any) {
             setLoginError(e?.message || '서버 오류');
