@@ -370,14 +370,15 @@ export default function AdminPage() {
                 <div style={styles.loginCard}>
                     <h1 style={styles.loginTitle}>예닮 관리자</h1>
                     <input
-                        type="email"
-                        placeholder="이메일"
+                        type="text"
                         value={loginEmail}
                         onChange={e => setLoginEmail(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && !loggingIn && handleLogin()}
                         style={{ ...styles.input, marginTop: 20 }}
                         disabled={loggingIn}
-                        autoComplete="email"
+                        autoComplete="off"
+                        autoCapitalize="off"
+                        spellCheck={false}
                     />
                     <button onClick={handleLogin} disabled={loggingIn} style={{ ...styles.primaryBtn, marginTop: 16 }}>
                         {loggingIn ? '...' : '로그인'}
