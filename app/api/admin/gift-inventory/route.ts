@@ -12,10 +12,29 @@ const VALID_PRODUCT_IDS = new Set<string>([
 ]);
 const VALID_BIBLE_TRANSLATIONS = new Set<string>(['korean_krv', 'korean_new', 'english_niv', 'english_esv']);
 
+interface GiftItem {
+    productId: string;
+    quantity: number;
+    bibleTranslation?: string;
+}
+
+interface ItemResult {
+    productId: string;
+    productLabel: string;
+    quantity: number;
+    success: boolean;
+    error?: string;
+}
+
 /**
  * POST /api/admin/gift-inventory
  * Authorization: Bearer <token>
- * body: { targetUserId, targetEmail?, productId, bibleTranslation?, quantity, note? }
+ *
+ * 단일 발급 (구형):
+ *   body: { targetUserId, targetEmail?, productId, bibleTranslation?, quantity, note? }
+ *
+ * 다중 발급 (신형):
+ *   body: { targetUserId, targetEmail?, items: [{productId, quantity, bibleTranslation?}, ...], note? }
  */
 export async function POST(req: NextRequest) {
     const auth = await requireAdmin(req);
@@ -24,64 +43,135 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json();
-        const { targetUserId, targetEmail, productId, bibleTranslation, quantity, note } = body;
+        const { targetUserId, targetEmail, note } = body;
 
-        if (!targetUserId) return NextResponse.json({ error: 'targetUserId 필수' }, { status: 400 });
-
-        const qty = parseInt(quantity, 10);
-        if (!Number.isFinite(qty) || qty < 1 || qty > 99) {
-            return NextResponse.json({ error: '수량은 1-99 사이' }, { status: 400 });
+        if (!targetUserId) {
+            return NextResponse.json({ error: 'targetUserId 필수' }, { status: 400 });
         }
 
-        let finalProductId = productId;
-        const isBible = productId === PRODUCT_IDS.BIBLE_LIFETIME_PREFIX || productId?.startsWith(PRODUCT_IDS.BIBLE_LIFETIME_PREFIX);
-        if (isBible) {
-            if (!bibleTranslation || !VALID_BIBLE_TRANSLATIONS.has(bibleTranslation)) {
-                return NextResponse.json({ error: '성경 평생 소장권은 bibleTranslation 필수' }, { status: 400 });
-            }
-            finalProductId = bibleProductId(bibleTranslation as BibleTranslation);
-        } else if (!VALID_PRODUCT_IDS.has(productId)) {
-            return NextResponse.json({ error: '알 수 없는 productId' }, { status: 400 });
+        // items 배열 정규화 (구형 단일 발급도 items 배열로 변환)
+        let items: GiftItem[] = [];
+        if (Array.isArray(body.items)) {
+            items = body.items;
+        } else if (body.productId) {
+            items = [{
+                productId: body.productId,
+                quantity: body.quantity,
+                bibleTranslation: body.bibleTranslation,
+            }];
+        }
+
+        if (items.length === 0) {
+            return NextResponse.json({ error: '발급할 이용권이 없습니다' }, { status: 400 });
         }
 
         const supabase = getAdminSupabase();
 
+        // 대상 사용자 존재 확인 (한 번만)
         const { data: targetUser, error: userErr } = await supabase.auth.admin.getUserById(targetUserId);
         if (userErr || !targetUser?.user) {
             return NextResponse.json({ error: '대상 사용자를 찾을 수 없습니다' }, { status: 404 });
         }
         const resolvedEmail = targetEmail || targetUser.user.email || null;
 
-        const rows = Array.from({ length: qty }).map(() => ({
-            user_id: targetUserId,
-            product_id: finalProductId,
-            bible_translation: isBible ? bibleTranslation : null,
-            source: 'admin_grant',
-            source_note: note?.trim() || null,
-            granted_by_admin: adminEmail,
-            status: 'available',
-        }));
+        const itemsResult: ItemResult[] = [];
+        let totalGranted = 0;
 
-        const { error: insertErr } = await supabase.from('gift_inventory').insert(rows);
-        if (insertErr) {
-            return NextResponse.json({ error: `발급 실패: ${insertErr.message}` }, { status: 500 });
+        // 각 item 순차 처리 (실패해도 다른 item은 계속 진행)
+        for (const item of items) {
+            const qty = parseInt(String(item.quantity), 10);
+            if (!Number.isFinite(qty) || qty < 1 || qty > 99) {
+                itemsResult.push({
+                    productId: item.productId,
+                    productLabel: getProductLabel(item.productId, item.bibleTranslation),
+                    quantity: qty || 0,
+                    success: false,
+                    error: '수량은 1-99 사이',
+                });
+                continue;
+            }
+
+            // 상품 검증
+            let finalProductId = item.productId;
+            const isBible = item.productId === PRODUCT_IDS.BIBLE_LIFETIME_PREFIX
+                || item.productId?.startsWith(PRODUCT_IDS.BIBLE_LIFETIME_PREFIX);
+
+            if (isBible) {
+                if (!item.bibleTranslation || !VALID_BIBLE_TRANSLATIONS.has(item.bibleTranslation)) {
+                    itemsResult.push({
+                        productId: item.productId,
+                        productLabel: '성경 평생 소장권',
+                        quantity: qty,
+                        success: false,
+                        error: '번역본 필수',
+                    });
+                    continue;
+                }
+                finalProductId = bibleProductId(item.bibleTranslation as BibleTranslation);
+            } else if (!VALID_PRODUCT_IDS.has(item.productId)) {
+                itemsResult.push({
+                    productId: item.productId,
+                    productLabel: item.productId,
+                    quantity: qty,
+                    success: false,
+                    error: '알 수 없는 productId',
+                });
+                continue;
+            }
+
+            // 보관함 insert (qty 만큼)
+            const rows = Array.from({ length: qty }).map(() => ({
+                user_id: targetUserId,
+                product_id: finalProductId,
+                bible_translation: isBible ? item.bibleTranslation : null,
+                source: 'admin_grant',
+                source_note: note?.trim() || null,
+                granted_by_admin: adminEmail,
+                status: 'available',
+            }));
+
+            const { error: insertErr } = await supabase.from('gift_inventory').insert(rows);
+
+            if (insertErr) {
+                itemsResult.push({
+                    productId: finalProductId,
+                    productLabel: getProductLabel(finalProductId, item.bibleTranslation),
+                    quantity: qty,
+                    success: false,
+                    error: insertErr.message,
+                });
+                continue;
+            }
+
+            // 감사 로그
+            await supabase.from('admin_gift_grants').insert({
+                admin_email: adminEmail,
+                target_user_id: targetUserId,
+                target_email: resolvedEmail,
+                product_id: finalProductId,
+                bible_translation: isBible ? item.bibleTranslation : null,
+                quantity: qty,
+                note: note?.trim() || null,
+            });
+
+            totalGranted += qty;
+            itemsResult.push({
+                productId: finalProductId,
+                productLabel: getProductLabel(finalProductId, item.bibleTranslation),
+                quantity: qty,
+                success: true,
+            });
         }
 
-        await supabase.from('admin_gift_grants').insert({
-            admin_email: adminEmail,
-            target_user_id: targetUserId,
-            target_email: resolvedEmail,
-            product_id: finalProductId,
-            bible_translation: isBible ? bibleTranslation : null,
-            quantity: qty,
-            note: note?.trim() || null,
-        });
+        const anySuccess = itemsResult.some(r => r.success);
+        const anyFail = itemsResult.some(r => !r.success);
 
         return NextResponse.json({
-            success: true,
-            granted: qty,
-            productLabel: getProductLabel(finalProductId, bibleTranslation),
+            success: anySuccess,
+            partial: anySuccess && anyFail,
+            granted: totalGranted,
             targetEmail: resolvedEmail,
+            items: itemsResult,
         });
     } catch (e: any) {
         return NextResponse.json({ error: e?.message || '서버 오류' }, { status: 500 });
@@ -90,7 +180,6 @@ export async function POST(req: NextRequest) {
 
 /**
  * GET /api/admin/gift-inventory
- * Authorization: Bearer <token>
  */
 export async function GET(req: NextRequest) {
     const auth = await requireAdmin(req);

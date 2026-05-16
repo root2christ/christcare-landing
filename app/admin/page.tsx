@@ -36,20 +36,35 @@ type GiftGrant = {
     created_at: string;
 };
 
-const GIFTABLE_PRODUCTS = [
-    { id: 'test_faith_checkup',  label: '신앙심 테스트',          price: '$1' },
-    { id: 'test_christ_basic',   label: '크라이스트 테스트',      price: '$1.5' },
-    { id: 'analysis_deep',       label: '심층 분석',              price: '$3' },
-    { id: 'sub_monthly',         label: '월 구독',                price: '$2' },
-    { id: 'sub_yearly',          label: '연 구독 (심층분석 4회)', price: '$20' },
-    { id: 'bible_lifetime',      label: '성경 평생 소장권',        price: '$6', needsBible: true },
+// 발급 가능한 모든 SKU (성경은 번역본별로 펼침)
+type GiftableSku = {
+    key: string;             // UI/state key
+    productId: string;       // API 전송용
+    bibleTranslation?: string;
+    label: string;
+    price: number;
+};
+
+const GIFTABLE_SKUS: GiftableSku[] = [
+    // 단품
+    { key: 'test_faith_checkup', productId: 'test_faith_checkup', label: '신앙심 테스트', price: 1 },
+    { key: 'test_christ_basic',  productId: 'test_christ_basic',  label: '크라이스트 테스트', price: 1.5 },
+    { key: 'analysis_deep',      productId: 'analysis_deep',      label: '심층 분석', price: 3 },
+    // 구독
+    { key: 'sub_monthly',        productId: 'sub_monthly',        label: '월 구독', price: 2 },
+    { key: 'sub_yearly',         productId: 'sub_yearly',         label: '연 구독 (심층분석 4회)', price: 20 },
+    // 성경 평생 소장권 (번역본별)
+    { key: 'bible_krv', productId: 'bible_lifetime_', bibleTranslation: 'korean_krv',  label: '성경 — 개역개정', price: 6 },
+    { key: 'bible_new', productId: 'bible_lifetime_', bibleTranslation: 'korean_new',  label: '성경 — 새번역',   price: 6 },
+    { key: 'bible_niv', productId: 'bible_lifetime_', bibleTranslation: 'english_niv', label: '성경 — NIV',     price: 6 },
+    { key: 'bible_esv', productId: 'bible_lifetime_', bibleTranslation: 'english_esv', label: '성경 — ESV',     price: 6 },
 ];
 
-const BIBLE_TRANSLATIONS = [
-    { id: 'korean_krv', label: '개역개정' },
-    { id: 'korean_new', label: '새번역' },
-    { id: 'english_niv', label: 'NIV (영문)' },
-    { id: 'english_esv', label: 'ESV (영문)' },
+// SKU 그룹 (UI 섹션 구분용)
+const SKU_SECTIONS: Array<{ title: string; keys: string[] }> = [
+    { title: '단품 테스트', keys: ['test_faith_checkup', 'test_christ_basic', 'analysis_deep'] },
+    { title: '구독', keys: ['sub_monthly', 'sub_yearly'] },
+    { title: '성경 평생 소장권', keys: ['bible_krv', 'bible_new', 'bible_niv', 'bible_esv'] },
 ];
 
 type TabKey = 'send' | 'history' | 'gift';
@@ -78,13 +93,34 @@ export default function AdminPage() {
     const [searching, setSearching] = useState(false);
     const [searchResults, setSearchResults] = useState<SearchedUser[]>([]);
     const [selectedUser, setSelectedUser] = useState<SearchedUser | null>(null);
-    const [productId, setProductId] = useState('test_christ_basic');
-    const [bibleTranslation, setBibleTranslation] = useState('korean_krv');
-    const [quantity, setQuantity] = useState('1');
+    // SKU별 수량 (key → 문자열 수량. 빈 문자열 또는 0이면 미선택)
+    const [quantities, setQuantities] = useState<Record<string, string>>({});
     const [note, setNote] = useState('');
     const [granting, setGranting] = useState(false);
     const [grantResult, setGrantResult] = useState('');
     const [grantHistory, setGrantHistory] = useState<GiftGrant[]>([]);
+
+    const setQty = (key: string, value: string) => {
+        // 숫자만 허용, 최대 2자리
+        const cleaned = value.replace(/[^0-9]/g, '').slice(0, 2);
+        setQuantities(prev => ({ ...prev, [key]: cleaned }));
+    };
+
+    const incQty = (key: string) => {
+        const cur = parseInt(quantities[key] || '0', 10) || 0;
+        setQuantities(prev => ({ ...prev, [key]: String(Math.min(99, cur + 1)) }));
+    };
+    const decQty = (key: string) => {
+        const cur = parseInt(quantities[key] || '0', 10) || 0;
+        setQuantities(prev => ({ ...prev, [key]: String(Math.max(0, cur - 1)) }));
+    };
+
+    // 선택된 항목 요약
+    const selectedItems = GIFTABLE_SKUS
+        .map(sku => ({ sku, qty: parseInt(quantities[sku.key] || '0', 10) || 0 }))
+        .filter(x => x.qty > 0);
+    const totalCount = selectedItems.reduce((s, x) => s + x.qty, 0);
+    const totalValue = selectedItems.reduce((s, x) => s + x.sku.price * x.qty, 0);
 
     // 세션 확인
     useEffect(() => {
@@ -242,16 +278,11 @@ export default function AdminPage() {
 
     const handleGrant = async () => {
         if (!selectedUser) { alert('대상 사용자를 먼저 선택해주세요.'); return; }
-        const qty = parseInt(quantity, 10);
-        if (!Number.isFinite(qty) || qty < 1 || qty > 99) { alert('수량은 1-99 사이.'); return; }
+        if (selectedItems.length === 0) { alert('발급할 이용권의 수량을 1장 이상 입력해주세요.'); return; }
 
-        const selectedProduct = GIFTABLE_PRODUCTS.find(p => p.id === productId);
-        const productLabel = selectedProduct?.needsBible
-            ? `성경 평생 소장권 (${BIBLE_TRANSLATIONS.find(b => b.id === bibleTranslation)?.label})`
-            : selectedProduct?.label;
-
+        const itemsText = selectedItems.map(x => `  · ${x.sku.label} × ${x.qty}장`).join('\n');
         if (!confirm(
-            `[발급 확인]\n\n대상: ${selectedUser.full_name || '(이름 없음)'} (${selectedUser.email || selectedUser.id.slice(0, 8)})\n상품: ${productLabel}\n수량: ${qty}장\n메모: ${note.trim() || '(없음)'}\n\n발급하시겠습니까?`
+            `[발급 확인]\n\n대상: ${selectedUser.full_name || '(이름 없음)'} (${selectedUser.email || selectedUser.id.slice(0, 8)})\n\n${itemsText}\n\n총 ${totalCount}장 (시장가치 $${totalValue.toFixed(2)})\n메모: ${note.trim() || '(없음)'}\n\n발급하시겠습니까?`
         )) return;
 
         setGranting(true);
@@ -262,17 +293,28 @@ export default function AdminPage() {
                 body: JSON.stringify({
                     targetUserId: selectedUser.id,
                     targetEmail: selectedUser.email,
-                    productId: selectedProduct?.needsBible ? 'bible_lifetime_' : productId,
-                    bibleTranslation: selectedProduct?.needsBible ? bibleTranslation : undefined,
-                    quantity: qty,
+                    items: selectedItems.map(x => ({
+                        productId: x.sku.productId,
+                        bibleTranslation: x.sku.bibleTranslation,
+                        quantity: x.qty,
+                    })),
                     note: note.trim() || undefined,
                 }),
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                setGrantResult(`✅ ${data.granted}장 발급 완료 → ${selectedUser.email || selectedUser.full_name}`);
+                const successItems = (data.items || []).filter((r: any) => r.success);
+                const failItems = (data.items || []).filter((r: any) => !r.success);
+
+                let msg = `✅ 총 ${data.granted}장 발급 완료 → ${selectedUser.email || selectedUser.full_name}\n`;
+                msg += successItems.map((r: any) => `  · ${r.productLabel} × ${r.quantity}장`).join('\n');
+                if (failItems.length > 0) {
+                    msg += '\n⚠️ 일부 실패:\n';
+                    msg += failItems.map((r: any) => `  · ${r.productLabel}: ${r.error}`).join('\n');
+                }
+                setGrantResult(msg);
                 setNote('');
-                setQuantity('1');
+                setQuantities({});
                 loadGrantHistory();
             } else {
                 setGrantResult(`❌ 오류: ${data.error || '알 수 없는 오류'}`);
@@ -446,33 +488,65 @@ export default function AdminPage() {
                                 </div>
                             )}
 
-                            <label style={styles.label}>이용권 종류</label>
-                            <select value={productId} onChange={e => setProductId(e.target.value)} style={styles.input}>
-                                {GIFTABLE_PRODUCTS.map(p => (
-                                    <option key={p.id} value={p.id}>{p.label} ({p.price})</option>
+                            {/* 이용권 종류 — 여러 SKU 동시 수량 선택 */}
+                            <label style={styles.label}>이용권 종류와 수량 (여러 종류 한 번에 발급 가능)</label>
+                            <div style={{ marginTop: 8 }}>
+                                {SKU_SECTIONS.map(section => (
+                                    <div key={section.title} style={{ marginBottom: 16 }}>
+                                        <div style={styles.skuSectionTitle}>{section.title}</div>
+                                        <div style={styles.skuList}>
+                                            {section.keys.map(key => {
+                                                const sku = GIFTABLE_SKUS.find(s => s.key === key)!;
+                                                const qty = quantities[key] || '';
+                                                const qtyNum = parseInt(qty || '0', 10) || 0;
+                                                const active = qtyNum > 0;
+                                                return (
+                                                    <div key={key} style={{ ...styles.skuRow, ...(active ? styles.skuRowActive : {}) }}>
+                                                        <div style={{ flex: 1 }}>
+                                                            <div style={styles.skuLabel}>{sku.label}</div>
+                                                            <div style={styles.skuPrice}>${sku.price.toFixed(2)}{qtyNum > 0 && ` × ${qtyNum} = $${(sku.price * qtyNum).toFixed(2)}`}</div>
+                                                        </div>
+                                                        <div style={styles.qtyControl}>
+                                                            <button type="button" onClick={() => decQty(key)} style={styles.qtyBtn} disabled={qtyNum === 0}>−</button>
+                                                            <input
+                                                                value={qty}
+                                                                onChange={e => setQty(key, e.target.value)}
+                                                                placeholder="0"
+                                                                style={styles.qtyInput}
+                                                                inputMode="numeric"
+                                                            />
+                                                            <button type="button" onClick={() => incQty(key)} style={styles.qtyBtn}>+</button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
                                 ))}
-                            </select>
+                            </div>
 
-                            {GIFTABLE_PRODUCTS.find(p => p.id === productId)?.needsBible && (
-                                <>
-                                    <label style={styles.label}>번역본</label>
-                                    <select value={bibleTranslation} onChange={e => setBibleTranslation(e.target.value)} style={styles.input}>
-                                        {BIBLE_TRANSLATIONS.map(b => (
-                                            <option key={b.id} value={b.id}>{b.label}</option>
-                                        ))}
-                                    </select>
-                                </>
+                            {/* 합계 요약 */}
+                            {totalCount > 0 && (
+                                <div style={styles.summaryBox}>
+                                    <div style={{ fontWeight: 800, color: '#1e293b', fontSize: 14 }}>
+                                        총 {totalCount}장 · 시장가치 ${totalValue.toFixed(2)}
+                                    </div>
+                                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
+                                        {selectedItems.map(x => `${x.sku.label} × ${x.qty}`).join(' · ')}
+                                    </div>
+                                </div>
                             )}
-
-                            <label style={styles.label}>수량 (1-99장)</label>
-                            <input type="number" min={1} max={99} value={quantity} onChange={e => setQuantity(e.target.value)} style={styles.input} />
 
                             <label style={styles.label}>메모 (선택, 사용자에게 표시됨)</label>
                             <input placeholder="예: 예수님께서 사랑하시는 목사님께 ROOT 운영팀 드림" value={note} onChange={e => setNote(e.target.value)} style={styles.input} />
 
                             <div style={styles.btnRow}>
-                                <button onClick={handleGrant} disabled={granting || !selectedUser} style={selectedUser ? styles.primaryBtn : styles.disabledBtn}>
-                                    {granting ? '발급 중...' : '이용권 발급'}
+                                <button
+                                    onClick={handleGrant}
+                                    disabled={granting || !selectedUser || totalCount === 0}
+                                    style={(selectedUser && totalCount > 0) ? styles.primaryBtn : styles.disabledBtn}
+                                >
+                                    {granting ? '발급 중...' : (totalCount > 0 ? `${totalCount}장 발급` : '이용권 수량 입력')}
                                 </button>
                             </div>
 
@@ -549,4 +623,16 @@ const styles: Record<string, React.CSSProperties> = {
     searchResults: { marginTop: 8, border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', maxHeight: 240, overflowY: 'auto' as const },
     searchResultItem: { display: 'block', width: '100%', padding: '12px 16px', textAlign: 'left' as const, backgroundColor: '#fff', border: 'none', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' },
     selectedUser: { marginTop: 12, padding: 14, borderRadius: 12, backgroundColor: '#eef2ff', border: '1px solid #c7d2fe' },
+
+    // 다중 SKU 발급
+    skuSectionTitle: { fontSize: 11, fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 8 },
+    skuList: { display: 'flex', flexDirection: 'column' as const, gap: 6 },
+    skuRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid #e2e8f0', backgroundColor: '#fff' },
+    skuRowActive: { borderColor: '#6366f1', backgroundColor: '#eef2ff' },
+    skuLabel: { fontSize: 13.5, fontWeight: 700, color: '#1e293b' },
+    skuPrice: { fontSize: 11.5, color: '#64748b', marginTop: 2 },
+    qtyControl: { display: 'flex', alignItems: 'center', gap: 4 },
+    qtyBtn: { width: 28, height: 28, borderRadius: 8, border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: 16, fontWeight: 800, color: '#475569', cursor: 'pointer', padding: 0 },
+    qtyInput: { width: 44, height: 28, borderRadius: 8, border: '1px solid #cbd5e1', textAlign: 'center' as const, fontSize: 14, fontWeight: 700, color: '#1e293b', padding: 0, boxSizing: 'border-box' as const, outline: 'none' },
+    summaryBox: { marginTop: 12, padding: 14, borderRadius: 12, backgroundColor: '#FFFBEB', border: '1px solid #FDE68A' },
 };
