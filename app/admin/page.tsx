@@ -122,15 +122,36 @@ export default function AdminPage() {
     const totalCount = selectedItems.reduce((s, x) => s + x.qty, 0);
     const totalValue = selectedItems.reduce((s, x) => s + x.sku.price * x.qty, 0);
 
-    // 세션 확인
+    // 세션 확인 + 권한 검증 (admin 아니면 자동 로그아웃)
     useEffect(() => {
-        supabase.auth.getSession().then(({ data }) => {
-            setSession(data.session);
-            setCheckingSession(false);
-        });
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
-            setSession(s);
-        });
+        const verifyAndSet = async (s: Session | null) => {
+            if (!s) {
+                setSession(null);
+                setCheckingSession(false);
+                return;
+            }
+            // 서버에서 admin 권한 확인
+            try {
+                const res = await fetch('/api/admin/check-permission', {
+                    headers: { 'Authorization': `Bearer ${s.access_token}` },
+                });
+                if (res.ok) {
+                    setSession(s);
+                } else {
+                    // 비admin이 어쩌다 토큰 얻어도 즉시 로그아웃
+                    await supabase.auth.signOut();
+                    setSession(null);
+                    setLoginError('관리자 권한이 없는 계정입니다.');
+                }
+            } catch {
+                setSession(s); // 네트워크 에러면 일단 두고 API 호출 시 재검증
+            } finally {
+                setCheckingSession(false);
+            }
+        };
+
+        supabase.auth.getSession().then(({ data }) => verifyAndSet(data.session));
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => verifyAndSet(s));
         return () => subscription.unsubscribe();
     }, []);
 
@@ -171,7 +192,8 @@ export default function AdminPage() {
         if (tab === 'gift') loadGrantHistory();
     }, [session, tab, loadHistory, loadGrantHistory]);
 
-    // ── 로그인 (Magic Link — 이메일로 일회용 링크 전송) ──
+    // ── 로그인 (서버 API로 Magic Link 발송 요청) ──
+    // 서버에서 화이트리스트 검증 → admin이면 실제 발송, 아니면 아무것도 안 함 (응답은 동일)
     const handleLogin = async () => {
         const email = loginEmail.trim().toLowerCase();
         if (!email || !email.includes('@')) {
@@ -181,19 +203,18 @@ export default function AdminPage() {
         setLoggingIn(true);
         setLoginError('');
         try {
-            // 현재 admin 페이지 URL로 돌아오게 설정
-            const redirectTo = `${window.location.origin}/admin`;
-            const { error } = await supabase.auth.signInWithOtp({
-                email,
-                options: {
-                    emailRedirectTo: redirectTo,
-                    shouldCreateUser: false, // 미가입자는 거부 (보안)
-                },
+            const res = await fetch('/api/admin/send-magic-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
             });
-            if (error) {
-                setLoginError(error.message || '링크 발송 실패');
+            const data = await res.json();
+            if (!res.ok) {
+                setLoginError(data?.error || '요청 실패');
                 return;
             }
+            // 항상 동일한 성공 응답 (admin이든 아니든)
+            // → admin이면 실제로 이메일 옴, 아니면 안 옴
             setMagicLinkSent(true);
         } catch (e: any) {
             setLoginError(e?.message || '서버 오류');
@@ -346,16 +367,18 @@ export default function AdminPage() {
                         <>
                             <div style={{ fontSize: 48, marginBottom: 16 }}>📧</div>
                             <p style={{ ...styles.loginDesc, fontWeight: 700, color: '#1e293b' }}>
-                                로그인 링크를 보냈습니다
+                                요청을 받았습니다
                             </p>
                             <p style={{ fontSize: 13, color: '#64748b', marginBottom: 20, lineHeight: 1.6 }}>
-                                <strong>{loginEmail}</strong>으로 보낸 이메일을 확인하시고<br/>
-                                <strong>"Log in"</strong> 링크를 클릭해주세요.
+                                <strong>{loginEmail}</strong>이(가) 등록된 관리자 이메일이면<br/>
+                                로그인 링크가 발송됩니다.<br/>
+                                이메일함을 확인해주세요.
                             </p>
                             <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 16 }}>
-                                · 이메일 도착까지 1~2분 걸릴 수 있어요<br/>
+                                · 도착까지 1~2분 걸릴 수 있어요<br/>
                                 · 스팸함도 확인해주세요<br/>
-                                · 링크는 6시간 후 만료됩니다
+                                · 링크는 6시간 후 만료됩니다<br/>
+                                · 등록된 관리자가 아니면 이메일이 오지 않습니다
                             </p>
                             <button
                                 onClick={() => { setMagicLinkSent(false); setLoginError(''); }}
@@ -367,8 +390,8 @@ export default function AdminPage() {
                     ) : (
                         <>
                             <p style={styles.loginDesc}>
-                                관리자 이메일을 입력하시면<br/>
-                                일회용 로그인 링크를 보내드립니다.
+                                등록된 관리자만 접근할 수 있습니다.<br/>
+                                관리자 이메일을 입력하세요.
                             </p>
                             <input
                                 type="email"
