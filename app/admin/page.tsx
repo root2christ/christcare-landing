@@ -9,8 +9,6 @@ import type { Session } from '@supabase/supabase-js';
 const ADMIN_EMAILS_CLIENT = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'master@root2christ.com')
     .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
 
-const ADMIN_EMAIL_HINT = ADMIN_EMAILS_CLIENT[0] || '';
-
 type Notification = {
     id: string;
     title: string;
@@ -77,10 +75,9 @@ export default function AdminPage() {
     const [session, setSession] = useState<Session | null>(null);
     const [checkingSession, setCheckingSession] = useState(true);
 
-    const [loginEmail, setLoginEmail] = useState(ADMIN_EMAIL_HINT);
+    const [loginEmail, setLoginEmail] = useState('');
     const [loggingIn, setLoggingIn] = useState(false);
-    const [loginError, setLoginError] = useState('');
-    const [magicLinkSent, setMagicLinkSent] = useState(false);
+    const [loginError, setLoginError] = useState(''); // check-permission 실패 시에만 사용
 
     const [tab, setTab] = useState<TabKey>('send');
 
@@ -197,34 +194,40 @@ export default function AdminPage() {
     }, [session, tab, loadHistory, loadGrantHistory]);
 
     // ── 로그인 ──
-    // 정확한 admin 이메일 일치만 통과 → 서버 호출 → Magic Link 발송
+    // 보안: 입력이 admin이든 아니든 응답·시간·UI 완전 동일 (해커가 admin 여부 추측 불가)
     const handleLogin = async () => {
         const email = loginEmail.trim().toLowerCase();
 
-        if (!ADMIN_EMAILS_CLIENT.includes(email)) {
-            setLoginError('관리자 이메일이 아닙니다.');
-            return;
-        }
-
         setLoggingIn(true);
         setLoginError('');
-        try {
-            const res = await fetch('/api/admin/send-magic-link', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-            });
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                setLoginError(data?.error || '요청 실패');
-                return;
+
+        const startTime = Date.now();
+        const isAdmin = ADMIN_EMAILS_CLIENT.includes(email);
+
+        if (isAdmin) {
+            // 실제 서버 호출 → Magic Link 발송
+            try {
+                await fetch('/api/admin/send-magic-link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                });
+            } catch {
+                // 에러 메시지 표시 X (정보 노출 방지)
             }
-            setMagicLinkSent(true);
-        } catch (e: any) {
-            setLoginError(e?.message || '서버 오류');
-        } finally {
-            setLoggingIn(false);
         }
+
+        // 시간 동기화 — admin이든 아니든 동일하게 600~900ms 후 응답
+        // (실제 서버 호출이 더 오래 걸리면 그대로, 짧으면 패딩)
+        const elapsed = Date.now() - startTime;
+        const minDuration = 700 + Math.random() * 200; // 700~900ms
+        if (elapsed < minDuration) {
+            await new Promise(r => setTimeout(r, minDuration - elapsed));
+        }
+
+        // 항상 동일한 UI 변화 (메시지 X, 단순히 입력란 비움)
+        setLoginEmail('');
+        setLoggingIn(false);
     };
 
     const handleLogout = async () => {
@@ -370,18 +373,12 @@ export default function AdminPage() {
                         type="email"
                         placeholder="이메일"
                         value={loginEmail}
-                        onChange={e => { setLoginEmail(e.target.value); setMagicLinkSent(false); setLoginError(''); }}
+                        onChange={e => setLoginEmail(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && !loggingIn && handleLogin()}
                         style={{ ...styles.input, marginTop: 20 }}
                         disabled={loggingIn}
                         autoComplete="email"
                     />
-                    {loginError && (
-                        <p style={{ color: '#ef4444', fontSize: 13, marginTop: 8, marginBottom: 0 }}>{loginError}</p>
-                    )}
-                    {magicLinkSent && (
-                        <p style={{ color: '#10b981', fontSize: 13, marginTop: 8, marginBottom: 0, fontWeight: 600 }}>✓ 이메일을 확인하세요</p>
-                    )}
                     <button onClick={handleLogin} disabled={loggingIn} style={{ ...styles.primaryBtn, marginTop: 16 }}>
                         {loggingIn ? '...' : '로그인'}
                     </button>
