@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     siteName: '예닮',
     type: 'website',
   },
+  verification: {
+    google: '_zRU1MzFSJhHVTVmHTjnM4itiLzgXRSbqqBD1of8gIg',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
