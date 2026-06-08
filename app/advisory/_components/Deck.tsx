@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { SLIDES, Slide } from '../_content';
+import { supabase } from '../../../lib/supabase';
 
 type Pastor = { id: string; name: string; church?: string | null };
 
+export const SYNC_CHANNEL = 'advisory-room';
 const LS_KEY = 'advisory_pastor_v1';
 const NAVY = '#0f172a';
 const BLUE = '#4f6ef2';
@@ -78,7 +80,7 @@ function Login({ onDone }: { onDone: (p: Pastor) => void }) {
 }
 
 // ───────────────── 슬라이드 본문 ─────────────────
-function SlideBody({
+export function SlideBody({
     slide, answer, setAnswer, ministry, setMinistry, info, setInfo,
 }: {
     slide: Slide;
@@ -242,11 +244,31 @@ export default function Deck() {
     const timers = useRef<Record<string, any>>({});
     const touchX = useRef<number | null>(null);
     const touchY = useRef<number | null>(null);
+    // 발표자 실시간 동기화
+    const [following, setFollowing] = useState(true);
+    const [remoteIdx, setRemoteIdx] = useState<number | null>(null);
+    const followingRef = useRef(true);
+    const setFollow = useCallback((v: boolean) => { followingRef.current = v; setFollowing(v); }, []);
 
     useEffect(() => {
         try { const raw = localStorage.getItem(LS_KEY); if (raw) setPastor(JSON.parse(raw)); } catch {}
         setLoaded(true);
     }, []);
+
+    // 발표자 broadcast 수신 → 따라가기 ON이면 자동 이동
+    useEffect(() => {
+        if (!pastor) return;
+        const ch = supabase.channel(SYNC_CHANNEL, { config: { broadcast: { self: false } } });
+        ch.on('broadcast', { event: 'slide' }, ({ payload }: any) => {
+            const n = payload?.slide;
+            if (typeof n === 'number' && n >= 0 && n < SLIDES.length) {
+                setRemoteIdx(n);
+                if (followingRef.current) setIdx(n);
+            }
+        });
+        ch.subscribe();
+        return () => { supabase.removeChannel(ch); };
+    }, [pastor]);
 
     useEffect(() => {
         if (!pastor) return;
@@ -274,7 +296,8 @@ export default function Deck() {
         if (pastor) persist(itemId, value, immediate);
     }, [pastor, persist]);
 
-    const go = useCallback((d: number) => setIdx(i => Math.min(Math.max(i + d, 0), SLIDES.length - 1)), []);
+    const go = useCallback((d: number) => { setFollow(false); setIdx(i => Math.min(Math.max(i + d, 0), SLIDES.length - 1)); }, [setFollow]);
+    const resync = useCallback(() => { if (remoteIdx != null) { setFollow(true); setIdx(remoteIdx); } }, [remoteIdx, setFollow]);
 
     useEffect(() => {
         const h = (e: KeyboardEvent) => { if (e.key === 'ArrowRight') go(1); if (e.key === 'ArrowLeft') go(-1); };
@@ -311,6 +334,21 @@ export default function Deck() {
                 <span style={{ fontSize: 12.5, fontWeight: 800, color: dark ? '#cbd5e1' : '#64748b' }}>{pastor.name}{pastor.church ? ` · ${pastor.church}` : ''}</span>
                 <span style={{ fontSize: 12.5, fontWeight: 800, color: dark ? '#94a3b8' : '#94a3b8' }}>{idx + 1} / {SLIDES.length}{savedTick > 0 ? '  ·  ✓저장됨' : ''}</span>
             </div>
+
+            {/* 발표 따라가기 배너 (발표자가 한 번이라도 송출했을 때만) */}
+            {remoteIdx != null && (
+                following ? (
+                    <button onClick={() => setFollow(false)}
+                        style={{ flexShrink: 0, margin: '0 16px 6px', border: 'none', background: '#fee2e2', color: '#b91c1c', borderRadius: 10, padding: '7px 12px', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}>
+                        🔴 발표 화면 따라가는 중 — 직접 보려면 탭
+                    </button>
+                ) : (
+                    <button onClick={resync}
+                        style={{ flexShrink: 0, margin: '0 16px 6px', border: 'none', background: '#dcfce7', color: '#15803d', borderRadius: 10, padding: '7px 12px', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}>
+                        ▶ 발표자 화면(슬라이드 {remoteIdx + 1})으로 돌아가기
+                    </button>
+                )
+            )}
 
             {/* 본문 (스크롤 가능) */}
             <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', display: 'flex', alignItems: slide.kind === 'cover' || slide.kind === 'divider' || slide.kind === 'closing' ? 'center' : 'flex-start', justifyContent: 'center', padding: '20px 22px 28px' }}>
