@@ -169,19 +169,17 @@ function Login({ onDone }: { onDone: (p: Pastor) => void }) {
                     <p style={{ fontSize: 14, color: '#64748b', marginTop: 8, lineHeight: 1.5 }}>성함을 선택하거나 입력해 주세요.<br />입력하신 내용은 자동 저장됩니다.</p>
                 </div>
 
-                {pastors.length > 0 && (
-                    <select
-                        value={sel}
-                        onChange={e => setSel(e.target.value)}
-                        style={{ width: '100%', height: 50, borderRadius: 12, border: '1.5px solid #e2e8f0', padding: '0 14px', fontSize: 16, marginBottom: 12, background: '#fff', color: NAVY, boxSizing: 'border-box' }}
-                    >
-                        <option value="">— 명단에서 선택 —</option>
-                        {pastors.map(p => (
-                            <option key={p.id} value={p.id}>{p.name}{p.church ? ` (${p.church})` : ''}</option>
-                        ))}
-                        <option value="new">+ 명단에 없어요 (직접 입력)</option>
-                    </select>
-                )}
+                <select
+                    value={sel}
+                    onChange={e => setSel(e.target.value)}
+                    style={{ width: '100%', height: 50, borderRadius: 12, border: '1.5px solid #e2e8f0', padding: '0 14px', fontSize: 16, marginBottom: 12, background: '#fff', color: NAVY, boxSizing: 'border-box' }}
+                >
+                    <option value="">{pastors.length > 0 ? '— 명단에서 성함을 선택하세요 —' : '— 등록된 명단이 없습니다 —'}</option>
+                    {pastors.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}{p.church ? ` (${p.church})` : ''}</option>
+                    ))}
+                    <option value="new">+ 명단에 없어요 (직접 입력)</option>
+                </select>
 
                 {isNew && (
                     <>
