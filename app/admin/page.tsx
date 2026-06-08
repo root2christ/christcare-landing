@@ -368,7 +368,7 @@ export default function AdminPage() {
         return (
             <div style={styles.container}>
                 <div style={styles.loginCard}>
-                    <h1 style={styles.loginTitle}>예닮 관리자</h1>
+                    <h1 style={styles.loginTitle}>soluma 관리자</h1>
                     <input
                         type="text"
                         value={loginEmail}
@@ -393,7 +393,7 @@ export default function AdminPage() {
             <div style={styles.main}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                     <div>
-                        <h1 style={{ ...styles.pageTitle, marginBottom: 4 }}>예닮 관리자</h1>
+                        <h1 style={{ ...styles.pageTitle, marginBottom: 4 }}>soluma 관리자</h1>
                         <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>{session.user.email}</p>
                     </div>
                     <button onClick={handleLogout} style={styles.refreshBtn}>로그아웃</button>

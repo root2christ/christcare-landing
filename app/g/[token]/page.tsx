@@ -15,7 +15,7 @@ export default function RedeemGift({ params }: { params: { token: string } }) {
         선물이 도착했어요!
       </h1>
       <p style={{ fontSize: 16, color: '#64748b', marginBottom: 32 }}>
-        예닮 앱에서 선물을 받으세요
+        soluma 앱에서 선물을 받으세요
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <a
@@ -25,7 +25,7 @@ export default function RedeemGift({ params }: { params: { token: string } }) {
             borderRadius: 16, fontWeight: 700, textDecoration: 'none', fontSize: 16,
           }}
         >
-          예닮 앱에서 열기
+          soluma 앱에서 열기
         </a>
         <a
           href="https://play.google.com/store/apps/details?id=com.root2christ.christapp"

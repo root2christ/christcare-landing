@@ -38,7 +38,7 @@ export default function ChristTestShare() {
           borderRadius: 16, fontWeight: 700, textDecoration: 'none', fontSize: 16,
         }}
       >
-        예닮 앱에서 테스트하기
+        soluma 앱에서 테스트하기
       </a>
     </div>
   );

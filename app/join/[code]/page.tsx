@@ -15,7 +15,7 @@ export default function JoinGroup({ params }: { params: { code: string } }) {
         소그룹 초대
       </h1>
       <p style={{ fontSize: 16, color: '#64748b', marginBottom: 8 }}>
-        예닮 앱에서 소그룹에 참여하세요
+        soluma 앱에서 소그룹에 참여하세요
       </p>
       <p style={{ fontSize: 14, color: '#94a3b8', marginBottom: 32 }}>
         초대코드: <strong style={{ color: '#6366f1', letterSpacing: 2 }}>{params.code}</strong>
@@ -28,7 +28,7 @@ export default function JoinGroup({ params }: { params: { code: string } }) {
             borderRadius: 16, fontWeight: 700, textDecoration: 'none', fontSize: 16,
           }}
         >
-          예닮 앱에서 열기
+          soluma 앱에서 열기
         </a>
         <a
           href="https://play.google.com/store/apps/details?id=com.root2christ.christapp"
@@ -41,7 +41,7 @@ export default function JoinGroup({ params }: { params: { code: string } }) {
         </a>
       </div>
       <p style={{ marginTop: 40, fontSize: 12, color: '#94a3b8', lineHeight: 1.8 }}>
-        앱이 설치되어 있다면 "예닮 앱에서 열기"를 누르세요.<br />
+        앱이 설치되어 있다면 "soluma 앱에서 열기"를 누르세요.<br />
         앱이 없다면 먼저 다운로드해주세요.
       </p>
     </div>
