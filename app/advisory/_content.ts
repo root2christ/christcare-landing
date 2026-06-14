@@ -16,6 +16,8 @@ export interface Slide {
   quote?: string;         // 강조 인용 (원고의 "..." 한 문장 정의)
   question?: string;      // 설문 질문 (q-* 전용)
   options?: string[];     // 선택지 (q-single/q-multi 전용). 원고의 □ 항목 그대로
+  qr?: string;            // QR 이미지 경로 (cover/divider 슬라이드에 표시) — /public 정적 파일
+  qrCaption?: string;     // QR 아래 안내 문구
 }
 
 export const SLIDES: Slide[] = [
@@ -29,6 +31,8 @@ export const SLIDES: Slide[] = [
     body: [
       '모든 것은 뿌리 되신 하나님으로부터, 그리고 하나님께로.',
     ],
+    qr: '/qr-advisory.png',
+    qrCaption: '📱 휴대폰으로 이 QR을 스캔하시면 발표를 폰에서 함께 보실 수 있습니다 (christcare.us/advisory)',
   },
 
   // ─────────────────── 왜 ROOT를 만들게 되었는가 ───────────────────
@@ -463,12 +467,14 @@ export const SLIDES: Slide[] = [
     id: 'survey-cta',
     kind: 'divider',
     eyebrow: '목회자 자문 설문',
-    title: '자문 설문은 별도 QR로 작성해 주세요',
+    title: '아래 QR로 설문을 작성해 주세요',
     emoji: '📋',
     body: [
       '발표를 들으신 뒤, 솔루마 앱을 직접 설치해 둘러보시고 자문 설문을 작성해 주십시오.',
-      '안내해 드리는 설문 QR을 휴대폰으로 찍으시면 설문 페이지로 이동합니다. 작성하신 내용은 자동으로 저장되며, 중간에 나가셨다가 다시 들어오셔도 이어서 작성하실 수 있습니다.',
+      '아래 설문 QR을 휴대폰으로 찍으시면 설문 페이지로 이동합니다. 작성하신 내용은 자동으로 저장되며, 중간에 나가셨다가 다시 들어오셔도 이어서 작성하실 수 있습니다.',
     ],
+    qr: '/qr-survey.png',
+    qrCaption: '📋 이 QR을 스캔 → 앱 설치 안내 + 자문 설문 (christcare.us/survey)',
     quote: '목사님의 귀한 조언이 솔루마의 방향을 세우는 중요한 기준이 됩니다.',
   },
 

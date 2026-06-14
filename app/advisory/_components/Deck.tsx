@@ -79,6 +79,22 @@ function Login({ onDone }: { onDone: (p: Pastor) => void }) {
     );
 }
 
+// ───────────────── QR (cover/divider 어두운 슬라이드용 흰 카드) ─────────────────
+function SlideQR({ slide }: { slide: Slide }) {
+    if (!slide.qr) return null;
+    return (
+        <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <div style={{ background: '#fff', padding: 14, borderRadius: 18, boxShadow: '0 14px 38px rgba(0,0,0,0.35)' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={slide.qr} alt="QR" width={200} height={200} style={{ display: 'block', width: 200, height: 200, imageRendering: 'pixelated' }} />
+            </div>
+            {slide.qrCaption && (
+                <p style={{ fontSize: 13.5, color: '#cbd5e1', fontWeight: 700, lineHeight: 1.55, maxWidth: 340, margin: 0 }}>{slide.qrCaption}</p>
+            )}
+        </div>
+    );
+}
+
 // ───────────────── 슬라이드 본문 ─────────────────
 export function SlideBody({
     slide, answer, setAnswer, ministry, setMinistry, info, setInfo,
@@ -100,6 +116,7 @@ export function SlideBody({
                 <img src="/app-icon.png" alt="" width={92} height={92} style={{ borderRadius: 21, marginBottom: 24, boxShadow: '0 16px 40px rgba(79,110,242,0.4)' }} />
                 <h1 style={{ fontSize: 34, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.25 }}>{slide.title}</h1>
                 {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 16, color: '#cbd5e1', marginTop: 14, lineHeight: 1.6 }}>{b}</p>)}
+                <SlideQR slide={slide} />
             </div>
         );
     }
@@ -110,6 +127,7 @@ export function SlideBody({
                 {slide.emoji && <div style={{ fontSize: 52, marginBottom: 14 }}>{slide.emoji}</div>}
                 <h1 style={{ fontSize: 30, fontWeight: 900, color: '#fff', margin: 0 }}>{slide.title}</h1>
                 {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 15.5, color: '#cbd5e1', marginTop: 14, lineHeight: 1.7 }}>{b}</p>)}
+                <SlideQR slide={slide} />
             </div>
         );
     }
