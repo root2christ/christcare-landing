@@ -287,7 +287,7 @@ export const SLIDES: Slide[] = [
     grid: [
       { icon: '/slide/icons/sparkles.png', label: '크라이스트 테스트' },
       { icon: '/slide/icons/chart.png', label: '크라이스트 심층분석' },
-      { icon: '/slide/icons/heart.png', label: '신앙심 테스트' },
+      { icon: '/slide/icons/heart.png', label: '신앙심 점검' },
       { icon: '/slide/icons/bible.png', label: '성경 읽기' },
       { icon: '/slide/icons/sun_qt.png', label: '큐티(QT)' },
       { icon: '/slide/icons/prayer.png', label: '기도 요청' },
@@ -328,10 +328,10 @@ export const SLIDES: Slide[] = [
     id: 'feat-faith',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '3. 신앙심 테스트',
+    title: '3. 신앙심 점검',
     emoji: '🩺',
     body: [
-      '신앙은 눈에 보이지 않기 때문에 스스로도 현재 상태를 객관적으로 점검하기 어려울 때가 있습니다. 신앙심 테스트는 사용자가 자신의 신앙생활을 돌아보고 하나님과의 관계를 점검할 수 있도록 돕는 기능입니다.',
+      '신앙은 눈에 보이지 않기 때문에 스스로도 현재 상태를 객관적으로 점검하기 어려울 때가 있습니다. 신앙심 점검은 사용자가 자신의 신앙생활을 돌아보고 하나님과의 관계를 점검할 수 있도록 돕는 기능입니다.',
     ],
     quote: '신앙의 현재 위치를 확인하는 영적 건강검진.',
   },

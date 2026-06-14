@@ -69,7 +69,7 @@ function Login({ onDone }: { onDone: (p: Pastor) => void }) {
                             style={{ width: '100%', height: 50, borderRadius: 12, border: '1.5px solid #e2e8f0', padding: '0 14px', fontSize: 16, marginBottom: 10, boxSizing: 'border-box' }} />
                     </>
                 )}
-                {err && <p style={{ color: '#dc2626', fontSize: 13, margin: '4px 0 10px' }}>{err}</p>}
+                {err && <p style={{ color: '#dc2626', fontSize: 14, margin: '4px 0 10px' }}>{err}</p>}
                 <button onClick={start} disabled={busy}
                     style={{ width: '100%', height: 52, borderRadius: 14, border: 'none', background: NAVY, color: '#fff', fontSize: 16, fontWeight: 800, cursor: 'pointer', opacity: busy ? 0.6 : 1 }}>
                     {busy ? '입장 중…' : '시작하기 →'}
@@ -141,7 +141,7 @@ function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) 
                             <div style={{ fontSize: 15.5, fontWeight: 800, color: T_WHITE }}>{head.trim()}</div>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 9 }}>
                                 {children.map((c, j) => (
-                                    <span key={j} style={{ fontSize: 12.5, fontWeight: 700, color: accent, background: hexA(accent, 0.14), padding: '4px 10px', borderRadius: 8 }}>{c}</span>
+                                    <span key={j} style={{ fontSize: 13.5, fontWeight: 700, color: accent, background: hexA(accent, 0.14), padding: '4px 10px', borderRadius: 8 }}>{c}</span>
                                 ))}
                             </div>
                         </div>
@@ -156,14 +156,14 @@ function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) 
                             <span style={{ width: 5, borderRadius: 6, background: accent, flexShrink: 0 }} />
                             <div>
                                 <div style={{ fontSize: 15.5, fontWeight: 800, color: T_WHITE, lineHeight: 1.4 }}>{head}</div>
-                                <div style={{ fontSize: 13.5, color: T_MUTE, lineHeight: 1.6, marginTop: 4 }}>{desc}</div>
+                                <div style={{ fontSize: 14.5, color: T_MUTE, lineHeight: 1.6, marginTop: 4 }}>{desc}</div>
                             </div>
                         </div>
                     );
                 }
                 return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 12, padding: '12px 15px' }}>
-                        <span style={{ width: 22, height: 22, borderRadius: 999, background: hexA(accent, 0.2), color: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, flexShrink: 0 }}>✓</span>
+                        <span style={{ width: 22, height: 22, borderRadius: 999, background: hexA(accent, 0.2), color: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 900, flexShrink: 0 }}>✓</span>
                         <span style={{ fontSize: 15, color: T_BODY, fontWeight: 600, lineHeight: 1.5 }}>{b}</span>
                     </div>
                 );
@@ -184,7 +184,7 @@ function FeatureGrid({ items, accent }: { items: { icon?: string; emoji?: string
                     ) : (
                         <div style={{ width: 46, height: 46, borderRadius: 13, background: hexA(accent, 0.16), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>{it.emoji}</div>
                     )}
-                    <span style={{ fontSize: 12.5, fontWeight: 700, color: T_WHITE, textAlign: 'center', lineHeight: 1.3 }}>{it.label}</span>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: T_WHITE, textAlign: 'center', lineHeight: 1.3 }}>{it.label}</span>
                 </div>
             ))}
         </div>
@@ -233,7 +233,7 @@ function SlideGallery({ slide, accent }: { slide: Slide; accent: string }) {
                     <img key={i} src={src} alt="" style={{ width: '100%', aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 12, border: `2px solid ${hexA(accent, 0.3)}`, background: 'rgba(255,255,255,0.05)' }} />
                 ))}
             </div>
-            <p style={{ fontSize: 12.5, color: T_MUTE, marginTop: 9, fontWeight: 600 }}>64명의 성경 인물 캐릭터 중 일부</p>
+            <p style={{ fontSize: 13.5, color: T_MUTE, marginTop: 9, fontWeight: 600 }}>64명의 성경 인물 캐릭터 중 일부</p>
         </div>
     );
 }
@@ -244,7 +244,7 @@ function SlideTable({ table, accent }: { table: { headers: string[]; rows: strin
     return (
         <div style={{ marginTop: 18, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, overflow: 'hidden' }}>
             <div style={{ display: 'grid', gridTemplateColumns: cols, background: hexA(accent, 0.2) }}>
-                {table.headers.map((h, i) => (<div key={i} style={{ padding: '11px 13px', fontSize: 12.5, fontWeight: 800, color: T_WHITE }}>{h}</div>))}
+                {table.headers.map((h, i) => (<div key={i} style={{ padding: '11px 13px', fontSize: 13.5, fontWeight: 800, color: T_WHITE }}>{h}</div>))}
             </div>
             {table.rows.map((row, r) => (
                 <div key={r} style={{ display: 'grid', gridTemplateColumns: cols, background: r % 2 ? 'rgba(255,255,255,0.03)' : 'transparent', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
@@ -265,7 +265,7 @@ function SlideQR({ slide }: { slide: Slide }) {
                 <img src={slide.qr} alt="QR" width={200} height={200} style={{ display: 'block', width: 200, height: 200, imageRendering: 'pixelated' }} />
             </div>
             {slide.qrCaption && (
-                <p style={{ fontSize: 13.5, color: '#cbd5e1', fontWeight: 700, lineHeight: 1.55, maxWidth: 340, margin: 0 }}>{slide.qrCaption}</p>
+                <p style={{ fontSize: 14.5, color: '#cbd5e1', fontWeight: 700, lineHeight: 1.55, maxWidth: 340, margin: 0 }}>{slide.qrCaption}</p>
             )}
         </div>
     );
@@ -294,7 +294,7 @@ export function SlideBody({
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/slide/logo-soluma.png" alt="soluma" style={{ width: '52%', maxWidth: 230, height: 'auto', display: 'block', margin: '0 auto 14px', filter: 'invert(1)' }} />
-                <div style={{ fontSize: 12.5, fontWeight: 800, color: GOLD, letterSpacing: 2, marginBottom: 8 }}>{slide.eyebrow}</div>
+                <div style={{ fontSize: 13.5, fontWeight: 800, color: GOLD, letterSpacing: 2, marginBottom: 8 }}>{slide.eyebrow}</div>
                 <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.3 }}>{slide.title}</h1>
                 {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 15.5, color: T_BODY, marginTop: 12, lineHeight: 1.6 }}>{b}</p>)}
             </div>
@@ -338,7 +338,7 @@ export function SlideBody({
         <>
             {illusFor(slide.id) ? <SlideBanner id={slide.id} accent={accent} /> : <SlideIcon slide={slide} accent={accent} />}
             {slide.eyebrow && (
-                <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 800, color: accent, letterSpacing: 0.5, background: hexA(accent, 0.16), border: `1px solid ${hexA(accent, 0.3)}`, padding: '5px 13px', borderRadius: 999, marginBottom: 12 }}>{slide.eyebrow}</span>
+                <span style={{ display: 'inline-block', fontSize: 13, fontWeight: 800, color: accent, letterSpacing: 0.5, background: hexA(accent, 0.16), border: `1px solid ${hexA(accent, 0.3)}`, padding: '5px 13px', borderRadius: 999, marginBottom: 12 }}>{slide.eyebrow}</span>
             )}
             {slide.title && <h2 style={{ fontSize: 26, fontWeight: 900, color: T_WHITE, margin: 0, lineHeight: 1.32 }}>{slide.title}</h2>}
         </>
@@ -365,7 +365,7 @@ export function SlideBody({
     if (k === 'info') {
         const field = (label: string, key: string, ph: string) => (
             <div style={{ marginBottom: 14 }}>
-                <label style={{ fontSize: 13.5, fontWeight: 800, color: '#475569', display: 'block', marginBottom: 6 }}>{label}</label>
+                <label style={{ fontSize: 14.5, fontWeight: 800, color: '#475569', display: 'block', marginBottom: 6 }}>{label}</label>
                 <input value={info[key] || ''} onChange={e => setInfo(key, e.target.value)} placeholder={ph}
                     style={{ width: '100%', height: 48, borderRadius: 12, border: '1.5px solid #e2e8f0', padding: '0 14px', fontSize: 16, boxSizing: 'border-box' }} />
             </div>
@@ -378,7 +378,7 @@ export function SlideBody({
                 {field('연락처', 'info_phone', '전화번호 (선택)')}
                 {field('이메일', 'info_email', '이메일 (선택)')}
                 <div>
-                    <label style={{ fontSize: 13.5, fontWeight: 800, color: '#475569', display: 'block', marginBottom: 8 }}>담당 사역 분야 (복수 선택)</label>
+                    <label style={{ fontSize: 14.5, fontWeight: 800, color: '#475569', display: 'block', marginBottom: 8 }}>담당 사역 분야 (복수 선택)</label>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                         {MINISTRY.map(m => {
                             const on = ministry.includes(m);
@@ -407,7 +407,7 @@ export function SlideBody({
             <div style={{ maxWidth: 560, width: '100%' }}>
                 {Head}
                 <p style={{ fontSize: 18, fontWeight: 800, color: NAVY, lineHeight: 1.5, margin: '12px 0 18px' }}>{slide.question}</p>
-                {k === 'q-multi' && <p style={{ fontSize: 13, color: '#94a3b8', marginTop: -10, marginBottom: 14 }}>복수 선택 가능</p>}
+                {k === 'q-multi' && <p style={{ fontSize: 14, color: '#94a3b8', marginTop: -10, marginBottom: 14 }}>복수 선택 가능</p>}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {(slide.options || []).map(opt => {
                         const on = selected.includes(opt);
@@ -536,20 +536,20 @@ export default function Deck() {
 
             {/* 상단 바 */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', flexShrink: 0 }}>
-                <span style={{ fontSize: 12.5, fontWeight: 800, color: dark ? '#cbd5e1' : '#64748b' }}>{pastor.name}{pastor.church ? ` · ${pastor.church}` : ''}</span>
-                <span style={{ fontSize: 12.5, fontWeight: 800, color: dark ? '#94a3b8' : '#94a3b8' }}>{idx + 1} / {SLIDES.length}{savedTick > 0 ? '  ·  ✓저장됨' : ''}</span>
+                <span style={{ fontSize: 13.5, fontWeight: 800, color: dark ? '#cbd5e1' : '#64748b' }}>{pastor.name}{pastor.church ? ` · ${pastor.church}` : ''}</span>
+                <span style={{ fontSize: 13.5, fontWeight: 800, color: dark ? '#94a3b8' : '#94a3b8' }}>{idx + 1} / {SLIDES.length}{savedTick > 0 ? '  ·  ✓저장됨' : ''}</span>
             </div>
 
             {/* 발표 따라가기 배너 (발표자가 한 번이라도 송출했을 때만) */}
             {remoteIdx != null && (
                 following ? (
                     <button onClick={() => setFollow(false)}
-                        style={{ flexShrink: 0, margin: '0 16px 6px', border: 'none', background: '#fee2e2', color: '#b91c1c', borderRadius: 10, padding: '7px 12px', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}>
+                        style={{ flexShrink: 0, margin: '0 16px 6px', border: 'none', background: '#fee2e2', color: '#b91c1c', borderRadius: 10, padding: '7px 12px', fontSize: 13.5, fontWeight: 800, cursor: 'pointer' }}>
                         🔴 발표 화면 따라가는 중 — 직접 보려면 탭
                     </button>
                 ) : (
                     <button onClick={resync}
-                        style={{ flexShrink: 0, margin: '0 16px 6px', border: 'none', background: '#dcfce7', color: '#15803d', borderRadius: 10, padding: '7px 12px', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}>
+                        style={{ flexShrink: 0, margin: '0 16px 6px', border: 'none', background: '#dcfce7', color: '#15803d', borderRadius: 10, padding: '7px 12px', fontSize: 13.5, fontWeight: 800, cursor: 'pointer' }}>
                         ▶ 발표자 화면(슬라이드 {remoteIdx + 1})으로 돌아가기
                     </button>
                 )
