@@ -13,7 +13,7 @@ const NAVY = '#0f172a';
 const BLUE = '#4f6ef2';
 
 const KIND_LABEL: Record<string, string> = {
-    cover: '표지', narrative: '이야기', feature: '기능', divider: '구분', closing: '마무리',
+    cover: '표지', narrative: '이야기', feature: '기능', grid: '기능 그리드', divider: '구분', closing: '마무리',
     info: '정보', 'q-single': '설문', 'q-multi': '설문', 'q-text': '설문',
 };
 
@@ -56,6 +56,14 @@ export default function AllSlidesPage() {
                                     </li>
                                 ))}
                             </ul>
+                        )}
+
+                        {s.grid && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                                {s.grid.map((g, j) => (
+                                    <span key={j} style={{ fontSize: 13, fontWeight: 700, color: BLUE, background: '#eef2ff', borderRadius: 8, padding: '5px 10px' }}>{g.emoji} {g.label}</span>
+                                ))}
+                            </div>
                         )}
 
                         {s.quote && (

@@ -2,7 +2,7 @@
 // 원본: advisor/soluma_prelaunch.txt (발표 원고 + 30문항 설문지)
 
 export type SlideKind =
-  | 'cover' | 'divider' | 'narrative' | 'feature' | 'info'
+  | 'cover' | 'divider' | 'narrative' | 'feature' | 'grid' | 'info'
   | 'q-single' | 'q-multi' | 'q-text' | 'closing';
 
 export interface Slide {
@@ -19,6 +19,7 @@ export interface Slide {
   qr?: string;            // QR 이미지 경로 (divider 슬라이드에 표시) — /public 정적 파일
   qrCaption?: string;     // QR 아래 안내 문구
   cta?: { href: string; label: string }; // 탭 이동 버튼 (폰으로 보는 분용 — 자기 화면 QR은 못 찍으므로)
+  grid?: { emoji: string; label: string }[]; // kind 'grid' — 아이콘 카드 그리드 (기능 한눈에 보기 등)
 }
 
 export const SLIDES: Slide[] = [
@@ -166,7 +167,7 @@ export const SLIDES: Slide[] = [
       '총괄이사 조미형 (CMO / CDO) → 디자인팀 · 홍보팀 · 마케팅팀',
       '자문위원단장 홍민기 목사 → 목회자 자문단 · 신학자 자문단 · 전문위원 자문단',
     ],
-    quote: '이 구성이 현재 솔루마(SOLUMA) 프리런칭 및 ROOT 운영을 위한 공식 조직도 최종안입니다.',
+    quote: '이 구성이 현재 솔루마(soluma) 프리런칭 및 ROOT 운영을 위한 공식 조직도입니다.',
   },
 
   // ─────────────────── ROOT가 꿈꾸는 비전 ───────────────────
@@ -209,7 +210,7 @@ export const SLIDES: Slide[] = [
       '우리는 재단을 통해 단순히 재정을 지원하는 것에 머무르지 않을 것입니다. 물질적 사역과 함께 행위적 사역도 실천하고자 합니다.',
       '재정을 흘려보내는 것뿐 아니라 직접 현장을 찾아가 섬기고, 함께 기도하고, 복음을 전하며, 하나님 나라의 확장을 위해 몸으로 순종하는 공동체가 되고자 합니다.',
     ],
-    quote: 'ROOT는 솔루마를 통해 얻어진 가치를 하나님 나라에 다시 돌려드리고, 기독교 비영리 재단을 설립하여 교회를 섬기고 선교에 동참하며, 복음을 위해 쓰임 받는 기업이 되고자 합니다.',
+    quote: '돈을 흘려보내는 것을 넘어, 직접 현장으로 가서 몸으로 섬기는 공동체가 되겠습니다.',
   },
   {
     id: 'vision-statement',
@@ -283,6 +284,31 @@ export const SLIDES: Slide[] = [
   },
 
   // ─────────────────── 기능 소개 (feature) ───────────────────
+  {
+    id: 'feat-overview',
+    kind: 'grid',
+    eyebrow: '주요 기능',
+    title: '솔루마의 주요 기능 한눈에',
+    emoji: '🧩',
+    body: [
+      '솔루마는 신앙의 시작부터 성장, 공동체, 세상 속 삶까지 아우르는 기능을 담았습니다.',
+    ],
+    grid: [
+      { emoji: '🧬', label: '크라이스트 테스트' },
+      { emoji: '🩺', label: '신앙심 테스트' },
+      { emoji: '📖', label: '성경 읽기' },
+      { emoji: '🕯️', label: '큐티(QT)' },
+      { emoji: '🙏', label: '기도 요청' },
+      { emoji: '💬', label: '간증 나눔' },
+      { emoji: '🌅', label: '말씀 묵상' },
+      { emoji: '🗺️', label: '성경 통독' },
+      { emoji: '✍️', label: '성경 필사' },
+      { emoji: '🎲', label: '성경 퀴즈' },
+      { emoji: '🛡️', label: '이단 점검' },
+      { emoji: '🤖', label: 'AI 상담' },
+      { emoji: '🧰', label: '잡박스' },
+    ],
+  },
   {
     id: 'feat-test',
     kind: 'feature',
@@ -400,7 +426,7 @@ export const SLIDES: Slide[] = [
     title: '13. 이단 점검',
     emoji: '🛡️',
     body: [
-      '잘못된 가르침은 신앙을 혼란스럽게 만들 수 있습니다. 이단 점검 기능은 주요 이단들의 특징과 교리를 안내하고 건강한 신앙생활을 돕습니다.',
+      '잘못된 가르침은 신앙을 혼란스럽게 만들 수 있습니다. 이단 점검 기능은 교단과 전문가의 자문을 기반으로 주요 이단들의 특징과 교리를 안내하고 건강한 신앙생활을 돕습니다.',
     ],
     quote: '성도를 보호하는 영적 안전장치.',
   },
@@ -412,8 +438,9 @@ export const SLIDES: Slide[] = [
     emoji: '🤖',
     body: [
       '신앙생활 중에는 누구에게도 쉽게 말하지 못하는 고민들이 있습니다. AI 상담 기능은 말씀과 기독교적 가치관을 기반으로 사용자의 고민을 함께 나누고 방향을 제시합니다.',
+      'AI 상담은 목회 상담을 대신하지 않습니다. 1차적인 도움을 드리되, 더 깊은 돌봄이 필요한 경우 목회자와 연결되도록 안내하는 신앙 동반자입니다.',
     ],
-    quote: '언제든지 찾아올 수 있는 신앙 동반자.',
+    quote: '목회 상담을 대신하지 않는, 언제든 찾아올 수 있는 1차 신앙 동반자.',
   },
   {
     id: 'feat-jobbox',
@@ -488,6 +515,6 @@ export const SLIDES: Slide[] = [
     body: [
       '목사님의 귀한 조언이 솔루마의 방향을 세우는 중요한 기준이 됩니다. 감사합니다.',
     ],
-    quote: '모든 것은 뿌리되신 하나님으로부터, 그리고 하나님께로.',
+    quote: '모든 것은 뿌리 되신 하나님으로부터, 그리고 하나님께로.',
   },
 ];

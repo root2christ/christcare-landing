@@ -79,6 +79,98 @@ function Login({ onDone }: { onDone: (p: Pastor) => void }) {
     );
 }
 
+// ───────────────── 시각 디자인 헬퍼 ─────────────────
+// #rrggbb → rgba(.,.,.,a)
+function hexA(hex: string, a: number) {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+    return `rgba(${r},${g},${b},${a})`;
+}
+
+// 섹션(eyebrow)별 강조색 — 슬라이드에 색의 리듬을 준다
+const SECTION_ACCENT: Record<string, string> = {
+    'ROOT 이야기': '#16a34a',
+    '솔루마 이야기': '#4f6ef2',
+    'ROOT 조직도': '#0ea5e9',
+    'ROOT의 비전': '#7c3aed',
+    '비전 선언문': '#7c3aed',
+    '크라이스트 테스트': '#db2777',
+    '주요 기능': '#4f6ef2',
+    '한 줄 정의': '#f59e0b',
+    '부탁의 말씀': '#0d9488',
+};
+function sectionAccent(eyebrow?: string) {
+    return (eyebrow && SECTION_ACCENT[eyebrow]) || BLUE;
+}
+
+// 불릿 → 카드/칩/조직 노드로 똑똑하게 렌더
+function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) {
+    const allShort = bullets.every((b) => b.trim().length <= 7 && !b.includes('—') && !b.includes('→'));
+    if (allShort) {
+        return (
+            <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {bullets.map((b, i) => (
+                    <span key={i} style={{ fontSize: 14.5, fontWeight: 800, color: accent, background: hexA(accent, 0.1), border: `1px solid ${hexA(accent, 0.25)}`, padding: '8px 15px', borderRadius: 999 }}>{b}</span>
+                ))}
+            </div>
+        );
+    }
+    return (
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {bullets.map((b, i) => {
+                if (b.includes('→')) {
+                    const [head, rest] = b.split('→');
+                    const children = (rest || '').split(/[·,]/).map((s) => s.trim()).filter(Boolean);
+                    return (
+                        <div key={i} style={{ background: '#f8fafc', border: '1px solid #eef0f6', borderRadius: 14, padding: '13px 15px' }}>
+                            <div style={{ fontSize: 15.5, fontWeight: 800, color: NAVY }}>{head.trim()}</div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 9 }}>
+                                {children.map((c, j) => (
+                                    <span key={j} style={{ fontSize: 12.5, fontWeight: 700, color: accent, background: hexA(accent, 0.1), padding: '4px 10px', borderRadius: 8 }}>{c}</span>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                }
+                if (b.includes('—')) {
+                    const idx = b.indexOf('—');
+                    const head = b.slice(0, idx).trim();
+                    const desc = b.slice(idx + 1).trim();
+                    return (
+                        <div key={i} style={{ display: 'flex', gap: 12, background: '#f8fafc', border: '1px solid #eef0f6', borderRadius: 14, padding: '13px 15px' }}>
+                            <span style={{ width: 5, borderRadius: 6, background: accent, flexShrink: 0 }} />
+                            <div>
+                                <div style={{ fontSize: 15.5, fontWeight: 800, color: NAVY, lineHeight: 1.4 }}>{head}</div>
+                                <div style={{ fontSize: 13.5, color: '#64748b', lineHeight: 1.6, marginTop: 4 }}>{desc}</div>
+                            </div>
+                        </div>
+                    );
+                }
+                return (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11, background: '#f8fafc', border: '1px solid #eef0f6', borderRadius: 12, padding: '12px 15px' }}>
+                        <span style={{ width: 22, height: 22, borderRadius: 999, background: hexA(accent, 0.15), color: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, flexShrink: 0 }}>✓</span>
+                        <span style={{ fontSize: 15, color: '#334155', fontWeight: 600, lineHeight: 1.5 }}>{b}</span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
+// 기능 아이콘 그리드
+function FeatureGrid({ items, accent }: { items: { emoji: string; label: string }[]; accent: string }) {
+    return (
+        <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10 }}>
+            {items.map((it, i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, background: '#f8fafc', border: '1px solid #eef0f6', borderRadius: 14, padding: '15px 8px' }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 13, background: hexA(accent, 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 23 }}>{it.emoji}</div>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: NAVY, textAlign: 'center', lineHeight: 1.3 }}>{it.label}</span>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 // ───────────────── QR (cover/divider 어두운 슬라이드용 흰 카드) ─────────────────
 function SlideQR({ slide }: { slide: Slide }) {
     if (!slide.qr) return null;
@@ -149,32 +241,33 @@ export function SlideBody({
         );
     }
 
-    // 컨텐츠형 공통 헤더
+    // 섹션별 강조색
+    const accent = sectionAccent(slide.eyebrow);
+
+    // 컨텐츠형 공통 헤더 (eyebrow 알약 + 이모지 원형 + 타이틀)
     const Head = (
         <>
-            {slide.eyebrow && <div style={{ fontSize: 12, fontWeight: 800, color: BLUE, letterSpacing: 1, marginBottom: 10 }}>{slide.eyebrow}</div>}
-            {slide.emoji && <div style={{ fontSize: 42, marginBottom: 8 }}>{slide.emoji}</div>}
-            {slide.title && <h2 style={{ fontSize: 23, fontWeight: 900, color: NAVY, margin: 0, lineHeight: 1.3 }}>{slide.title}</h2>}
+            {slide.eyebrow && (
+                <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 800, color: accent, letterSpacing: 0.5, background: hexA(accent, 0.1), padding: '5px 13px', borderRadius: 999, marginBottom: 14 }}>{slide.eyebrow}</span>
+            )}
+            {slide.emoji && (
+                <div style={{ width: 58, height: 58, borderRadius: 17, background: hexA(accent, 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 31, marginBottom: 12 }}>{slide.emoji}</div>
+            )}
+            {slide.title && <h2 style={{ fontSize: 24, fontWeight: 900, color: NAVY, margin: 0, lineHeight: 1.32 }}>{slide.title}</h2>}
         </>
     );
 
-    if (k === 'narrative' || k === 'feature') {
+    if (k === 'narrative' || k === 'feature' || k === 'grid') {
         return (
-            <div style={{ maxWidth: 560, width: '100%' }}>
+            <div style={{ maxWidth: 620, width: '100%', background: '#fff', borderRadius: 22, padding: '26px 24px 28px', boxShadow: '0 12px 40px rgba(15,23,42,0.07)', borderTop: `4px solid ${accent}` }}>
                 {Head}
                 {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 16, color: '#334155', lineHeight: 1.8, margin: '14px 0 0' }}>{b}</p>)}
-                {slide.bullets && (
-                    <ul style={{ margin: '16px 0 0', padding: 0, listStyle: 'none' }}>
-                        {slide.bullets.map((b, i) => (
-                            <li key={i} style={{ display: 'flex', gap: 10, fontSize: 15.5, color: '#334155', lineHeight: 1.6, marginBottom: 9 }}>
-                                <span style={{ color: BLUE, fontWeight: 900 }}>·</span><span>{b}</span>
-                            </li>
-                        ))}
-                    </ul>
-                )}
+                {k === 'grid' && slide.grid && <FeatureGrid items={slide.grid} accent={accent} />}
+                {slide.bullets && <BulletList bullets={slide.bullets} accent={accent} />}
                 {slide.quote && (
-                    <div style={{ marginTop: 18, borderLeft: `4px solid ${BLUE}`, background: '#f5f7ff', borderRadius: '0 12px 12px 0', padding: '14px 16px', fontSize: 16, color: '#1e293b', fontWeight: 700, lineHeight: 1.6 }}>
-                        “{slide.quote}”
+                    <div style={{ marginTop: 18, background: `linear-gradient(135deg, ${hexA(accent, 0.12)}, ${hexA(accent, 0.03)})`, borderRadius: 16, padding: '16px 18px 16px 40px', position: 'relative' }}>
+                        <span style={{ position: 'absolute', top: 4, left: 14, fontSize: 40, color: hexA(accent, 0.35), fontWeight: 900, lineHeight: 1 }}>“</span>
+                        <p style={{ margin: 0, fontSize: 16, color: '#1e293b', fontWeight: 700, lineHeight: 1.65 }}>{slide.quote}</p>
                     </div>
                 )}
             </div>
