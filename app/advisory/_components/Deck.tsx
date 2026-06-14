@@ -157,16 +157,73 @@ function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) 
     );
 }
 
-// 기능 아이콘 그리드
-function FeatureGrid({ items, accent }: { items: { emoji: string; label: string }[]; accent: string }) {
+// 기능 아이콘 그리드 (실제 3D 앱 아이콘)
+function FeatureGrid({ items, accent }: { items: { icon?: string; emoji?: string; label: string }[]; accent: string }) {
     return (
-        <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10 }}>
+        <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(112px, 1fr))', gap: 10 }}>
             {items.map((it, i) => (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, background: '#f8fafc', border: '1px solid #eef0f6', borderRadius: 14, padding: '15px 8px' }}>
-                    <div style={{ width: 44, height: 44, borderRadius: 13, background: hexA(accent, 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 23 }}>{it.emoji}</div>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: NAVY, textAlign: 'center', lineHeight: 1.3 }}>{it.label}</span>
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, background: '#fff', border: '1px solid #eef0f6', borderRadius: 16, padding: '16px 8px', boxShadow: '0 4px 14px rgba(15,23,42,0.05)' }}>
+                    {it.icon ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={it.icon} alt="" width={48} height={48} style={{ width: 48, height: 48, objectFit: 'contain' }} />
+                    ) : (
+                        <div style={{ width: 48, height: 48, borderRadius: 13, background: hexA(accent, 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 25 }}>{it.emoji}</div>
+                    )}
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: NAVY, textAlign: 'center', lineHeight: 1.3 }}>{it.label}</span>
                 </div>
             ))}
+        </div>
+    );
+}
+
+// ───────────────── 슬라이드별 실제 3D 앱 아이콘 / 성경 인물 갤러리 ─────────────────
+const SLIDE_ICON: Record<string, string> = {
+    'root-1': 'sparkles', 'root-2': 'heart', 'root-3': 'church',
+    'org-1': 'people', 'org-2': 'gear',
+    'vision-1': 'crown', 'vision-2': 'gift', 'vision-3': 'impact',
+    'ct-1': 'prayer', 'ct-2': 'people', 'ct-3': 'heart', 'ct-4': 'trophy',
+    'feat-test': 'sparkles', 'feat-faith': 'heart', 'feat-bible': 'bible',
+    'feat-qt': 'sun_qt', 'feat-prayer': 'prayer', 'feat-testimony': 'megaphone',
+    'feat-meditation': 'sun', 'feat-readthrough': 'calendar', 'feat-transcribe': 'pen',
+    'feat-quiz': 'quiz', 'feat-heresy': 'shield', 'feat-ai': 'robot', 'feat-jobbox': 'hammer',
+    'feat-summary': 'sparkles', 'feat-overview': 'sparkles', 'ask-1': 'people', 'ask-2': 'smile',
+};
+const CHAR_FILES = ['paul', 'david', 'esther', 'moses', 'peter', 'daniel', 'ruth', 'joshua', 'john', 'mary', 'samuel', 'nehemiah'];
+const SLIDE_GALLERY: Record<string, string[]> = {
+    'ct-4': CHAR_FILES.map((c) => `/slide/char/${c}.png`),
+    'feat-test': CHAR_FILES.slice(0, 8).map((c) => `/slide/char/${c}.png`),
+};
+
+// 헤더 아이콘 — 실제 3D 앱 아이콘(있으면) / 없으면 이모지 원형
+function SlideIcon({ slide, accent }: { slide: Slide; accent: string }) {
+    const ic = SLIDE_ICON[slide.id];
+    if (ic) {
+        return (
+            <div style={{ width: 100, height: 100, borderRadius: 26, background: hexA(accent, 0.08), display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/slide/icons/${ic}.png`} alt="" width={70} height={70} style={{ width: 70, height: 70, objectFit: 'contain', filter: 'drop-shadow(0 8px 14px rgba(79,110,242,0.22))' }} />
+            </div>
+        );
+    }
+    if (slide.emoji) {
+        return <div style={{ width: 58, height: 58, borderRadius: 17, background: hexA(accent, 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 31, marginBottom: 12 }}>{slide.emoji}</div>;
+    }
+    return null;
+}
+
+// 성경 인물 캐릭터 갤러리
+function SlideGallery({ slide, accent }: { slide: Slide; accent: string }) {
+    const imgs = SLIDE_GALLERY[slide.id];
+    if (!imgs) return null;
+    return (
+        <div style={{ marginTop: 18 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: 8 }}>
+                {imgs.map((src, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={i} src={src} alt="" style={{ width: '100%', aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 12, border: `2px solid ${hexA(accent, 0.18)}`, background: '#fff' }} />
+                ))}
+            </div>
+            <p style={{ fontSize: 12.5, color: '#94a3b8', marginTop: 9, fontWeight: 600 }}>64명의 성경 인물 캐릭터 중 일부</p>
         </div>
     );
 }
@@ -205,8 +262,9 @@ export function SlideBody({
         return (
             <div style={{ textAlign: 'center', maxWidth: 520 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/app-icon.png" alt="" width={92} height={92} style={{ borderRadius: 21, marginBottom: 24, boxShadow: '0 16px 40px rgba(79,110,242,0.4)' }} />
-                <h1 style={{ fontSize: 34, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.25 }}>{slide.title}</h1>
+                <img src="/slide/logo-soluma.png" alt="soluma" style={{ width: '62%', maxWidth: 250, height: 'auto', display: 'block', margin: '0 auto 26px', filter: 'invert(1)' }} />
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#93c5fd', letterSpacing: 2, marginBottom: 10 }}>{slide.eyebrow}</div>
+                <h1 style={{ fontSize: 30, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.3 }}>{slide.title}</h1>
                 {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 16, color: '#cbd5e1', marginTop: 14, lineHeight: 1.6 }}>{b}</p>)}
                 <SlideQR slide={slide} />
             </div>
@@ -236,7 +294,8 @@ export function SlideBody({
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🙏</div>
                 <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.4 }}>{slide.title}</h1>
                 {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 15, color: '#cbd5e1', marginTop: 14, lineHeight: 1.7 }}>{b}</p>)}
-                <p style={{ marginTop: 22, fontSize: 14, color: '#94a3b8', fontWeight: 800, letterSpacing: 1 }}>ROOT / SOLUMA</p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/slide/logo-soluma.png" alt="soluma" style={{ width: 130, height: 'auto', display: 'block', margin: '24px auto 0', filter: 'invert(1)', opacity: 0.85 }} />
             </div>
         );
     }
@@ -244,24 +303,23 @@ export function SlideBody({
     // 섹션별 강조색
     const accent = sectionAccent(slide.eyebrow);
 
-    // 컨텐츠형 공통 헤더 (eyebrow 알약 + 이모지 원형 + 타이틀)
+    // 컨텐츠형 공통 헤더 (실제 3D 아이콘 + eyebrow 알약 + 타이틀)
     const Head = (
         <>
+            <SlideIcon slide={slide} accent={accent} />
             {slide.eyebrow && (
-                <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 800, color: accent, letterSpacing: 0.5, background: hexA(accent, 0.1), padding: '5px 13px', borderRadius: 999, marginBottom: 14 }}>{slide.eyebrow}</span>
+                <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 800, color: accent, letterSpacing: 0.5, background: hexA(accent, 0.1), padding: '5px 13px', borderRadius: 999, marginBottom: 12 }}>{slide.eyebrow}</span>
             )}
-            {slide.emoji && (
-                <div style={{ width: 58, height: 58, borderRadius: 17, background: hexA(accent, 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 31, marginBottom: 12 }}>{slide.emoji}</div>
-            )}
-            {slide.title && <h2 style={{ fontSize: 24, fontWeight: 900, color: NAVY, margin: 0, lineHeight: 1.32 }}>{slide.title}</h2>}
+            {slide.title && <h2 style={{ fontSize: 25, fontWeight: 900, color: NAVY, margin: 0, lineHeight: 1.32 }}>{slide.title}</h2>}
         </>
     );
 
     if (k === 'narrative' || k === 'feature' || k === 'grid') {
         return (
-            <div style={{ maxWidth: 620, width: '100%', background: '#fff', borderRadius: 22, padding: '26px 24px 28px', boxShadow: '0 12px 40px rgba(15,23,42,0.07)', borderTop: `4px solid ${accent}` }}>
+            <div style={{ maxWidth: 620, width: '100%', background: '#fff', borderRadius: 22, padding: '28px 26px 30px', boxShadow: '0 12px 40px rgba(15,23,42,0.08)', borderTop: `4px solid ${accent}` }}>
                 {Head}
                 {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 16, color: '#334155', lineHeight: 1.8, margin: '14px 0 0' }}>{b}</p>)}
+                <SlideGallery slide={slide} accent={accent} />
                 {k === 'grid' && slide.grid && <FeatureGrid items={slide.grid} accent={accent} />}
                 {slide.bullets && <BulletList bullets={slide.bullets} accent={accent} />}
                 {slide.quote && (

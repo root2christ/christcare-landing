@@ -19,7 +19,7 @@ export interface Slide {
   qr?: string;            // QR 이미지 경로 (divider 슬라이드에 표시) — /public 정적 파일
   qrCaption?: string;     // QR 아래 안내 문구
   cta?: { href: string; label: string }; // 탭 이동 버튼 (폰으로 보는 분용 — 자기 화면 QR은 못 찍으므로)
-  grid?: { emoji: string; label: string }[]; // kind 'grid' — 아이콘 카드 그리드 (기능 한눈에 보기 등)
+  grid?: { icon?: string; emoji?: string; label: string }[]; // kind 'grid' — 아이콘 카드 그리드 (기능 한눈에 보기 등)
 }
 
 export const SLIDES: Slide[] = [
@@ -28,7 +28,7 @@ export const SLIDES: Slide[] = [
     id: 'cover',
     kind: 'cover',
     eyebrow: 'ROOT & SOLUMA',
-    title: 'soluma 프리런칭 · 목회자 자문회',
+    title: '프리런칭 · 목회자 자문회',
     emoji: '🌱',
     body: [
       '모든 것은 뿌리 되신 하나님으로부터, 그리고 하나님께로.',
@@ -294,19 +294,19 @@ export const SLIDES: Slide[] = [
       '솔루마는 신앙의 시작부터 성장, 공동체, 세상 속 삶까지 아우르는 기능을 담았습니다.',
     ],
     grid: [
-      { emoji: '🧬', label: '크라이스트 테스트' },
-      { emoji: '🩺', label: '신앙심 테스트' },
-      { emoji: '📖', label: '성경 읽기' },
-      { emoji: '🕯️', label: '큐티(QT)' },
-      { emoji: '🙏', label: '기도 요청' },
-      { emoji: '💬', label: '간증 나눔' },
-      { emoji: '🌅', label: '말씀 묵상' },
-      { emoji: '🗺️', label: '성경 통독' },
-      { emoji: '✍️', label: '성경 필사' },
-      { emoji: '🎲', label: '성경 퀴즈' },
-      { emoji: '🛡️', label: '이단 점검' },
-      { emoji: '🤖', label: 'AI 상담' },
-      { emoji: '🧰', label: '잡박스' },
+      { icon: '/slide/icons/sparkles.png', label: '크라이스트 테스트' },
+      { icon: '/slide/icons/heart.png', label: '신앙심 테스트' },
+      { icon: '/slide/icons/bible.png', label: '성경 읽기' },
+      { icon: '/slide/icons/sun_qt.png', label: '큐티(QT)' },
+      { icon: '/slide/icons/prayer.png', label: '기도 요청' },
+      { icon: '/slide/icons/megaphone.png', label: '간증 나눔' },
+      { icon: '/slide/icons/sun.png', label: '말씀 묵상' },
+      { icon: '/slide/icons/calendar.png', label: '성경 통독' },
+      { icon: '/slide/icons/pen.png', label: '성경 필사' },
+      { icon: '/slide/icons/quiz.png', label: '성경 퀴즈' },
+      { icon: '/slide/icons/shield.png', label: '이단 점검' },
+      { icon: '/slide/icons/robot.png', label: 'AI 상담' },
+      { icon: '/slide/icons/hammer.png', label: '잡박스' },
     ],
   },
   {
