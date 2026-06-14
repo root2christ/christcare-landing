@@ -158,20 +158,7 @@ export const SLIDES: Slide[] = [
         ['자문위원단장', '홍민기 목사', '신학 자문 · 목회자 네트워크 · 콘텐츠 검수 · 사업 자문'],
       ],
     },
-  },
-  {
-    id: 'org-2',
-    kind: 'narrative',
-    eyebrow: 'ROOT 조직도',
-    title: '조직 구조도',
-    emoji: '🌐',
-    body: [
-      'ROOT (기독교 플랫폼 기업) · 대표이사 박상범',
-      '부대표 정지원 (COO / CTO) → 개발팀 · 운영팀 · 기술지원팀',
-      '총괄이사 조미형 (CMO / CDO) → 디자인팀 · 홍보팀 · 마케팅팀',
-      '자문위원단장 홍민기 목사 → 목회자 자문단 · 신학자 자문단 · 전문위원 자문단',
-    ],
-    quote: '이 구성이 현재 솔루마(soluma) 프리런칭 및 ROOT 운영을 위한 공식 조직도입니다.',
+    quote: '이 구성이 현재 soluma 프리런칭 및 ROOT 운영을 위한 공식 조직도입니다.',
   },
 
   // ─────────────────── ROOT가 꿈꾸는 비전 ───────────────────
@@ -299,6 +286,7 @@ export const SLIDES: Slide[] = [
     ],
     grid: [
       { icon: '/slide/icons/sparkles.png', label: '크라이스트 테스트' },
+      { icon: '/slide/icons/chart.png', label: '크라이스트 심층분석' },
       { icon: '/slide/icons/heart.png', label: '신앙심 테스트' },
       { icon: '/slide/icons/bible.png', label: '성경 읽기' },
       { icon: '/slide/icons/sun_qt.png', label: '큐티(QT)' },
@@ -317,7 +305,7 @@ export const SLIDES: Slide[] = [
     id: 'feat-test',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '1~3. 크라이스트 테스트',
+    title: '1. 크라이스트 테스트',
     emoji: '🧬',
     body: [
       '나는 어떤 기도를 해야 할까 라는 질문에서 시작되어, 하나님께서 만드신 나의 신앙적 모습을 찾기 위해 만들어진 신앙 성향 분석 도구입니다. 분석 결과를 바탕으로 64명의 성경적 인물을 매칭하여 보여주고, 다양한 미션과 말씀 묵상을 통해 실질적인 신앙 성장으로 이어지도록 구성합니다.',
@@ -325,10 +313,22 @@ export const SLIDES: Slide[] = [
     quote: '하나님께서 만드신 나의 신앙적 모습을 발견하는 과정.',
   },
   {
+    id: 'feat-deep',
+    kind: 'feature',
+    eyebrow: '주요 기능',
+    title: '2. 크라이스트 테스트 심층분석',
+    emoji: '🔬',
+    body: [
+      '기본 크라이스트 테스트가 신앙 성향의 큰 그림을 보여준다면, 심층분석은 한 걸음 더 들어갑니다.',
+      'AI가 개인의 삶의 정황 — 연령, 신앙 경력, 현재의 고민 등 — 을 반영하여, 나에게 꼭 맞는 깊이 있는 신앙 해석과 구체적인 성장 방향을 제시합니다.',
+    ],
+    quote: '나의 삶에 꼭 맞춘, 한 걸음 더 깊은 신앙 분석.',
+  },
+  {
     id: 'feat-faith',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '4. 신앙심 테스트',
+    title: '3. 신앙심 테스트',
     emoji: '🩺',
     body: [
       '신앙은 눈에 보이지 않기 때문에 스스로도 현재 상태를 객관적으로 점검하기 어려울 때가 있습니다. 신앙심 테스트는 사용자가 자신의 신앙생활을 돌아보고 하나님과의 관계를 점검할 수 있도록 돕는 기능입니다.',
@@ -339,7 +339,7 @@ export const SLIDES: Slide[] = [
     id: 'feat-bible',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '5. 성경 읽기',
+    title: '4. 성경 읽기',
     emoji: '📖',
     body: [
       '성경은 신앙생활의 가장 중요한 기초입니다. 사용자는 매일 성경을 읽고 기록하며 자신의 성경 읽기 습관을 관리할 수 있습니다.',
@@ -350,7 +350,7 @@ export const SLIDES: Slide[] = [
     id: 'feat-qt',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '6. 큐티(QT)',
+    title: '5. 큐티(QT)',
     emoji: '🕯️',
     body: [
       '말씀을 읽는 것에서 끝나는 것이 아니라 말씀을 삶에 적용하는 것이 중요합니다. 큐티 기능은 말씀 묵상과 적용을 기록하고 실천할 수 있도록 돕습니다.',
@@ -361,7 +361,7 @@ export const SLIDES: Slide[] = [
     id: 'feat-prayer',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '7. 기도 요청',
+    title: '6. 기도 요청',
     emoji: '🙏',
     body: [
       '신앙생활은 혼자 하는 것이 아닙니다. 사용자는 자신의 기도제목을 나누고 다른 사람들과 함께 기도할 수 있습니다.',
@@ -372,7 +372,7 @@ export const SLIDES: Slide[] = [
     id: 'feat-testimony',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '8. 간증 나눔',
+    title: '7. 간증 나눔',
     emoji: '💬',
     body: [
       '하나님께서 삶 가운데 행하신 일들을 나누는 것은 또 다른 누군가에게 큰 믿음의 씨앗이 됩니다. 간증 나눔 기능은 하나님의 은혜를 기록하고 서로 격려할 수 있도록 돕습니다.',
@@ -383,7 +383,7 @@ export const SLIDES: Slide[] = [
     id: 'feat-meditation',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '9. 말씀 묵상',
+    title: '8. 말씀 묵상',
     emoji: '🌅',
     body: [
       '한 구절의 말씀이라도 깊이 묵상하면 삶이 변화될 수 있습니다. 말씀 묵상 기능은 사용자가 자신의 생각과 깨달음을 기록하고 저장할 수 있도록 돕습니다.',
@@ -394,7 +394,7 @@ export const SLIDES: Slide[] = [
     id: 'feat-readthrough',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '10. 성경 통독',
+    title: '9. 성경 통독',
     emoji: '🗺️',
     body: [
       '성경 전체를 읽는 것은 쉽지 않은 도전입니다. 성경 통독 기능은 계획표와 진도 관리를 통해 사용자가 꾸준히 말씀을 읽을 수 있도록 돕습니다.',
@@ -405,7 +405,7 @@ export const SLIDES: Slide[] = [
     id: 'feat-transcribe',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '11. 성경 필사',
+    title: '10. 성경 필사',
     emoji: '✍️',
     body: [
       '말씀을 손으로 직접 써 내려가는 과정은 말씀을 더욱 깊이 마음에 새기게 합니다. 성경 필사 기능은 말씀을 기록하며 묵상할 수 있도록 돕습니다.',
@@ -416,7 +416,7 @@ export const SLIDES: Slide[] = [
     id: 'feat-quiz',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '12. 성경 퀴즈',
+    title: '11. 성경 퀴즈',
     emoji: '🎲',
     body: [
       '성경을 재미있고 자연스럽게 배울 수 있도록 돕는 기능입니다. 개인 또는 공동체가 함께 참여하며 말씀을 익히고 나눌 수 있습니다.',
@@ -427,7 +427,7 @@ export const SLIDES: Slide[] = [
     id: 'feat-heresy',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '13. 이단 점검',
+    title: '12. 이단 점검',
     emoji: '🛡️',
     body: [
       '잘못된 가르침은 신앙을 혼란스럽게 만들 수 있습니다. 이단 점검 기능은 교단과 전문가의 자문을 기반으로 주요 이단들의 특징과 교리를 안내하고 건강한 신앙생활을 돕습니다.',
@@ -438,7 +438,7 @@ export const SLIDES: Slide[] = [
     id: 'feat-ai',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '14. AI 상담',
+    title: '13. AI 상담',
     emoji: '🤖',
     body: [
       '신앙생활 중에는 누구에게도 쉽게 말하지 못하는 고민들이 있습니다. AI 상담 기능은 말씀과 기독교적 가치관을 기반으로 사용자의 고민을 함께 나누고 방향을 제시합니다.',
@@ -450,7 +450,7 @@ export const SLIDES: Slide[] = [
     id: 'feat-jobbox',
     kind: 'feature',
     eyebrow: '주요 기능',
-    title: '15. 잡박스(Job Box)',
+    title: '14. 잡박스(Job Box)',
     emoji: '🧰',
     body: [
       '교회와 성도를 연결하는 기능입니다. 교회는 필요한 사역자를 찾을 수 있고, 성도는 자신이 가진 재능과 달란트를 등록하여 하나님께서 주신 은사를 필요한 곳에 사용할 수 있습니다.',

@@ -193,7 +193,7 @@ function FeatureGrid({ items, accent }: { items: { icon?: string; emoji?: string
 
 // ───────────────── 슬라이드별 3D 앱 아이콘(기능) / 성경 인물 갤러리 ─────────────────
 const SLIDE_ICON: Record<string, string> = {
-    'feat-test': 'sparkles', 'feat-faith': 'heart', 'feat-bible': 'bible',
+    'feat-test': 'sparkles', 'feat-deep': 'chart', 'feat-faith': 'heart', 'feat-bible': 'bible',
     'feat-qt': 'sun_qt', 'feat-prayer': 'prayer', 'feat-testimony': 'megaphone',
     'feat-meditation': 'sun', 'feat-readthrough': 'calendar', 'feat-transcribe': 'pen',
     'feat-quiz': 'quiz', 'feat-heresy': 'shield', 'feat-ai': 'robot', 'feat-jobbox': 'hammer',
@@ -251,37 +251,6 @@ function SlideTable({ table, accent }: { table: { headers: string[]; rows: strin
                     {row.map((cell, c) => (<div key={c} style={{ padding: '11px 13px', fontSize: c === 0 ? 13 : 12.5, fontWeight: c === 0 ? 800 : 600, color: c === 0 ? accent : (c === 1 ? T_WHITE : T_BODY), lineHeight: 1.5 }}>{cell}</div>))}
                 </div>
             ))}
-        </div>
-    );
-}
-
-// 조직 구조도 (선으로 연결된 트리)
-function OrgChart({ accent }: { accent: string }) {
-    const branches = [
-        { head: '정지원', role: '부대표 · COO / CTO', teams: ['개발팀', '운영팀', '기술지원팀'] },
-        { head: '조미형', role: '총괄이사 · CMO / CDO', teams: ['디자인팀', '홍보팀', '마케팅팀'] },
-        { head: '홍민기 목사', role: '자문위원단장', teams: ['목회자 자문단', '신학자 자문단', '전문위원 자문단'] },
-    ];
-    return (
-        <div style={{ marginTop: 18 }}>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <div style={{ background: hexA(accent, 0.2), border: `1.5px solid ${hexA(accent, 0.45)}`, borderRadius: 14, padding: '11px 24px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 15, fontWeight: 900, color: T_WHITE, letterSpacing: 1 }}>ROOT</div>
-                    <div style={{ fontSize: 11.5, color: accent, fontWeight: 700, marginTop: 2 }}>대표이사 · 박상범</div>
-                </div>
-            </div>
-            <div style={{ width: 2, height: 18, background: hexA(accent, 0.45), margin: '0 auto' }} />
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 9 }}>
-                {branches.map((b, i) => (
-                    <div key={i} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '12px 8px', textAlign: 'center' }}>
-                        <div style={{ fontSize: 13, fontWeight: 900, color: T_WHITE }}>{b.head}</div>
-                        <div style={{ fontSize: 10, color: T_MUTE, fontWeight: 700, marginTop: 2, marginBottom: 9 }}>{b.role}</div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                            {b.teams.map((t, j) => (<span key={j} style={{ fontSize: 10.5, fontWeight: 700, color: accent, background: hexA(accent, 0.13), borderRadius: 7, padding: '4px 5px' }}>{t}</span>))}
-                        </div>
-                    </div>
-                ))}
-            </div>
         </div>
     );
 }
@@ -382,9 +351,8 @@ export function SlideBody({
                 {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 16, color: T_BODY, lineHeight: 1.8, margin: '14px 0 0' }}>{b}</p>)}
                 <SlideGallery slide={slide} accent={accent} />
                 {slide.table && <SlideTable table={slide.table} accent={accent} />}
-                {slide.id === 'org-2' && <OrgChart accent={accent} />}
                 {k === 'grid' && slide.grid && <FeatureGrid items={slide.grid} accent={accent} />}
-                {slide.bullets && slide.id !== 'org-2' && <BulletList bullets={slide.bullets} accent={accent} />}
+                {slide.bullets && <BulletList bullets={slide.bullets} accent={accent} />}
                 {slide.quote && (
                     <div style={{ marginTop: 20, background: hexA(accent, 0.1), border: `1px solid ${hexA(accent, 0.22)}`, borderLeft: `4px solid ${accent}`, borderRadius: 14, padding: '15px 18px' }}>
                         <p style={{ margin: 0, fontSize: 16, color: '#fff', fontWeight: 700, lineHeight: 1.65 }}>“{slide.quote}”</p>
