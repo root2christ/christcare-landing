@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { SLIDES, Slide } from '../_content';
 import { supabase } from '../../../lib/supabase';
+import FeatureIcon, { hasFeatureIcon } from './FeatureIcons';
 
 type Pastor = { id: string; name: string; church?: string | null };
 
@@ -172,17 +173,18 @@ function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) 
     );
 }
 
-// 기능 아이콘 그리드 (실제 3D 앱 아이콘) — 다크 타일
+// 기능 아이콘 그리드 (앱 아웃라인 라인 아이콘) — 다크 타일
 function FeatureGrid({ items, accent }: { items: { icon?: string; emoji?: string; label: string }[]; accent: string }) {
     return (
         <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(108px, 1fr))', gap: 10 }}>
             {items.map((it, i) => (
                 <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 16, padding: '16px 8px' }}>
-                    {it.icon ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={it.icon} alt="" width={46} height={46} style={{ width: 46, height: 46, objectFit: 'contain' }} />
+                    {it.icon && hasFeatureIcon(it.icon) ? (
+                        <div style={{ width: 54, height: 54, borderRadius: 14, background: hexA(accent, 0.14), border: `1px solid ${hexA(accent, 0.22)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: accent }}>
+                            <FeatureIcon name={it.icon} size={30} strokeWidth={1.9} />
+                        </div>
                     ) : (
-                        <div style={{ width: 46, height: 46, borderRadius: 13, background: hexA(accent, 0.16), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>{it.emoji}</div>
+                        <div style={{ width: 54, height: 54, borderRadius: 14, background: hexA(accent, 0.16), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>{it.emoji}</div>
                     )}
                     <span style={{ fontSize: 13.5, fontWeight: 700, color: T_WHITE, textAlign: 'center', lineHeight: 1.3 }}>{it.label}</span>
                 </div>
@@ -191,12 +193,13 @@ function FeatureGrid({ items, accent }: { items: { icon?: string; emoji?: string
     );
 }
 
-// ───────────────── 슬라이드별 3D 앱 아이콘(기능) / 성경 인물 갤러리 ─────────────────
+// ───────────────── 슬라이드별 앱 아웃라인 아이콘(기능) / 성경 인물 갤러리 ─────────────────
+// 값은 FeatureIcons.tsx 의 아이콘 key (앱 glyph 와 1:1)
 const SLIDE_ICON: Record<string, string> = {
-    'feat-test': 'sparkles', 'feat-deep': 'chart', 'feat-faith': 'heart', 'feat-bible': 'bible',
-    'feat-qt': 'sun_qt', 'feat-prayer': 'prayer', 'feat-testimony': 'megaphone',
-    'feat-meditation': 'sun', 'feat-readthrough': 'calendar', 'feat-transcribe': 'pen',
-    'feat-quiz': 'quiz', 'feat-heresy': 'shield', 'feat-ai': 'robot', 'feat-jobbox': 'hammer',
+    'feat-test': 'sparkles', 'feat-deep': 'brain', 'feat-faith': 'heart', 'feat-bible': 'bible',
+    'feat-qt': 'qt', 'feat-prayer': 'prayer', 'feat-testimony': 'megaphone',
+    'feat-meditation': 'meditation', 'feat-readthrough': 'calendar', 'feat-transcribe': 'pen',
+    'feat-quiz': 'quiz', 'feat-heresy': 'shield', 'feat-ai': 'robot', 'feat-jobbox': 'jobbox',
     'feat-summary': 'sparkles', 'feat-overview': 'sparkles',
 };
 const CHAR_FILES = ['paul', 'david', 'esther', 'moses', 'peter', 'daniel', 'ruth', 'joshua', 'john', 'mary', 'samuel', 'nehemiah'];
@@ -204,14 +207,13 @@ const SLIDE_GALLERY: Record<string, string[]> = {
     'ct-4': CHAR_FILES.map((c) => `/slide/char/${c}.png`),
 };
 
-// 헤더 아이콘 — 실제 3D 앱 아이콘(기능 슬라이드) / 없으면 이모지
+// 헤더 아이콘 — 앱 아웃라인 라인 아이콘(기능 슬라이드) / 없으면 이모지
 function SlideIcon({ slide, accent }: { slide: Slide; accent: string }) {
     const ic = SLIDE_ICON[slide.id];
-    if (ic) {
+    if (ic && hasFeatureIcon(ic)) {
         return (
-            <div style={{ width: 104, height: 104, borderRadius: 28, background: hexA(accent, 0.14), border: `1px solid ${hexA(accent, 0.25)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/slide/icons/${ic}.png`} alt="" width={72} height={72} style={{ width: 72, height: 72, objectFit: 'contain', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.4))' }} />
+            <div style={{ width: 104, height: 104, borderRadius: 28, background: hexA(accent, 0.14), border: `1px solid ${hexA(accent, 0.25)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, color: accent }}>
+                <FeatureIcon name={ic} size={56} strokeWidth={1.8} />
             </div>
         );
     }
