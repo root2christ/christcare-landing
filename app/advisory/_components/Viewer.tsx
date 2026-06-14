@@ -5,10 +5,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { SLIDES } from '../_content';
-import { SlideBody, SYNC_CHANNEL } from './Deck';
+import { SlideBody, SYNC_CHANNEL, DARK_BG } from './Deck';
 import { supabase } from '../../../lib/supabase';
 
-const BLUE = '#4f6ef2';
+const BLUE = '#60a5fa';
 
 export default function Viewer() {
     const [idx, setIdx] = useState(0);
@@ -34,9 +34,9 @@ export default function Viewer() {
     const dark = slide.kind === 'cover' || slide.kind === 'divider' || slide.kind === 'closing';
 
     return (
-        <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: dark ? 'linear-gradient(160deg,#0b1220,#1e293b)' : '#fbfbfd', overflow: 'hidden' }}>
+        <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: DARK_BG, overflow: 'hidden' }}>
             {/* 진행 바 (발표자 위치 표시 — 청중은 조작 불가) */}
-            <div style={{ height: 3, background: dark ? 'rgba(255,255,255,0.12)' : '#eef0f6', flexShrink: 0 }}>
+            <div style={{ height: 3, background: 'rgba(255,255,255,0.12)', flexShrink: 0 }}>
                 <div style={{ height: '100%', width: `${((idx + 1) / SLIDES.length) * 100}%`, background: BLUE, transition: 'width 0.3s' }} />
             </div>
 
@@ -46,7 +46,7 @@ export default function Viewer() {
             </div>
 
             {/* 하단 — 발표자가 진행함을 안내 (청중용 네비 버튼 없음) */}
-            <div style={{ flexShrink: 0, padding: '12px 18px calc(14px + env(safe-area-inset-bottom))', textAlign: 'center', borderTop: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #eef0f6' }}>
+            <div style={{ flexShrink: 0, padding: '12px 18px calc(14px + env(safe-area-inset-bottom))', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 800, color: '#94a3b8' }}>
                     <span style={{ width: 8, height: 8, borderRadius: 8, background: connected ? '#22c55e' : '#f59e0b', boxShadow: connected ? '0 0 6px #22c55e' : 'none' }} />
                     {connected ? '발표자가 화면을 진행합니다' : '연결 중…'} · {idx + 1} / {SLIDES.length}

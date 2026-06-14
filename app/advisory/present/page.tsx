@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { SLIDES } from '../_content';
-import { SlideBody, SYNC_CHANNEL } from '../_components/Deck';
+import { SlideBody, SYNC_CHANNEL, DARK_BG } from '../_components/Deck';
 import { supabase } from '../../../lib/supabase';
 
 const PRESENT_KEY = 'soluma-present-2026';
@@ -97,7 +97,7 @@ export default function PresentPage() {
     const dark = slide.kind === 'cover' || slide.kind === 'divider' || slide.kind === 'closing';
 
     return (
-        <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: dark ? 'linear-gradient(160deg,#0b1220,#1e293b)' : '#fbfbfd', overflow: 'hidden' }}>
+        <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: DARK_BG, overflow: 'hidden' }}>
             {/* 발표자 상단 바 */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', background: '#0f172a', flexShrink: 0 }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 900, color: '#fff' }}>

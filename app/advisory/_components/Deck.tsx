@@ -79,38 +79,53 @@ function Login({ onDone }: { onDone: (p: Pastor) => void }) {
     );
 }
 
-// ───────────────── 시각 디자인 헬퍼 ─────────────────
-// #rrggbb → rgba(.,.,.,a)
+// ───────────────── 다크 에디토리얼 디자인 시스템 ─────────────────
+export const DARK_BG = 'linear-gradient(165deg, #0c2a30 0%, #0a2028 55%, #06151b 100%)';
+const T_WHITE = '#f8fafc', T_BODY = '#cbd5e1', T_MUTE = '#94a3b8', GOLD = '#e7b75f';
+
 function hexA(hex: string, a: number) {
     const h = hex.replace('#', '');
     const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
     return `rgba(${r},${g},${b},${a})`;
 }
 
-// 섹션(eyebrow)별 강조색 — 슬라이드에 색의 리듬을 준다
+// 섹션(eyebrow)별 강조색 — 다크 배경에서 빛나는 밝은 톤
 const SECTION_ACCENT: Record<string, string> = {
-    'ROOT 이야기': '#16a34a',
-    '솔루마 이야기': '#4f6ef2',
-    'ROOT 조직도': '#0ea5e9',
-    'ROOT의 비전': '#7c3aed',
-    '비전 선언문': '#7c3aed',
-    '크라이스트 테스트': '#db2777',
-    '주요 기능': '#4f6ef2',
-    '한 줄 정의': '#f59e0b',
-    '부탁의 말씀': '#0d9488',
+    'ROOT 이야기': '#34d399',
+    '솔루마 이야기': '#60a5fa',
+    'ROOT 조직도': '#38bdf8',
+    'ROOT의 비전': '#a78bfa',
+    '비전 선언문': '#a78bfa',
+    '크라이스트 테스트': '#f472b6',
+    '주요 기능': '#60a5fa',
+    '한 줄 정의': GOLD,
+    '부탁의 말씀': '#2dd4bf',
 };
-function sectionAccent(eyebrow?: string) {
-    return (eyebrow && SECTION_ACCENT[eyebrow]) || BLUE;
+function sectionAccent(eyebrow?: string) { return (eyebrow && SECTION_ACCENT[eyebrow]) || '#60a5fa'; }
+
+// 상단 일러스트 배너 (생성된 분위기 일러스트)
+const ILLUS_MAP: Record<string, string> = { 'ask-1': 'ask', 'ask-2': 'ask' };
+const ILLUS_IDS = new Set(['root-1', 'root-2', 'root-3', 'root-4', 'soluma-1', 'soluma-2', 'soluma-3', 'soluma-4', 'vision-1', 'vision-2', 'vision-3', 'ct-1', 'ct-2', 'ct-3', 'ask-1', 'ask-2']);
+function illusFor(id: string) { return ILLUS_IDS.has(id) ? `/slide/illus/${ILLUS_MAP[id] || id}.jpg` : null; }
+function SlideBanner({ id, accent }: { id: string; accent: string }) {
+    const src = illusFor(id);
+    if (!src) return null;
+    return (
+        <div style={{ width: '100%', aspectRatio: '16 / 9', borderRadius: 18, overflow: 'hidden', marginBottom: 20, boxShadow: '0 16px 40px rgba(0,0,0,0.4)', border: `1px solid ${hexA(accent, 0.25)}` }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        </div>
+    );
 }
 
-// 불릿 → 카드/칩/조직 노드로 똑똑하게 렌더
+// 불릿 → 다크 글래스 카드/칩/조직 노드
 function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) {
     const allShort = bullets.every((b) => b.trim().length <= 7 && !b.includes('—') && !b.includes('→'));
     if (allShort) {
         return (
             <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {bullets.map((b, i) => (
-                    <span key={i} style={{ fontSize: 14.5, fontWeight: 800, color: accent, background: hexA(accent, 0.1), border: `1px solid ${hexA(accent, 0.25)}`, padding: '8px 15px', borderRadius: 999 }}>{b}</span>
+                    <span key={i} style={{ fontSize: 14.5, fontWeight: 800, color: accent, background: hexA(accent, 0.14), border: `1px solid ${hexA(accent, 0.3)}`, padding: '8px 15px', borderRadius: 999 }}>{b}</span>
                 ))}
             </div>
         );
@@ -122,11 +137,11 @@ function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) 
                     const [head, rest] = b.split('→');
                     const children = (rest || '').split(/[·,]/).map((s) => s.trim()).filter(Boolean);
                     return (
-                        <div key={i} style={{ background: '#f8fafc', border: '1px solid #eef0f6', borderRadius: 14, padding: '13px 15px' }}>
-                            <div style={{ fontSize: 15.5, fontWeight: 800, color: NAVY }}>{head.trim()}</div>
+                        <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 14, padding: '13px 15px' }}>
+                            <div style={{ fontSize: 15.5, fontWeight: 800, color: T_WHITE }}>{head.trim()}</div>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 9 }}>
                                 {children.map((c, j) => (
-                                    <span key={j} style={{ fontSize: 12.5, fontWeight: 700, color: accent, background: hexA(accent, 0.1), padding: '4px 10px', borderRadius: 8 }}>{c}</span>
+                                    <span key={j} style={{ fontSize: 12.5, fontWeight: 700, color: accent, background: hexA(accent, 0.14), padding: '4px 10px', borderRadius: 8 }}>{c}</span>
                                 ))}
                             </div>
                         </div>
@@ -137,19 +152,19 @@ function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) 
                     const head = b.slice(0, idx).trim();
                     const desc = b.slice(idx + 1).trim();
                     return (
-                        <div key={i} style={{ display: 'flex', gap: 12, background: '#f8fafc', border: '1px solid #eef0f6', borderRadius: 14, padding: '13px 15px' }}>
+                        <div key={i} style={{ display: 'flex', gap: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 14, padding: '13px 15px' }}>
                             <span style={{ width: 5, borderRadius: 6, background: accent, flexShrink: 0 }} />
                             <div>
-                                <div style={{ fontSize: 15.5, fontWeight: 800, color: NAVY, lineHeight: 1.4 }}>{head}</div>
-                                <div style={{ fontSize: 13.5, color: '#64748b', lineHeight: 1.6, marginTop: 4 }}>{desc}</div>
+                                <div style={{ fontSize: 15.5, fontWeight: 800, color: T_WHITE, lineHeight: 1.4 }}>{head}</div>
+                                <div style={{ fontSize: 13.5, color: T_MUTE, lineHeight: 1.6, marginTop: 4 }}>{desc}</div>
                             </div>
                         </div>
                     );
                 }
                 return (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11, background: '#f8fafc', border: '1px solid #eef0f6', borderRadius: 12, padding: '12px 15px' }}>
-                        <span style={{ width: 22, height: 22, borderRadius: 999, background: hexA(accent, 0.15), color: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, flexShrink: 0 }}>✓</span>
-                        <span style={{ fontSize: 15, color: '#334155', fontWeight: 600, lineHeight: 1.5 }}>{b}</span>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 12, padding: '12px 15px' }}>
+                        <span style={{ width: 22, height: 22, borderRadius: 999, background: hexA(accent, 0.2), color: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, flexShrink: 0 }}>✓</span>
+                        <span style={{ fontSize: 15, color: T_BODY, fontWeight: 600, lineHeight: 1.5 }}>{b}</span>
                     </div>
                 );
             })}
@@ -157,56 +172,51 @@ function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) 
     );
 }
 
-// 기능 아이콘 그리드 (실제 3D 앱 아이콘)
+// 기능 아이콘 그리드 (실제 3D 앱 아이콘) — 다크 타일
 function FeatureGrid({ items, accent }: { items: { icon?: string; emoji?: string; label: string }[]; accent: string }) {
     return (
-        <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(112px, 1fr))', gap: 10 }}>
+        <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(108px, 1fr))', gap: 10 }}>
             {items.map((it, i) => (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, background: '#fff', border: '1px solid #eef0f6', borderRadius: 16, padding: '16px 8px', boxShadow: '0 4px 14px rgba(15,23,42,0.05)' }}>
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 16, padding: '16px 8px' }}>
                     {it.icon ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={it.icon} alt="" width={48} height={48} style={{ width: 48, height: 48, objectFit: 'contain' }} />
+                        <img src={it.icon} alt="" width={46} height={46} style={{ width: 46, height: 46, objectFit: 'contain' }} />
                     ) : (
-                        <div style={{ width: 48, height: 48, borderRadius: 13, background: hexA(accent, 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 25 }}>{it.emoji}</div>
+                        <div style={{ width: 46, height: 46, borderRadius: 13, background: hexA(accent, 0.16), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>{it.emoji}</div>
                     )}
-                    <span style={{ fontSize: 12.5, fontWeight: 700, color: NAVY, textAlign: 'center', lineHeight: 1.3 }}>{it.label}</span>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: T_WHITE, textAlign: 'center', lineHeight: 1.3 }}>{it.label}</span>
                 </div>
             ))}
         </div>
     );
 }
 
-// ───────────────── 슬라이드별 실제 3D 앱 아이콘 / 성경 인물 갤러리 ─────────────────
+// ───────────────── 슬라이드별 3D 앱 아이콘(기능) / 성경 인물 갤러리 ─────────────────
 const SLIDE_ICON: Record<string, string> = {
-    'root-1': 'sparkles', 'root-2': 'heart', 'root-3': 'church',
-    'org-1': 'people', 'org-2': 'gear',
-    'vision-1': 'crown', 'vision-2': 'gift', 'vision-3': 'impact',
-    'ct-1': 'prayer', 'ct-2': 'people', 'ct-3': 'heart', 'ct-4': 'trophy',
     'feat-test': 'sparkles', 'feat-faith': 'heart', 'feat-bible': 'bible',
     'feat-qt': 'sun_qt', 'feat-prayer': 'prayer', 'feat-testimony': 'megaphone',
     'feat-meditation': 'sun', 'feat-readthrough': 'calendar', 'feat-transcribe': 'pen',
     'feat-quiz': 'quiz', 'feat-heresy': 'shield', 'feat-ai': 'robot', 'feat-jobbox': 'hammer',
-    'feat-summary': 'sparkles', 'feat-overview': 'sparkles', 'ask-1': 'people', 'ask-2': 'smile',
+    'feat-summary': 'sparkles', 'feat-overview': 'sparkles',
 };
 const CHAR_FILES = ['paul', 'david', 'esther', 'moses', 'peter', 'daniel', 'ruth', 'joshua', 'john', 'mary', 'samuel', 'nehemiah'];
 const SLIDE_GALLERY: Record<string, string[]> = {
     'ct-4': CHAR_FILES.map((c) => `/slide/char/${c}.png`),
-    'feat-test': CHAR_FILES.slice(0, 8).map((c) => `/slide/char/${c}.png`),
 };
 
-// 헤더 아이콘 — 실제 3D 앱 아이콘(있으면) / 없으면 이모지 원형
+// 헤더 아이콘 — 실제 3D 앱 아이콘(기능 슬라이드) / 없으면 이모지
 function SlideIcon({ slide, accent }: { slide: Slide; accent: string }) {
     const ic = SLIDE_ICON[slide.id];
     if (ic) {
         return (
-            <div style={{ width: 100, height: 100, borderRadius: 26, background: hexA(accent, 0.08), display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+            <div style={{ width: 104, height: 104, borderRadius: 28, background: hexA(accent, 0.14), border: `1px solid ${hexA(accent, 0.25)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/slide/icons/${ic}.png`} alt="" width={70} height={70} style={{ width: 70, height: 70, objectFit: 'contain', filter: 'drop-shadow(0 8px 14px rgba(79,110,242,0.22))' }} />
+                <img src={`/slide/icons/${ic}.png`} alt="" width={72} height={72} style={{ width: 72, height: 72, objectFit: 'contain', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.4))' }} />
             </div>
         );
     }
     if (slide.emoji) {
-        return <div style={{ width: 58, height: 58, borderRadius: 17, background: hexA(accent, 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 31, marginBottom: 12 }}>{slide.emoji}</div>;
+        return <div style={{ width: 60, height: 60, borderRadius: 17, background: hexA(accent, 0.14), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, marginBottom: 14 }}>{slide.emoji}</div>;
     }
     return null;
 }
@@ -220,10 +230,58 @@ function SlideGallery({ slide, accent }: { slide: Slide; accent: string }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: 8 }}>
                 {imgs.map((src, i) => (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img key={i} src={src} alt="" style={{ width: '100%', aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 12, border: `2px solid ${hexA(accent, 0.18)}`, background: '#fff' }} />
+                    <img key={i} src={src} alt="" style={{ width: '100%', aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 12, border: `2px solid ${hexA(accent, 0.3)}`, background: 'rgba(255,255,255,0.05)' }} />
                 ))}
             </div>
-            <p style={{ fontSize: 12.5, color: '#94a3b8', marginTop: 9, fontWeight: 600 }}>64명의 성경 인물 캐릭터 중 일부</p>
+            <p style={{ fontSize: 12.5, color: T_MUTE, marginTop: 9, fontWeight: 600 }}>64명의 성경 인물 캐릭터 중 일부</p>
+        </div>
+    );
+}
+
+// 표 (조직 구성 등)
+function SlideTable({ table, accent }: { table: { headers: string[]; rows: string[][] }; accent: string }) {
+    const cols = '1fr 0.7fr 1.9fr';
+    return (
+        <div style={{ marginTop: 18, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, overflow: 'hidden' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: cols, background: hexA(accent, 0.2) }}>
+                {table.headers.map((h, i) => (<div key={i} style={{ padding: '11px 13px', fontSize: 12.5, fontWeight: 800, color: T_WHITE }}>{h}</div>))}
+            </div>
+            {table.rows.map((row, r) => (
+                <div key={r} style={{ display: 'grid', gridTemplateColumns: cols, background: r % 2 ? 'rgba(255,255,255,0.03)' : 'transparent', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                    {row.map((cell, c) => (<div key={c} style={{ padding: '11px 13px', fontSize: c === 0 ? 13 : 12.5, fontWeight: c === 0 ? 800 : 600, color: c === 0 ? accent : (c === 1 ? T_WHITE : T_BODY), lineHeight: 1.5 }}>{cell}</div>))}
+                </div>
+            ))}
+        </div>
+    );
+}
+
+// 조직 구조도 (선으로 연결된 트리)
+function OrgChart({ accent }: { accent: string }) {
+    const branches = [
+        { head: '정지원', role: '부대표 · COO / CTO', teams: ['개발팀', '운영팀', '기술지원팀'] },
+        { head: '조미형', role: '총괄이사 · CMO / CDO', teams: ['디자인팀', '홍보팀', '마케팅팀'] },
+        { head: '홍민기 목사', role: '자문위원단장', teams: ['목회자 자문단', '신학자 자문단', '전문위원 자문단'] },
+    ];
+    return (
+        <div style={{ marginTop: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <div style={{ background: hexA(accent, 0.2), border: `1.5px solid ${hexA(accent, 0.45)}`, borderRadius: 14, padding: '11px 24px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 15, fontWeight: 900, color: T_WHITE, letterSpacing: 1 }}>ROOT</div>
+                    <div style={{ fontSize: 11.5, color: accent, fontWeight: 700, marginTop: 2 }}>대표이사 · 박상범</div>
+                </div>
+            </div>
+            <div style={{ width: 2, height: 18, background: hexA(accent, 0.45), margin: '0 auto' }} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 9 }}>
+                {branches.map((b, i) => (
+                    <div key={i} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '12px 8px', textAlign: 'center' }}>
+                        <div style={{ fontSize: 13, fontWeight: 900, color: T_WHITE }}>{b.head}</div>
+                        <div style={{ fontSize: 10, color: T_MUTE, fontWeight: 700, marginTop: 2, marginBottom: 9 }}>{b.role}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                            {b.teams.map((t, j) => (<span key={j} style={{ fontSize: 10.5, fontWeight: 700, color: accent, background: hexA(accent, 0.13), borderRadius: 7, padding: '4px 5px' }}>{t}</span>))}
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
@@ -260,13 +318,16 @@ export function SlideBody({
 
     if (k === 'cover') {
         return (
-            <div style={{ textAlign: 'center', maxWidth: 520 }}>
+            <div style={{ textAlign: 'center', maxWidth: 600, width: '100%' }}>
+                <div style={{ width: '100%', aspectRatio: '16 / 9', borderRadius: 20, overflow: 'hidden', marginBottom: 26, boxShadow: '0 22px 55px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.12)' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/slide/illus/cover.jpg" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/slide/logo-soluma.png" alt="soluma" style={{ width: '62%', maxWidth: 250, height: 'auto', display: 'block', margin: '0 auto 26px', filter: 'invert(1)' }} />
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#93c5fd', letterSpacing: 2, marginBottom: 10 }}>{slide.eyebrow}</div>
-                <h1 style={{ fontSize: 30, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.3 }}>{slide.title}</h1>
-                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 16, color: '#cbd5e1', marginTop: 14, lineHeight: 1.6 }}>{b}</p>)}
-                <SlideQR slide={slide} />
+                <img src="/slide/logo-soluma.png" alt="soluma" style={{ width: '52%', maxWidth: 230, height: 'auto', display: 'block', margin: '0 auto 14px', filter: 'invert(1)' }} />
+                <div style={{ fontSize: 12.5, fontWeight: 800, color: GOLD, letterSpacing: 2, marginBottom: 8 }}>{slide.eyebrow}</div>
+                <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.3 }}>{slide.title}</h1>
+                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 15.5, color: T_BODY, marginTop: 12, lineHeight: 1.6 }}>{b}</p>)}
             </div>
         );
     }
@@ -303,29 +364,30 @@ export function SlideBody({
     // 섹션별 강조색
     const accent = sectionAccent(slide.eyebrow);
 
-    // 컨텐츠형 공통 헤더 (실제 3D 아이콘 + eyebrow 알약 + 타이틀)
+    // 헤더: 일러스트 배너(있으면) 또는 3D 아이콘 + eyebrow 알약 + 타이틀
     const Head = (
         <>
-            <SlideIcon slide={slide} accent={accent} />
+            {illusFor(slide.id) ? <SlideBanner id={slide.id} accent={accent} /> : <SlideIcon slide={slide} accent={accent} />}
             {slide.eyebrow && (
-                <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 800, color: accent, letterSpacing: 0.5, background: hexA(accent, 0.1), padding: '5px 13px', borderRadius: 999, marginBottom: 12 }}>{slide.eyebrow}</span>
+                <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 800, color: accent, letterSpacing: 0.5, background: hexA(accent, 0.16), border: `1px solid ${hexA(accent, 0.3)}`, padding: '5px 13px', borderRadius: 999, marginBottom: 12 }}>{slide.eyebrow}</span>
             )}
-            {slide.title && <h2 style={{ fontSize: 25, fontWeight: 900, color: NAVY, margin: 0, lineHeight: 1.32 }}>{slide.title}</h2>}
+            {slide.title && <h2 style={{ fontSize: 26, fontWeight: 900, color: T_WHITE, margin: 0, lineHeight: 1.32 }}>{slide.title}</h2>}
         </>
     );
 
     if (k === 'narrative' || k === 'feature' || k === 'grid') {
         return (
-            <div style={{ maxWidth: 620, width: '100%', background: '#fff', borderRadius: 22, padding: '28px 26px 30px', boxShadow: '0 12px 40px rgba(15,23,42,0.08)', borderTop: `4px solid ${accent}` }}>
+            <div style={{ maxWidth: 640, width: '100%' }}>
                 {Head}
-                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 16, color: '#334155', lineHeight: 1.8, margin: '14px 0 0' }}>{b}</p>)}
+                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 16, color: T_BODY, lineHeight: 1.8, margin: '14px 0 0' }}>{b}</p>)}
                 <SlideGallery slide={slide} accent={accent} />
+                {slide.table && <SlideTable table={slide.table} accent={accent} />}
+                {slide.id === 'org-2' && <OrgChart accent={accent} />}
                 {k === 'grid' && slide.grid && <FeatureGrid items={slide.grid} accent={accent} />}
-                {slide.bullets && <BulletList bullets={slide.bullets} accent={accent} />}
+                {slide.bullets && slide.id !== 'org-2' && <BulletList bullets={slide.bullets} accent={accent} />}
                 {slide.quote && (
-                    <div style={{ marginTop: 18, background: `linear-gradient(135deg, ${hexA(accent, 0.12)}, ${hexA(accent, 0.03)})`, borderRadius: 16, padding: '16px 18px 16px 40px', position: 'relative' }}>
-                        <span style={{ position: 'absolute', top: 4, left: 14, fontSize: 40, color: hexA(accent, 0.35), fontWeight: 900, lineHeight: 1 }}>“</span>
-                        <p style={{ margin: 0, fontSize: 16, color: '#1e293b', fontWeight: 700, lineHeight: 1.65 }}>{slide.quote}</p>
+                    <div style={{ marginTop: 20, background: hexA(accent, 0.1), border: `1px solid ${hexA(accent, 0.22)}`, borderLeft: `4px solid ${accent}`, borderRadius: 14, padding: '15px 18px' }}>
+                        <p style={{ margin: 0, fontSize: 16, color: '#fff', fontWeight: 700, lineHeight: 1.65 }}>“{slide.quote}”</p>
                     </div>
                 )}
             </div>
@@ -489,7 +551,7 @@ export default function Deck() {
 
     return (
         <div
-            style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: dark ? 'linear-gradient(160deg,#0b1220,#1e293b)' : '#fbfbfd', overflow: 'hidden' }}
+            style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: DARK_BG, overflow: 'hidden' }}
             onTouchStart={e => { touchX.current = e.touches[0].clientX; touchY.current = e.touches[0].clientY; }}
             onTouchEnd={e => {
                 if (touchX.current == null || touchY.current == null) return;

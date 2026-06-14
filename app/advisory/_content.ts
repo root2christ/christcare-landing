@@ -20,6 +20,7 @@ export interface Slide {
   qrCaption?: string;     // QR 아래 안내 문구
   cta?: { href: string; label: string }; // 탭 이동 버튼 (폰으로 보는 분용 — 자기 화면 QR은 못 찍으므로)
   grid?: { icon?: string; emoji?: string; label: string }[]; // kind 'grid' — 아이콘 카드 그리드 (기능 한눈에 보기 등)
+  table?: { headers: string[]; rows: string[][] }; // 표 (조직 구성 등)
 }
 
 export const SLIDES: Slide[] = [
@@ -148,12 +149,15 @@ export const SLIDES: Slide[] = [
     body: [
       'ROOT는 다음과 같은 임원 구성으로 운영됩니다.',
     ],
-    bullets: [
-      '대표이사 (CEO) · 박상범 — 비전 수립, 전략기획, 사업개발, 투자유치, 대외협력, 재무총괄',
-      '부대표 (COO / CTO) · 정지원 — 플랫폼 개발 총괄, AI 개발, 시스템 운영, 기술전략 수립',
-      '총괄이사 (CMO / CDO) · 조미형 — 브랜딩, 디자인, 마케팅, 홍보, 콘텐츠 제작, 행사 운영',
-      '자문위원단장 (Advisory Chairman) · 홍민기 목사 — 신학 자문, 목회자 네트워크 구축, 콘텐츠 검수, 사업 자문 및 방향성 제시',
-    ],
+    table: {
+      headers: ['직책', '이름', '주요 역할'],
+      rows: [
+        ['대표이사 · CEO', '박상범', '비전 수립 · 전략기획 · 사업개발 · 투자유치 · 대외협력 · 재무총괄'],
+        ['부대표 · COO/CTO', '정지원', '플랫폼 개발 총괄 · AI 개발 · 시스템 운영 · 기술전략 수립'],
+        ['총괄이사 · CMO/CDO', '조미형', '브랜딩 · 디자인 · 마케팅 · 홍보 · 콘텐츠 제작 · 행사 운영'],
+        ['자문위원단장', '홍민기 목사', '신학 자문 · 목회자 네트워크 · 콘텐츠 검수 · 사업 자문'],
+      ],
+    },
   },
   {
     id: 'org-2',
