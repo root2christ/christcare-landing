@@ -37,16 +37,24 @@ const emptyData = (): SurveyData => ({
     christMemos: {},
 });
 
-function genUid(): string {
-    try {
-        if (typeof crypto !== 'undefined' && (crypto as any).randomUUID) return (crypto as any).randomUUID();
-    } catch { /* noop */ }
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = (Math.random() * 16) | 0;
-        const v = c === 'x' ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-    });
+// 서버 응답(row) → 폼 데이터
+function mapServer(srv: any): SurveyData {
+    return {
+        basic: {
+            name: srv.name || '', church: srv.church || '',
+            role: ROLE_OPTIONS.includes(srv.role) ? srv.role : (srv.role ? '기타' : ''),
+            roleEtc: srv.role && !ROLE_OPTIONS.includes(srv.role) ? srv.role : '',
+            phone: srv.phone || '', email: srv.email || '',
+            ministry: Array.isArray(srv.ministry) ? srv.ministry : [],
+            career: srv.career || '',
+        },
+        answers: srv.answers && typeof srv.answers === 'object' ? srv.answers : {},
+        christMemos: srv.christ_memos && typeof srv.christ_memos === 'object' ? srv.christ_memos : {},
+    };
 }
+
+// 휴대폰 번호 → 숫자만 (010-1234 / 01012 34 동일 처리)
+const phoneDigits = (s: string) => (s || '').replace(/\D/g, '');
 
 // 기기 감지
 function detectOS(): 'ios' | 'android' | 'other' {
@@ -67,46 +75,36 @@ export default function SurveyForm() {
     const saveTimer = useRef<any>(null);
     const os = useMemo(detectOS, []);
 
-    // ── 최초 진입: uid 발급 + localStorage 복원 + 서버 동기화 ──
+    // ── 본인 확인(이름 + 휴대폰) — 폰/PC 어디서나 이어쓰기 ──
+    const [identified, setIdentified] = useState(false);
+    const [gateName, setGateName] = useState('');
+    const [gatePhone, setGatePhone] = useState('');
+    const [gateBusy, setGateBusy] = useState(false);
+    const [gateErr, setGateErr] = useState('');
+
+    // ── 최초 진입: 같은 기기면 자동 복원, 아니면 본인 확인(게이트) 노출 ──
     useEffect(() => {
         let uid = '';
         try { uid = localStorage.getItem(LS_UID) || ''; } catch { /* noop */ }
-        if (!uid) {
-            uid = genUid();
-            try { localStorage.setItem(LS_UID, uid); } catch { /* noop */ }
+        if (uid && uid.startsWith('p:')) {
+            uidRef.current = uid;
+            // localStorage 우선 복원
+            let local: SurveyData | null = null;
+            try {
+                const raw = localStorage.getItem(LS_DATA);
+                if (raw) local = { ...emptyData(), ...JSON.parse(raw) };
+            } catch { /* noop */ }
+            if (local) setData(local);
+            setIdentified(true);
+            setLoaded(true);
+            // 서버 동기화 (localStorage 가 비어있을 때만 서버값으로 채움)
+            fetch(`/api/survey?uid=${encodeURIComponent(uid)}`)
+                .then((r) => r.json())
+                .then((d) => { const srv = d?.response; if (!srv || local) return; setData(mapServer(srv)); })
+                .catch(() => { /* noop */ });
+        } else {
+            setLoaded(true); // 본인 확인 화면 표시
         }
-        uidRef.current = uid;
-
-        // 1) localStorage 우선 복원
-        let local: SurveyData | null = null;
-        try {
-            const raw = localStorage.getItem(LS_DATA);
-            if (raw) local = { ...emptyData(), ...JSON.parse(raw) };
-        } catch { /* noop */ }
-        if (local) setData(local);
-        setLoaded(true);
-
-        // 2) 서버에서 동기화 (localStorage 가 비어있을 때만 서버값으로 채움)
-        fetch(`/api/survey?uid=${encodeURIComponent(uid)}`)
-            .then((r) => r.json())
-            .then((d) => {
-                const srv = d?.response;
-                if (!srv) return;
-                if (local) return; // localStorage 가 우선 — 서버로 덮어쓰지 않음
-                setData({
-                    basic: {
-                        name: srv.name || '', church: srv.church || '',
-                        role: ROLE_OPTIONS.includes(srv.role) ? srv.role : (srv.role ? '기타' : ''),
-                        roleEtc: srv.role && !ROLE_OPTIONS.includes(srv.role) ? srv.role : '',
-                        phone: srv.phone || '', email: srv.email || '',
-                        ministry: Array.isArray(srv.ministry) ? srv.ministry : [],
-                        career: srv.career || '',
-                    },
-                    answers: srv.answers && typeof srv.answers === 'object' ? srv.answers : {},
-                    christMemos: srv.christ_memos && typeof srv.christ_memos === 'object' ? srv.christ_memos : {},
-                });
-            })
-            .catch(() => { /* noop */ });
     }, []);
 
     // ── 직분 최종값(기타면 직접입력) ──
@@ -151,6 +149,53 @@ export default function SurveyForm() {
         });
     }, [persist]);
 
+    // ── 본인 확인 입장(이름+휴대폰) → 기존 응답 있으면 이어쓰기, 없으면 새로 시작 ──
+    const enterIdentity = useCallback(async () => {
+        const nm = gateName.trim();
+        const digits = phoneDigits(gatePhone);
+        if (!nm) { setGateErr('성함을 입력해 주세요.'); return; }
+        if (digits.length < 9) { setGateErr('휴대폰 번호를 정확히 입력해 주세요. (숫자 9자리 이상)'); return; }
+        setGateErr('');
+        const uid = 'p:' + digits;
+        uidRef.current = uid;
+        try { localStorage.setItem(LS_UID, uid); } catch { /* noop */ }
+        setGateBusy(true);
+        try {
+            const r = await fetch(`/api/survey?uid=${encodeURIComponent(uid)}`);
+            const d = await r.json();
+            const srv = d?.response;
+            if (srv) {
+                // 같은 번호로 저장된 응답 → 이어쓰기
+                const restored = mapServer(srv);
+                setData(restored);
+                try { localStorage.setItem(LS_DATA, JSON.stringify(restored)); } catch { /* noop */ }
+            } else {
+                // 처음 — 이름/휴대폰 미리 채워 새로 시작 + 서버에 행 생성
+                const fresh: SurveyData = { ...emptyData(), basic: { ...emptyData().basic, name: nm, phone: gatePhone.trim() } };
+                setData(fresh);
+                try { localStorage.setItem(LS_DATA, JSON.stringify(fresh)); } catch { /* noop */ }
+                fetch('/api/survey', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload(fresh)) }).catch(() => {});
+            }
+        } catch {
+            // 오프라인이어도 이름/휴대폰으로 시작 (localStorage 에 보관)
+            const fresh: SurveyData = { ...emptyData(), basic: { ...emptyData().basic, name: nm, phone: gatePhone.trim() } };
+            setData(fresh);
+            try { localStorage.setItem(LS_DATA, JSON.stringify(fresh)); } catch { /* noop */ }
+        } finally {
+            setGateBusy(false);
+            setIdentified(true);
+        }
+    }, [gateName, gatePhone, buildPayload]);
+
+    // 다른 사람으로 시작 (공용 기기 대비) — 이 기기 캐시만 비움, 서버 응답은 그대로 보존
+    const resetIdentity = useCallback(() => {
+        try { localStorage.removeItem(LS_UID); localStorage.removeItem(LS_DATA); } catch { /* noop */ }
+        uidRef.current = '';
+        setData(emptyData());
+        setGateName(''); setGatePhone(''); setGateErr('');
+        setIdentified(false);
+    }, []);
+
     // ── 핸들러 ──
     const setBasic = useCallback((patch: Partial<Basic>) => {
         update((d) => ({ ...d, basic: { ...d.basic, ...patch } }));
@@ -190,6 +235,17 @@ export default function SurveyForm() {
         return <div style={{ minHeight: '100dvh', background: BG }} />;
     }
 
+    // 본인 확인 전 — 이름 + 휴대폰 입력 화면
+    if (!identified) {
+        return (
+            <IdentityGate
+                name={gateName} setName={setGateName}
+                phone={gatePhone} setPhone={setGatePhone}
+                busy={gateBusy} err={gateErr} onSubmit={enterIdentity}
+            />
+        );
+    }
+
     // 저장 표시 텍스트
     const savedLabel = saving ? '저장 중…' : savedAt ? '자동 저장됨 ✓' : '입력 시 자동 저장';
 
@@ -201,8 +257,16 @@ export default function SurveyForm() {
                     <div style={{ height: '100%', width: `${progress.pct}%`, background: BLUE, transition: 'width 0.3s' }} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 16px', maxWidth: 720, margin: '0 auto' }}>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: NAVY }}>목회자 자문 설문</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                        <span style={{ fontSize: 14, fontWeight: 800, color: NAVY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {data.basic.name ? `${data.basic.name}님` : '목회자 자문 설문'}
+                        </span>
+                        <button onClick={resetIdentity}
+                            style={{ flexShrink: 0, fontSize: 11.5, color: '#94a3b8', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}>
+                            다른 분
+                        </button>
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                         <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>{progress.pct}% · {progress.done}/{progress.total}</span>
                         <span style={{ fontSize: 12.5, fontWeight: 800, color: saving ? '#94a3b8' : '#16a34a' }}>{savedLabel}</span>
                     </span>
@@ -221,8 +285,9 @@ export default function SurveyForm() {
                         목사님의 소중한 의견은 솔루마의 개발 방향과 한국교회를 섬기는 사역의 기준으로 적극 반영될 예정입니다. 감사합니다.
                     </p>
                     <p style={{ fontSize: 14.5, color: '#64748b', marginTop: 14, lineHeight: 1.7 }}>
-                        모든 입력은 <strong style={{ color: BLUE }}>자동으로 저장</strong>됩니다. 중간에 폰을 끄셔도 다시 이 페이지를 열면 작성하시던 내용이 그대로 복원됩니다.
-                        저장 버튼은 따로 없습니다.
+                        모든 입력은 <strong style={{ color: BLUE }}>자동으로 저장</strong>됩니다. 저장 버튼은 따로 없습니다.
+                        중간에 폰을 끄셔도, <strong style={{ color: BLUE }}>처음 입력하신 휴대폰 번호</strong>로 다시 들어오시면
+                        폰이든 PC든 어디서나 작성하시던 내용이 그대로 이어집니다.
                     </p>
                 </Card>
 
@@ -333,6 +398,50 @@ export default function SurveyForm() {
                     <p style={{ marginTop: 18, fontSize: 13, color: '#94a3b8', fontWeight: 800, letterSpacing: 1 }}>ROOT &amp; SOLUMA</p>
                     <p style={{ fontSize: 12.5, color: '#64748b', marginTop: 4 }}>모든 것은 뿌리되신 하나님으로부터</p>
                 </div>
+            </div>
+        </div>
+    );
+}
+
+// ═══════════════════════════════════════════════════════════
+// 본인 확인 화면 (이름 + 휴대폰) — 폰/PC 어디서나 이어쓰기
+function IdentityGate({ name, setName, phone, setPhone, busy, err, onSubmit }: {
+    name: string; setName: (v: string) => void;
+    phone: string; setPhone: (v: string) => void;
+    busy: boolean; err: string; onSubmit: () => void;
+}) {
+    return (
+        <div style={{ minHeight: '100dvh', background: 'linear-gradient(160deg,#0b1220,#1e293b)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 22 }}>
+            <div style={{ background: '#fff', borderRadius: 24, padding: '32px 24px', width: '100%', maxWidth: 400, boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}>
+                <div style={{ textAlign: 'center', marginBottom: 22 }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/app-icon.png" alt="soluma" width={60} height={60} style={{ borderRadius: 14, marginBottom: 14 }} />
+                    <h1 style={{ fontSize: 21, fontWeight: 900, color: NAVY, margin: 0 }}>목회자 자문 설문</h1>
+                    <p style={{ fontSize: 14, color: '#64748b', marginTop: 10, lineHeight: 1.6 }}>
+                        성함과 휴대폰 번호를 입력해 주세요.<br />
+                        <strong style={{ color: BLUE }}>같은 번호</strong>로 다시 들어오시면 폰·PC 어디서나 작성하던 내용이 이어집니다.
+                    </p>
+                </div>
+                <input
+                    value={name} onChange={(e) => setName(e.target.value)}
+                    placeholder="성함 (예: 홍길동 목사)"
+                    style={{ width: '100%', height: 52, borderRadius: 12, border: '1.5px solid #e2e8f0', padding: '0 14px', fontSize: 16.5, marginBottom: 10, boxSizing: 'border-box' }}
+                />
+                <input
+                    value={phone} onChange={(e) => setPhone(e.target.value)}
+                    placeholder="휴대폰 번호 (예: 010-1234-5678)"
+                    type="tel" inputMode="tel"
+                    onKeyDown={(e) => { if (e.key === 'Enter') onSubmit(); }}
+                    style={{ width: '100%', height: 52, borderRadius: 12, border: '1.5px solid #e2e8f0', padding: '0 14px', fontSize: 16.5, marginBottom: 10, boxSizing: 'border-box' }}
+                />
+                {err && <p style={{ color: '#dc2626', fontSize: 13.5, margin: '2px 0 10px' }}>{err}</p>}
+                <button onClick={onSubmit} disabled={busy}
+                    style={{ width: '100%', height: 54, borderRadius: 14, border: 'none', background: NAVY, color: '#fff', fontSize: 16.5, fontWeight: 800, cursor: 'pointer', opacity: busy ? 0.6 : 1 }}>
+                    {busy ? '확인 중…' : '시작 / 이어쓰기 →'}
+                </button>
+                <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 12, textAlign: 'center', lineHeight: 1.6 }}>
+                    번호는 본인 확인과 이어쓰기에만 사용됩니다.
+                </p>
             </div>
         </div>
     );
