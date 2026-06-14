@@ -128,6 +128,12 @@ export function SlideBody({
                 <h1 style={{ fontSize: 30, fontWeight: 900, color: '#fff', margin: 0 }}>{slide.title}</h1>
                 {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 15.5, color: '#cbd5e1', marginTop: 14, lineHeight: 1.7 }}>{b}</p>)}
                 <SlideQR slide={slide} />
+                {slide.cta && (
+                    <a href={slide.cta.href} target="_blank" rel="noopener noreferrer"
+                        style={{ display: 'inline-block', marginTop: 18, background: BLUE, color: '#fff', fontSize: 16, fontWeight: 800, padding: '14px 24px', borderRadius: 14, textDecoration: 'none', boxShadow: '0 10px 26px rgba(79,110,242,0.4)' }}>
+                        {slide.cta.label}
+                    </a>
+                )}
             </div>
         );
     }

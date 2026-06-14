@@ -16,8 +16,9 @@ export interface Slide {
   quote?: string;         // 강조 인용 (원고의 "..." 한 문장 정의)
   question?: string;      // 설문 질문 (q-* 전용)
   options?: string[];     // 선택지 (q-single/q-multi 전용). 원고의 □ 항목 그대로
-  qr?: string;            // QR 이미지 경로 (cover/divider 슬라이드에 표시) — /public 정적 파일
+  qr?: string;            // QR 이미지 경로 (divider 슬라이드에 표시) — /public 정적 파일
   qrCaption?: string;     // QR 아래 안내 문구
+  cta?: { href: string; label: string }; // 탭 이동 버튼 (폰으로 보는 분용 — 자기 화면 QR은 못 찍으므로)
 }
 
 export const SLIDES: Slide[] = [
@@ -31,8 +32,6 @@ export const SLIDES: Slide[] = [
     body: [
       '모든 것은 뿌리 되신 하나님으로부터, 그리고 하나님께로.',
     ],
-    qr: '/qr-advisory.png',
-    qrCaption: '📱 휴대폰으로 이 QR을 스캔하시면 발표를 폰에서 함께 보실 수 있습니다 (christcare.us/advisory)',
   },
 
   // ─────────────────── 왜 ROOT를 만들게 되었는가 ───────────────────
@@ -474,7 +473,8 @@ export const SLIDES: Slide[] = [
       '아래 설문 QR을 휴대폰으로 찍으시면 설문 페이지로 이동합니다. 작성하신 내용은 자동으로 저장되며, 중간에 나가셨다가 다시 들어오셔도 이어서 작성하실 수 있습니다.',
     ],
     qr: '/qr-survey.png',
-    qrCaption: '📋 이 QR을 스캔 → 앱 설치 안내 + 자문 설문 (christcare.us/survey)',
+    qrCaption: '프로젝터 화면을 보고 계신 분은 이 QR을 스캔해 주세요',
+    cta: { href: 'https://christcare.us/survey', label: '📋 이 폰으로 보고 계신 분 — 탭하여 설문으로' },
     quote: '목사님의 귀한 조언이 솔루마의 방향을 세우는 중요한 기준이 됩니다.',
   },
 

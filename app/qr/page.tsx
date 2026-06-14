@@ -150,11 +150,32 @@ export default function QRPage() {
                 {/* ④ 목사님께 보여줄 QR */}
                 <Section tag="④ 목사님 안내용 QR" title="목사님께 화면/안내로 보여드리는 QR" accent={GREEN}>
                     <p style={{ fontSize: 14.5, color: '#475569', lineHeight: 1.7, margin: '0 0 16px' }}>
-                        발표 시작 시 ①번을, 발표가 끝나면 ②번을 안내해 주세요. (두 QR은 발표 슬라이드 표지/마지막 장에도 자동으로 떠 있습니다.)
+                        발표 시작 시 ①번을, 발표가 끝나면 ②번을 안내해 주세요. (설문 QR은 발표 마지막 장에도 자동으로 떠 있어, 그 화면을 그대로 보여드려도 됩니다.)
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
                         <QRBlock qr="/qr-advisory.png" label="① 발표 함께 보기" sub="발표를 내 폰에서 함께 보기" url="christcare.us/advisory" accent={BLUE} />
                         <QRBlock qr="/qr-survey.png" label="② 자문 설문 작성" sub="앱 설치 + 84문항 설문" url="christcare.us/survey" accent={GREEN} />
+                    </div>
+                </Section>
+
+                {/* ⑤ 발표 내용 검토 & 수정 */}
+                <Section tag="⑤ 발표 내용 검토 & 수정" title="발표 전에 슬라이드를 함께 검토해 주세요" accent="#d97706">
+                    <Step n="검토" title="전체 슬라이드를 한 번에 읽기" accent="#d97706">
+                        아래 주소를 열면 발표 슬라이드 전체 내용이 번호와 함께 쭉 나옵니다. 위에서 아래로 읽으며 어색한 표현·오타·신학적으로 고칠 부분을 확인해 주세요.
+                        <div style={{ marginTop: 10, fontSize: 14.5, fontWeight: 800, color: NAVY, wordBreak: 'break-all', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 12px' }}>
+                            christcare.us/advisory/all
+                        </div>
+                        <div style={{ marginTop: 8, fontSize: 13.5, color: '#64748b', lineHeight: 1.65 }}>
+                            ※ 발표자 모드(③)에서 상단 드롭다운으로 특정 슬라이드만 골라 볼 수도 있습니다.
+                        </div>
+                    </Step>
+                    <Step n="수정" title="고칠 부분은 번호로 알려주세요" accent="#d97706">
+                        고칠 곳을 발견하시면 단톡방에 이렇게 남겨 주세요 →{' '}
+                        <b style={{ color: NAVY }}>「12번 슬라이드: ‘현재 문구’ → ‘이렇게’」</b>.
+                        박상범 대표가 반영하면 <b style={{ color: NAVY }}>1~2분 안에 모든 화면(목사님 폰 포함)에 자동 반영</b>됩니다. 발표 당일 현장에서도 즉시 수정할 수 있습니다.
+                    </Step>
+                    <div style={{ marginTop: 6, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '12px 14px', fontSize: 13.5, color: '#166534', lineHeight: 1.65 }}>
+                        ✅ 슬라이드 내용은 실시간으로 바꿀 수 있으니, 부담 없이 검토 의견을 많이 남겨 주세요.
                     </div>
                 </Section>
 
