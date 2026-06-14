@@ -365,7 +365,6 @@ function InstallCard({ os }: { os: 'ios' | 'android' | 'other' }) {
                         <span style={{ fontSize: 12.5, opacity: 0.85, fontWeight: 600 }}>아이폰 사용자{!dimIos && os === 'ios' ? ' · 추천' : ''}</span>
                     </span>
                 </a>
-                {/* TODO: APK/Play 링크 교체 */}
                 <a
                     href={ANDROID_APK_URL}
                     target="_blank"
@@ -379,6 +378,11 @@ function InstallCard({ os }: { os: 'ios' | 'android' | 'other' }) {
                     </span>
                 </a>
             </div>
+            {os !== 'ios' && (
+                <p style={{ fontSize: 12.5, color: '#64748b', lineHeight: 1.6, margin: '12px 2px 0' }}>
+                    💡 안드로이드는 다운로드한 파일을 열어 설치합니다. 처음이면 “출처를 알 수 없는 앱 설치 허용”을 한 번 켜 주세요. (정식 출시 후에는 Play 스토어에서 받으실 수 있습니다.)
+                </p>
+            )}
         </div>
     );
 }

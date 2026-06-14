@@ -847,5 +847,5 @@ export const CATEGORY_LABEL: Record<string, string> = {
 
 // 설치 링크
 export const TESTFLIGHT_URL = 'https://testflight.apple.com/join/7SzqebuS';
-// TODO: APK/Play 링크 교체
-export const ANDROID_APK_URL = '#ANDROID_APK_PLACEHOLDER';
+// preview APK 직링크 (출시 전 임시 — Google Play 승인 후 스토어 링크로 교체 예정)
+export const ANDROID_APK_URL = 'https://expo.dev/artifacts/eas/cvC0YAqg8gachPA1nAWpk6J6atPzIcO6hJ1BFsNpMe8.apk';
