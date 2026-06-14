@@ -3,7 +3,7 @@
 // 청중(목사님) 화면 — 순수 뷰어.
 // 직접 넘기는 버튼/스와이프/키보드 없음. 오직 발표자(present)가 보내는 슬라이드만 실시간으로 따라간다.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SLIDES } from '../_content';
 import { SlideBody, SYNC_CHANNEL } from './Deck';
 import { supabase } from '../../../lib/supabase';
@@ -13,12 +13,18 @@ const BLUE = '#4f6ef2';
 export default function Viewer() {
     const [idx, setIdx] = useState(0);
     const [connected, setConnected] = useState(false);
+    // 발표자 송출 시퀀스 — 인수인계 순간 오래된 하트비트가 화면을 되돌리지 않도록
+    const seqRef = useRef(0);
 
     useEffect(() => {
         const ch = supabase.channel(SYNC_CHANNEL, { config: { broadcast: { self: false } } });
         ch.on('broadcast', { event: 'slide' }, ({ payload }: any) => {
             const n = payload?.slide;
-            if (typeof n === 'number' && n >= 0 && n < SLIDES.length) setIdx(n);
+            const s = typeof payload?.seq === 'number' ? payload.seq : 0;
+            if (typeof n !== 'number' || n < 0 || n >= SLIDES.length) return;
+            if (s < seqRef.current) return; // 오래된 송출 무시 (같은 seq의 하트비트는 허용)
+            seqRef.current = s;
+            setIdx(n);
         });
         ch.subscribe((s: string) => { if (s === 'SUBSCRIBED') setConnected(true); });
         return () => { supabase.removeChannel(ch); };
