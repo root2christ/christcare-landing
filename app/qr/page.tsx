@@ -162,9 +162,11 @@ export default function QRPage() {
                 <Section tag="⑤ 발표 내용 검토 & 수정" title="발표 전에 슬라이드를 함께 검토해 주세요" accent="#d97706">
                     <Step n="검토" title="전체 슬라이드를 한 번에 읽기" accent="#d97706">
                         아래 주소를 열면 발표 슬라이드 전체 내용이 번호와 함께 쭉 나옵니다. 위에서 아래로 읽으며 어색한 표현·오타·신학적으로 고칠 부분을 확인해 주세요.
-                        <div style={{ marginTop: 10, fontSize: 14.5, fontWeight: 800, color: NAVY, wordBreak: 'break-all', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 12px' }}>
-                            christcare.us/advisory/all
-                        </div>
+                        <a href="https://christcare.us/advisory/all" target="_blank" rel="noopener noreferrer"
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 10, fontSize: 14.5, fontWeight: 800, color: '#92400e', textDecoration: 'none', wordBreak: 'break-all', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '12px 14px' }}>
+                            <span>christcare.us/advisory/all</span>
+                            <span style={{ flexShrink: 0, fontWeight: 900 }}>열기 →</span>
+                        </a>
                         <div style={{ marginTop: 8, fontSize: 13.5, color: '#64748b', lineHeight: 1.65 }}>
                             ※ 발표자 모드(③)에서 상단 드롭다운으로 특정 슬라이드만 골라 볼 수도 있습니다.
                         </div>
@@ -172,7 +174,7 @@ export default function QRPage() {
                     <Step n="수정" title="고칠 부분은 번호로 알려주세요" accent="#d97706">
                         고칠 곳을 발견하시면 단톡방에 이렇게 남겨 주세요 →{' '}
                         <b style={{ color: NAVY }}>「12번 슬라이드: ‘현재 문구’ → ‘이렇게’」</b>.
-                        박상범 대표가 반영하면 <b style={{ color: NAVY }}>1~2분 안에 모든 화면(목사님 폰 포함)에 자동 반영</b>됩니다. 발표 당일 현장에서도 즉시 수정할 수 있습니다.
+                        정지원이 반영하면 <b style={{ color: NAVY }}>1~2분 안에 모든 화면(목사님 폰 포함)에 자동 반영</b>됩니다. 발표 당일 현장에서도 즉시 수정할 수 있습니다.
                     </Step>
                     <div style={{ marginTop: 6, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '12px 14px', fontSize: 13.5, color: '#166534', lineHeight: 1.65 }}>
                         ✅ 슬라이드 내용은 실시간으로 바꿀 수 있으니, 부담 없이 검토 의견을 많이 남겨 주세요.
