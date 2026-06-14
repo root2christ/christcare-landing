@@ -36,7 +36,7 @@ function Step({ n, title, children, accent = BLUE }: { n: string; title: string;
     );
 }
 
-function QRBlock({ qr, label, sub, url, accent }: { qr: string; label: string; sub: string; url: string; accent: string }) {
+function QRBlock({ qr, label, sub, url, href, accent }: { qr: string; label: string; sub: string; url: string; href: string; accent: string }) {
     return (
         <div style={{ flex: 1, minWidth: 240, background: '#fbfbfd', border: '1px solid #eef0f6', borderRadius: 18, padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <div style={{ fontSize: 13, fontWeight: 900, color: accent, letterSpacing: 0.5, marginBottom: 12 }}>{label}</div>
@@ -45,7 +45,7 @@ function QRBlock({ qr, label, sub, url, accent }: { qr: string; label: string; s
                 <img src={qr} alt={label} width={220} height={220} style={{ display: 'block', width: 220, height: 220, imageRendering: 'pixelated' }} />
             </div>
             <p style={{ fontSize: 15.5, fontWeight: 800, color: NAVY, margin: '14px 0 3px', lineHeight: 1.4 }}>{sub}</p>
-            <p style={{ fontSize: 13, color: '#64748b', margin: 0, wordBreak: 'break-all' }}>{url}</p>
+            <a href={href} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 700, color: accent, margin: 0, wordBreak: 'break-all', textDecoration: 'underline' }}>{url} ↗</a>
         </div>
     );
 }
@@ -136,10 +136,12 @@ export default function QRPage() {
                             <img src="/qr-present.png" alt="발표자 모드 QR" width={200} height={200} style={{ display: 'block', width: 200, height: 200, imageRendering: 'pixelated' }} />
                         </div>
                         <div style={{ flex: 1, minWidth: 220 }}>
-                            <div style={{ fontSize: 13, fontWeight: 900, color: '#7c3aed', letterSpacing: 0.5, marginBottom: 6 }}>발표자 모드 주소</div>
-                            <div style={{ fontSize: 14.5, fontWeight: 800, color: NAVY, wordBreak: 'break-all', lineHeight: 1.5, background: '#fbfbfd', border: '1px solid #eef0f6', borderRadius: 10, padding: '10px 12px' }}>
-                                {PRESENT_URL}
-                            </div>
+                            <div style={{ fontSize: 13, fontWeight: 900, color: '#7c3aed', letterSpacing: 0.5, marginBottom: 6 }}>발표자 모드 주소 (눌러서 바로 입장)</div>
+                            <a href={`https://${PRESENT_URL}`} target="_blank" rel="noopener noreferrer"
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: 14.5, fontWeight: 800, color: '#6d28d9', textDecoration: 'none', wordBreak: 'break-all', lineHeight: 1.5, background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 10, padding: '12px 14px' }}>
+                                <span>{PRESENT_URL}</span>
+                                <span style={{ flexShrink: 0, fontWeight: 900 }}>입장 →</span>
+                            </a>
                             <p style={{ fontSize: 13, color: '#64748b', marginTop: 10, lineHeight: 1.6 }}>
                                 ※ 이 주소(비밀번호 포함)는 발표자 세 분만 사용해 주세요. 목사님께는 ④의 QR을 안내합니다.
                             </p>
@@ -153,8 +155,8 @@ export default function QRPage() {
                         발표 시작 시 ①번을, 발표가 끝나면 ②번을 안내해 주세요. (설문 QR은 발표 마지막 장에도 자동으로 떠 있어, 그 화면을 그대로 보여드려도 됩니다.)
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
-                        <QRBlock qr="/qr-advisory.png" label="① 발표 함께 보기" sub="발표를 내 폰에서 함께 보기" url="christcare.us/advisory" accent={BLUE} />
-                        <QRBlock qr="/qr-survey.png" label="② 자문 설문 작성" sub="앱 설치 + 84문항 설문" url="christcare.us/survey" accent={GREEN} />
+                        <QRBlock qr="/qr-advisory.png" label="① 발표 함께 보기" sub="발표를 내 폰에서 함께 보기" url="christcare.us/advisory" href="https://christcare.us/advisory" accent={BLUE} />
+                        <QRBlock qr="/qr-survey.png" label="② 자문 설문 작성" sub="앱 설치 + 84문항 설문" url="christcare.us/survey" href="https://christcare.us/survey" accent={GREEN} />
                     </div>
                 </Section>
 
