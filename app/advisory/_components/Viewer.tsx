@@ -14,7 +14,6 @@ const BLUE = '#60a5fa';
 
 export default function Viewer() {
     const [idx, setIdx] = useState(0);
-    const [connected, setConnected] = useState(false);
     const [isFs, setIsFs] = useState(false);
     const [showFsBtn, setShowFsBtn] = useState(true);
     // 발표 따라가기(true) / 자유 열람(false)
@@ -37,7 +36,7 @@ export default function Viewer() {
             setRemoteIdx(n);
             if (followingRef.current) setIdx(prev => (prev === n ? prev : n));
         });
-        ch.subscribe((s: string) => { if (s === 'SUBSCRIBED') setConnected(true); });
+        ch.subscribe();
         return () => { supabase.removeChannel(ch); };
     }, []);
 
@@ -121,19 +120,22 @@ export default function Viewer() {
                 <SlideBody slide={slide} answer="" setAnswer={() => {}} ministry={[]} setMinistry={() => {}} info={{}} setInfo={() => {}} />
             </div>
 
-            {/* 하단 — 따라가는 중이면 안내+힌트, 자유 열람 중이면 돌아가기 버튼 */}
-            <div style={{ flexShrink: 0, padding: '10px 16px calc(12px + env(safe-area-inset-bottom))', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                {remoteIdx != null && !following ? (
-                    <button onClick={resync}
-                        style={{ border: 'none', background: '#16a34a', color: '#fff', borderRadius: 10, padding: '9px 16px', fontSize: 13.5, fontWeight: 800, cursor: 'pointer' }}>
-                        ▶ 발표자 화면(슬라이드 {remoteIdx + 1})으로 돌아가기
-                    </button>
-                ) : (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12.5, fontWeight: 700, color: '#94a3b8' }}>
-                        <span style={{ width: 8, height: 8, borderRadius: 8, background: connected ? '#22c55e' : '#f59e0b', boxShadow: connected ? '0 0 6px #22c55e' : 'none' }} />
-                        {remoteIdx != null ? (connected ? '발표 진행 중' : '연결 중…') : '자유 열람'} · {idx + 1} / {SLIDES.length} · 좌우로 넘겨 보세요
-                    </span>
-                )}
+            {/* 하단 컨트롤 — 버튼으로 이동 (스와이프·좌우 화살표도 그대로 작동) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px calc(12px + env(safe-area-inset-bottom))', borderTop: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+                <button onClick={() => go(-1)} disabled={idx === 0}
+                    style={{ width: 86, height: 48, borderRadius: 12, border: 'none', background: 'rgba(255,255,255,0.12)', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', opacity: idx === 0 ? 0.35 : 1 }}>‹ 이전</button>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 0 }}>
+                    {remoteIdx != null && !following ? (
+                        <button onClick={resync}
+                            style={{ border: 'none', background: '#16a34a', color: '#fff', borderRadius: 9, padding: '8px 12px', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}>
+                            ▶ 발표 위치(슬라이드 {remoteIdx + 1})로
+                        </button>
+                    ) : (
+                        <span style={{ fontSize: 13.5, fontWeight: 800, color: '#94a3b8' }}>{idx + 1} / {SLIDES.length}</span>
+                    )}
+                </div>
+                <button onClick={() => go(1)} disabled={idx === SLIDES.length - 1}
+                    style={{ width: 86, height: 48, borderRadius: 12, border: 'none', background: BLUE, color: '#fff', fontSize: 15, fontWeight: 900, cursor: 'pointer', opacity: idx === SLIDES.length - 1 ? 0.4 : 1 }}>다음 ›</button>
             </div>
         </div>
     );
