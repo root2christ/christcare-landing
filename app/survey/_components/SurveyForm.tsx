@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     SURVEY_SECTIONS, FREE_SUFFIX, ROLE_OPTIONS, MINISTRY_OPTIONS, CAREER_OPTIONS,
-    CHRIST_QUESTIONS, CATEGORY_LABEL, TESTFLIGHT_URL, ANDROID_APK_URL,
+    CHRIST_QUESTIONS, CATEGORY_LABEL, ANDROID_APK_URL,
     SurveyQuestion,
 } from '../_content';
 
@@ -12,6 +12,7 @@ const NAVY = '#0f172a';
 const BLUE = '#4f6ef2';
 const BG = '#fbfbfd';
 const BORDER = '#e2e8f0';
+const APP_STORE_URL = 'https://apps.apple.com/app/id6779090825'; // soluma App Store
 
 // ───────────── localStorage 키 ─────────────
 const LS_UID = 'soluma_survey_uid_v1';
@@ -464,20 +465,23 @@ function InstallCard({ os }: { os: 'ios' | 'android' | 'other' }) {
             <h2 style={{ fontSize: 19, fontWeight: 900, margin: '0 0 10px', lineHeight: 1.4, color: NAVY }}>
                 먼저 솔루마 앱을 설치하고 직접 둘러보신 뒤<br />설문을 작성해 주세요
             </h2>
-            <p style={{ fontSize: 14.5, color: '#475569', lineHeight: 1.7, margin: '0 0 16px' }}>
+            <p style={{ fontSize: 14.5, color: '#475569', lineHeight: 1.7, margin: '0 0 14px' }}>
                 사용하시는 휴대폰에 맞는 버튼을 눌러 설치해 주세요. 앱을 직접 경험하신 후의 의견이 가장 소중합니다.
             </p>
+            <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 10, padding: '11px 13px', margin: '0 0 14px', fontSize: 13.5, color: '#065f46', fontWeight: 700, lineHeight: 1.6 }}>
+                ✅ App Store 출시 완료! 아이폰은 App Store에서 <strong>soluma</strong> 를 검색해 받으실 수 있습니다.
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <a
-                    href={TESTFLIGHT_URL}
+                    href={APP_STORE_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={installBtnStyle(!dimIos)}
                 >
-                    <span style={{ fontSize: 22 }}></span>
+                    <span style={{ fontSize: 22 }}>🍎</span>
                     <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.25 }}>
-                        <span style={{ fontSize: 16.5, fontWeight: 900 }}>iPhone — TestFlight로 설치</span>
-                        <span style={{ fontSize: 12.5, opacity: 0.85, fontWeight: 600 }}>아이폰 사용자{!dimIos && os === 'ios' ? ' · 추천' : ''}</span>
+                        <span style={{ fontSize: 16.5, fontWeight: 900 }}>iPhone — App Store에서 받기</span>
+                        <span style={{ fontSize: 12.5, opacity: 0.85, fontWeight: 600 }}>App Store에서 &apos;soluma&apos; 검색</span>
                     </span>
                 </a>
                 <a
