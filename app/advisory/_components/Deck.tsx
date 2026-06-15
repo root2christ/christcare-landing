@@ -292,7 +292,7 @@ export function SlideBody({
 
     if (k === 'cover') {
         return (
-            <div style={{ textAlign: 'center', maxWidth: 720, width: '100%' }}>
+            <div style={{ textAlign: 'center', maxWidth: 720, width: '100%', paddingTop: 'clamp(8px, 8vh, 110px)' }}>
                 <h1 style={{ fontSize: 54, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.12, letterSpacing: 1.5 }}>ROOT <span style={{ color: GOLD }}>&</span> SOLUMA</h1>
                 {slide.title && <div style={{ fontSize: 22, fontWeight: 800, color: GOLD, letterSpacing: 1, marginTop: 20 }}>{slide.title}</div>}
                 {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 18.5, color: T_BODY, marginTop: 16, lineHeight: 1.7 }}>{b}</p>)}
