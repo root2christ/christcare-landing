@@ -99,6 +99,7 @@ const SECTION_ACCENT: Record<string, string> = {
     '비전 선언문': '#a78bfa',
     '크라이스트 테스트': '#f472b6',
     '주요 기능': '#60a5fa',
+    '신앙의 나침반': '#22d3ee',
     '한 줄 정의': GOLD,
     '부탁의 말씀': '#2dd4bf',
 };
