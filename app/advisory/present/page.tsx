@@ -6,6 +6,7 @@ import { SlideBody, SYNC_CHANNEL, DARK_BG } from '../_components/Deck';
 import { supabase } from '../../../lib/supabase';
 
 const PRESENT_KEY = 'soluma-present-2026';
+const AUTH_FLAG = 'soluma-present-authed'; // 한 번 입장하면 이 브라우저에선 다시 안 물어봄
 const BLUE = '#4f6ef2';
 
 export default function PresentPage() {
@@ -27,12 +28,15 @@ export default function PresentPage() {
         drivingRef.current = true;
         setIdx(prev => (typeof next === 'function' ? (next as (i: number) => number)(prev) : next));
     };
+    // 입장 처리 — 인증을 브라우저에 저장(다음부터 자동 입장)
+    const unlock = () => { setAuthed(true); try { localStorage.setItem(AUTH_FLAG, '1'); } catch {} };
 
-    // URL ?key= 로도 인증
+    // 저장된 인증 또는 URL ?key= 로 자동 입장 (한 번 들어오면 다시 안 물어봄)
     useEffect(() => {
         try {
+            if (localStorage.getItem(AUTH_FLAG) === '1') { setAuthed(true); return; }
             const k = new URLSearchParams(window.location.search).get('key');
-            if (k === PRESENT_KEY) setAuthed(true);
+            if (k === PRESENT_KEY) unlock();
         } catch {}
     }, []);
 
@@ -85,9 +89,9 @@ export default function PresentPage() {
                     <h1 style={{ fontSize: 20, fontWeight: 900, margin: '0 0 6px' }}>발표자 모드</h1>
                     <p style={{ fontSize: 13.5, color: '#64748b', margin: '0 0 16px' }}>발표 진행용 비밀번호를 입력하세요.</p>
                     <input value={pass} onChange={e => setPass(e.target.value)} placeholder="비밀번호" type="password"
-                        onKeyDown={e => { if (e.key === 'Enter' && pass === PRESENT_KEY) setAuthed(true); }}
+                        onKeyDown={e => { if (e.key === 'Enter' && pass === PRESENT_KEY) unlock(); }}
                         style={{ width: '100%', height: 48, borderRadius: 12, border: '1.5px solid #e2e8f0', padding: '0 14px', fontSize: 16, marginBottom: 10, boxSizing: 'border-box' }} />
-                    <button onClick={() => { if (pass === PRESENT_KEY) setAuthed(true); }}
+                    <button onClick={() => { if (pass === PRESENT_KEY) unlock(); }}
                         style={{ width: '100%', height: 48, borderRadius: 12, border: 'none', background: '#0f172a', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>입장</button>
                 </div>
             </div>
