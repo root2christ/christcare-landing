@@ -107,7 +107,7 @@ function sectionAccent(eyebrow?: string) { return (eyebrow && SECTION_ACCENT[eye
 
 // 상단 일러스트 배너 (생성된 분위기 일러스트)
 const ILLUS_MAP: Record<string, string> = { 'ask-1': 'ask', 'ask-2': 'ask' };
-const ILLUS_IDS = new Set(['root-1', 'root-2', 'root-3', 'root-4', 'soluma-1', 'soluma-2', 'soluma-3', 'soluma-4', 'vision-1', 'vision-2', 'vision-3', 'ct-1', 'ct-2', 'ct-3', 'ask-1', 'ask-2']);
+const ILLUS_IDS = new Set(['root-1', 'root-2', 'root-3', 'root-4', 'soluma-1', 'soluma-2', 'soluma-3', 'vision-1', 'vision-2', 'vision-3', 'ct-1', 'ct-2', 'ct-3', 'ask-1', 'ask-2']);
 function illusFor(id: string) { return ILLUS_IDS.has(id) ? `/slide/illus/${ILLUS_MAP[id] || id}.jpg` : null; }
 function SlideBanner({ id, accent }: { id: string; accent: string }) {
     const src = illusFor(id);
