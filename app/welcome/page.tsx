@@ -173,6 +173,20 @@ export default function WelcomePage() {
                     )}
                 </div>
 
+                {/* 2-1. 프리미엄 선물 코드 */}
+                <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 18, padding: '18px 18px' }}>
+                    <div style={cardTitle}>🎁 프리미엄 1년 무료 이용</div>
+                    <div style={{ ...cardDesc, marginBottom: 12 }}>참석해 주신 목사님께 드리는 선물입니다. 앱 설치 후 아래 코드를 입력하시면 프리미엄 구독이 적용됩니다.</div>
+                    <div style={{ background: '#fff', border: '1.5px dashed #f59e0b', borderRadius: 12, padding: '12px 14px', marginBottom: 12, textAlign: 'center' }}>
+                        <div style={{ fontSize: 11.5, fontWeight: 800, color: '#b45309', letterSpacing: 0.5, marginBottom: 4 }}>선물 코드</div>
+                        <div style={{ fontSize: 24, fontWeight: 900, color: '#92400e', letterSpacing: 3 }}>PASTOR2026</div>
+                    </div>
+                    <div style={{ fontSize: 13.5, color: '#475569', lineHeight: 1.75 }}>
+                        앱에서 <b style={{ color: NAVY }}>my</b> → <b style={{ color: NAVY }}>선물하기</b> → <b style={{ color: NAVY }}>코드 입력</b> 칸에{' '}
+                        <b style={{ color: '#b45309' }}>PASTOR2026</b> 을(를) 입력하시면 구독이 적용됩니다.
+                    </div>
+                </div>
+
                 {/* 3. 설문 (이어쓰기 연동) */}
                 <a href="/survey" style={{ ...cardLink, background: hasSurvey ? '#ecfdf5' : '#fff', borderColor: hasSurvey ? '#a7f3d0' : BORDER }}>
                     <div style={{ ...iconBox, background: hasSurvey ? '#d1fae5' : '#fef3c7', color: hasSurvey ? '#059669' : '#d97706' }}>📝</div>
