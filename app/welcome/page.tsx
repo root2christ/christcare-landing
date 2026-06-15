@@ -4,8 +4,7 @@
 // 로그인(설문과 동일한 이름+휴대폰 신원) → 발표 다시보기 / 앱 설치 / 설문(저장된 답변 이어쓰기).
 // 설문과 동일한 localStorage uid 키를 설정하므로, '설문 작성'으로 들어가면 서버에 저장된 응답이 자동 연동된다.
 
-import { useEffect, useMemo, useState } from 'react';
-import { TESTFLIGHT_URL, ANDROID_APK_URL } from '../survey/_content';
+import { useEffect, useState } from 'react';
 
 const NAVY = '#0f172a';
 const BLUE = '#4f6ef2';
@@ -16,14 +15,6 @@ const LS_UID = 'soluma_survey_uid_v1';
 const LS_DATA = 'soluma_survey_data_v1';
 
 const phoneDigits = (s: string) => (s || '').replace(/\D/g, '');
-
-function detectOS(): 'ios' | 'android' | 'other' {
-    if (typeof navigator === 'undefined') return 'other';
-    const ua = navigator.userAgent || '';
-    if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
-    if (/Android/i.test(ua)) return 'android';
-    return 'other';
-}
 
 function hasAnswers(srv: any): boolean {
     if (!srv) return false;
@@ -41,7 +32,6 @@ export default function WelcomePage() {
     const [err, setErr] = useState('');
     const [pastorName, setPastorName] = useState('');
     const [hasSurvey, setHasSurvey] = useState(false);
-    const os = useMemo(detectOS, []);
 
     // 같은 기기에서 이미 신원 있으면 자동 로그인
     useEffect(() => {
@@ -117,9 +107,6 @@ export default function WelcomePage() {
     }
 
     // ── 허브 ──
-    const dimIos = os === 'android';
-    const dimAndroid = os === 'ios';
-
     return (
         <div style={{ minHeight: '100dvh', background: '#fbfbfd', color: NAVY }}>
             {/* 헤더 */}
@@ -130,7 +117,7 @@ export default function WelcomePage() {
                     {pastorName ? `${pastorName}님, 감사합니다 🌿` : '참석해 주셔서 감사합니다 🌿'}
                 </h1>
                 <p style={{ fontSize: 14.5, color: '#cbd5e1', marginTop: 10, lineHeight: 1.7 }}>
-                    목회자 자문회에 함께해 주셔서 진심으로 감사드립니다.<br />아래에서 발표를 다시 보고, 앱을 설치하고, 설문을 이어서 작성하실 수 있습니다.
+                    목회자 자문회에 함께해 주셔서 진심으로 감사드립니다.<br />아래에서 발표를 다시 보고, 설문을 이어서 작성하실 수 있습니다.
                 </p>
                 <button onClick={reset} style={{ marginTop: 14, fontSize: 12.5, color: '#94a3b8', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>다른 분으로 입장</button>
             </div>
@@ -146,34 +133,7 @@ export default function WelcomePage() {
                     <span style={chev}>›</span>
                 </a>
 
-                {/* 2. 앱 설치 */}
-                <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 18, padding: '18px 18px' }}>
-                    <div style={cardTitle}>📱 솔루마 앱 설치</div>
-                    <div style={{ ...cardDesc, marginBottom: 14 }}>직접 둘러보신 뒤의 의견이 가장 소중합니다.</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-                        <a href={TESTFLIGHT_URL} target="_blank" rel="noopener noreferrer" style={installBtn(!dimIos, false)}>
-                            <span style={{ fontSize: 20 }}>🍎</span>
-                            <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.25 }}>
-                                <span style={{ fontSize: 15.5, fontWeight: 900 }}>iPhone — TestFlight로 설치</span>
-                                <span style={{ fontSize: 12, opacity: 0.85, fontWeight: 600 }}>아이폰 사용자{os === 'ios' ? ' · 추천' : ''}</span>
-                            </span>
-                        </a>
-                        <a href={ANDROID_APK_URL} target="_blank" rel="noopener noreferrer" style={installBtn(!dimAndroid, true)}>
-                            <span style={{ fontSize: 20 }}>🤖</span>
-                            <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.25 }}>
-                                <span style={{ fontSize: 15.5, fontWeight: 900 }}>Android — APK 설치</span>
-                                <span style={{ fontSize: 12, opacity: 0.85, fontWeight: 600 }}>안드로이드 사용자{os === 'android' ? ' · 추천' : ''}</span>
-                            </span>
-                        </a>
-                    </div>
-                    {os !== 'ios' && (
-                        <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6, margin: '12px 2px 0' }}>
-                            💡 안드로이드는 받은 파일을 열어 설치합니다. 처음이면 “출처를 알 수 없는 앱 설치 허용”을 한 번 켜 주세요.
-                        </p>
-                    )}
-                </div>
-
-                {/* 2-1. 프리미엄 선물 코드 */}
+                {/* 2. 프리미엄 선물 코드 */}
                 <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 18, padding: '18px 18px' }}>
                     <div style={cardTitle}>🎁 프리미엄 1년 무료 이용</div>
                     <div style={{ ...cardDesc, marginBottom: 12 }}>참석해 주신 목사님께 드리는 선물입니다. 앱 설치 후 아래 코드를 입력하시면 프리미엄 구독이 적용됩니다.</div>
@@ -213,13 +173,3 @@ const iconBox: React.CSSProperties = { width: 48, height: 48, borderRadius: 14, 
 const cardTitle: React.CSSProperties = { fontSize: 17, fontWeight: 900, color: NAVY, lineHeight: 1.35 };
 const cardDesc: React.CSSProperties = { fontSize: 13.5, color: '#64748b', marginTop: 4, lineHeight: 1.6 };
 const chev: React.CSSProperties = { fontSize: 26, color: '#cbd5e1', fontWeight: 700, flexShrink: 0 };
-
-function installBtn(highlight: boolean, android: boolean): React.CSSProperties {
-    return {
-        display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', padding: '13px 16px', borderRadius: 14,
-        background: highlight ? (android ? '#1f2937' : '#000') : '#fff',
-        color: highlight ? '#fff' : '#94a3b8',
-        border: highlight ? 'none' : `1.5px solid ${BORDER}`,
-        opacity: highlight ? 1 : 0.6, minHeight: 54,
-    };
-}
