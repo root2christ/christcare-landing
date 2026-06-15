@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { SLIDES } from '../_content';
+import { SLIDES, CUES } from '../_content';
 import { SlideBody, SYNC_CHANNEL, DARK_BG } from '../_components/Deck';
 import { supabase } from '../../../lib/supabase';
 
@@ -13,6 +13,7 @@ export default function PresentPage() {
     const [pass, setPass] = useState('');
     const [idx, setIdx] = useState(0);
     const [live, setLive] = useState(false);
+    const [showCue, setShowCue] = useState(true);
     const chRef = useRef<any>(null);
     const idxRef = useRef(0);
     idxRef.current = idx;
@@ -104,18 +105,32 @@ export default function PresentPage() {
                     <span style={{ width: 9, height: 9, borderRadius: 9, background: live ? '#22c55e' : '#ef4444', boxShadow: live ? '0 0 8px #22c55e' : 'none' }} />
                     발표자 모드 {live ? 'LIVE' : '연결 중…'}
                 </span>
-                <select value={idx} onChange={e => drive(Number(e.target.value))}
-                    style={{ maxWidth: 200, height: 34, borderRadius: 8, border: 'none', padding: '0 8px', fontSize: 12.5, fontWeight: 700, color: '#0f172a' }}>
-                    {SLIDES.map((s, i) => (
-                        <option key={s.id} value={i}>{i + 1}. {(s.title || s.question || s.kind).slice(0, 22)}</option>
-                    ))}
-                </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <button onClick={() => setShowCue(s => !s)}
+                        style={{ height: 34, padding: '0 11px', borderRadius: 8, border: 'none', background: showCue ? BLUE : 'rgba(255,255,255,0.16)', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        🎤 큐 {showCue ? 'ON' : 'OFF'}
+                    </button>
+                    <select value={idx} onChange={e => drive(Number(e.target.value))}
+                        style={{ maxWidth: 168, height: 34, borderRadius: 8, border: 'none', padding: '0 8px', fontSize: 12.5, fontWeight: 700, color: '#0f172a' }}>
+                        {SLIDES.map((s, i) => (
+                            <option key={s.id} value={i}>{i + 1}. {(s.title || s.question || s.kind).slice(0, 22)}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* 현재 슬라이드 미리보기 */}
             <div style={{ flex: 1, overflowY: 'auto', display: 'flex', alignItems: dark ? 'center' : 'flex-start', justifyContent: 'center', padding: '20px 22px 28px' }}>
                 <SlideBody slide={slide} answer="" setAnswer={() => {}} ministry={[]} setMinistry={() => {}} info={{}} setInfo={() => {}} />
             </div>
+
+            {/* 발표 큐카드 — 발표자만 보임 (목사님 화면엔 안 나감) */}
+            {showCue && CUES[slide.id] && (
+                <div style={{ background: '#15203a', borderTop: `2px solid ${BLUE}`, padding: '11px 16px', flexShrink: 0, maxHeight: '34vh', overflowY: 'auto' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 900, color: '#8aa0ff', letterSpacing: 1, marginBottom: 5 }}>🎤 발표 큐 · 나만 보임</div>
+                    <p style={{ margin: 0, fontSize: 16.5, lineHeight: 1.55, color: '#eef2ff', fontWeight: 600 }}>{CUES[slide.id]}</p>
+                </div>
+            )}
 
             {/* 발표자 컨트롤 */}
             <div style={{ display: 'flex', gap: 10, padding: '12px 16px calc(14px + env(safe-area-inset-bottom))', background: '#0f172a', flexShrink: 0 }}>
