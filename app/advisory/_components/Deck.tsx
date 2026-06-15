@@ -112,9 +112,11 @@ function SlideBanner({ id, accent }: { id: string; accent: string }) {
     const src = illusFor(id);
     if (!src) return null;
     return (
-        <div style={{ width: '100%', aspectRatio: '16 / 9', borderRadius: 18, overflow: 'hidden', marginBottom: 20, boxShadow: '0 16px 40px rgba(0,0,0,0.4)', border: `1px solid ${hexA(accent, 0.25)}` }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+            <div style={{ width: '50%', maxWidth: 220, aspectRatio: '1 / 1', borderRadius: '50%', overflow: 'hidden', boxShadow: '0 12px 32px rgba(0,0,0,0.45)', border: `2px solid ${hexA(accent, 0.35)}` }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            </div>
         </div>
     );
 }
@@ -289,16 +291,10 @@ export function SlideBody({
 
     if (k === 'cover') {
         return (
-            <div style={{ textAlign: 'center', maxWidth: 600, width: '100%' }}>
-                <div style={{ width: '100%', aspectRatio: '16 / 9', borderRadius: 20, overflow: 'hidden', marginBottom: 26, boxShadow: '0 22px 55px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.12)' }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/slide/illus/cover.jpg" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/slide/logo-soluma.png" alt="soluma" style={{ width: '52%', maxWidth: 230, height: 'auto', display: 'block', margin: '0 auto 14px', filter: 'invert(1)' }} />
-                <div style={{ fontSize: 13.5, fontWeight: 800, color: GOLD, letterSpacing: 2, marginBottom: 8 }}>{slide.eyebrow}</div>
-                <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.3 }}>{slide.title}</h1>
-                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 18.5, color: T_BODY, marginTop: 12, lineHeight: 1.6 }}>{b}</p>)}
+            <div style={{ textAlign: 'center', maxWidth: 720, width: '100%' }}>
+                <h1 style={{ fontSize: 54, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.12, letterSpacing: 1.5 }}>ROOT <span style={{ color: GOLD }}>&</span> SOLUMA</h1>
+                {slide.title && <div style={{ fontSize: 22, fontWeight: 800, color: GOLD, letterSpacing: 1, marginTop: 20 }}>{slide.title}</div>}
+                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 18.5, color: T_BODY, marginTop: 16, lineHeight: 1.7 }}>{b}</p>)}
             </div>
         );
     }
