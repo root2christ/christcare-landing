@@ -112,8 +112,8 @@ function SlideBanner({ id, accent }: { id: string; accent: string }) {
     const src = illusFor(id);
     if (!src) return null;
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-            <div style={{ width: '50%', maxWidth: 220, aspectRatio: '1 / 1', borderRadius: '50%', overflow: 'hidden', boxShadow: '0 12px 32px rgba(0,0,0,0.45)', border: `2px solid ${hexA(accent, 0.35)}` }}>
+        <div style={{ textAlign: 'center', marginBottom: 16 }}>
+            <div style={{ display: 'inline-block', width: 'min(48vw, 210px)', height: 'min(48vw, 210px)', borderRadius: '50%', overflow: 'hidden', boxShadow: '0 12px 32px rgba(0,0,0,0.45)', border: `2px solid ${hexA(accent, 0.35)}`, verticalAlign: 'top' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>

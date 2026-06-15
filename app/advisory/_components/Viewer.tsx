@@ -49,6 +49,15 @@ export default function Viewer() {
         };
     }, []);
 
+    // 전체화면 시 화면 밖(100dvh 아래) 영역이 흰색으로 보이지 않도록 html/body 배경을 어둡게 고정
+    useEffect(() => {
+        const html = document.documentElement, body = document.body;
+        const pHtml = html.style.background, pBody = body.style.background;
+        html.style.background = '#06151b';
+        body.style.background = '#06151b';
+        return () => { html.style.background = pHtml; body.style.background = pBody; };
+    }, []);
+
     const toggleFs = () => {
         const d: any = document;
         const el: any = document.documentElement;
