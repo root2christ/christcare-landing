@@ -36,6 +36,18 @@ function csvEscape(s: string): string {
     return needsQuote ? `"${e}"` : e;
 }
 
+// 서울(KST) 기준 시각 표기 — "YYYY-MM-DD HH:MM"
+function fmtSeoul(iso: string | null | undefined): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso);
+    const p = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false,
+    }).formatToParts(d).reduce((a: Record<string, string>, x) => { a[x.type] = x.value; return a; }, {});
+    return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`;
+}
+
 export default function SurveyAdminPage() {
     return (
         <Suspense fallback={<div style={{ minHeight: '100dvh', background: '#f8fafc' }} />}>
@@ -79,7 +91,7 @@ function AdminInner() {
     // ── CSV 내보내기 ──
     const exportCsv = useCallback(() => {
         const headers = [
-            '응답ID', '성함', '교회', '직분', '연락처', '이메일', '담당사역', '목회경력', '최종수정',
+            '응답ID', '성함', '교회', '직분', '연락처', '이메일', '담당사역', '목회경력', '최종수정(KST)',
         ];
         ALL_QUESTIONS.forEach((q) => {
             headers.push(`Q${q.no} 답변`);
@@ -91,7 +103,7 @@ function AdminInner() {
         rows.forEach((r) => {
             const cells: string[] = [
                 r.respondent_uid, r.name || '', r.church || '', r.role || '', r.phone || '', r.email || '',
-                (r.ministry || []).join(' | '), r.career || '', r.updated_at || '',
+                (r.ministry || []).join(' | '), r.career || '', fmtSeoul(r.updated_at),
             ];
             ALL_QUESTIONS.forEach((q) => {
                 cells.push(val(r.answers?.[q.id]));
@@ -106,7 +118,7 @@ function AdminInner() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `soluma_survey_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.download = `soluma_survey_${fmtSeoul(new Date().toISOString()).slice(0, 10)}.csv`;
         a.click();
         URL.revokeObjectURL(url);
     }, [rows]);
@@ -213,7 +225,7 @@ function RespondentCard({ r }: { r: ResponseRow }) {
                 </div>
                 <div style={{ fontSize: 12.5, color: '#94a3b8', marginTop: 4 }}>
                     {[r.phone, r.email, (r.ministry || []).join('/'), r.career].filter(Boolean).join(' · ')}
-                    {' · '}수정 {r.updated_at?.slice(0, 16).replace('T', ' ')}
+                    {' · '}수정 {fmtSeoul(r.updated_at)} (KST)
                 </div>
             </button>
 
