@@ -131,7 +131,7 @@ export default function Viewer() {
                 ) : (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12.5, fontWeight: 700, color: '#94a3b8' }}>
                         <span style={{ width: 8, height: 8, borderRadius: 8, background: connected ? '#22c55e' : '#f59e0b', boxShadow: connected ? '0 0 6px #22c55e' : 'none' }} />
-                        {connected ? '발표 진행 중' : '연결 중…'} · {idx + 1} / {SLIDES.length} · 좌우로 넘겨 자유 열람
+                        {remoteIdx != null ? (connected ? '발표 진행 중' : '연결 중…') : '자유 열람'} · {idx + 1} / {SLIDES.length} · 좌우로 넘겨 보세요
                     </span>
                 )}
             </div>
