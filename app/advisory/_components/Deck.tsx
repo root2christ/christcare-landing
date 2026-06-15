@@ -126,7 +126,7 @@ function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) 
         return (
             <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {bullets.map((b, i) => (
-                    <span key={i} style={{ fontSize: 14.5, fontWeight: 800, color: accent, background: hexA(accent, 0.14), border: `1px solid ${hexA(accent, 0.3)}`, padding: '8px 15px', borderRadius: 999 }}>{b}</span>
+                    <span key={i} style={{ fontSize: 17.5, fontWeight: 800, color: accent, background: hexA(accent, 0.14), border: `1px solid ${hexA(accent, 0.3)}`, padding: '8px 15px', borderRadius: 999 }}>{b}</span>
                 ))}
             </div>
         );
@@ -139,10 +139,10 @@ function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) 
                     const children = (rest || '').split(/[·,]/).map((s) => s.trim()).filter(Boolean);
                     return (
                         <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 14, padding: '13px 15px' }}>
-                            <div style={{ fontSize: 15.5, fontWeight: 800, color: T_WHITE }}>{head.trim()}</div>
+                            <div style={{ fontSize: 18.5, fontWeight: 800, color: T_WHITE }}>{head.trim()}</div>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 9 }}>
                                 {children.map((c, j) => (
-                                    <span key={j} style={{ fontSize: 13.5, fontWeight: 700, color: accent, background: hexA(accent, 0.14), padding: '4px 10px', borderRadius: 8 }}>{c}</span>
+                                    <span key={j} style={{ fontSize: 16, fontWeight: 700, color: accent, background: hexA(accent, 0.14), padding: '4px 10px', borderRadius: 8 }}>{c}</span>
                                 ))}
                             </div>
                         </div>
@@ -156,8 +156,8 @@ function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) 
                         <div key={i} style={{ display: 'flex', gap: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 14, padding: '13px 15px' }}>
                             <span style={{ width: 5, borderRadius: 6, background: accent, flexShrink: 0 }} />
                             <div>
-                                <div style={{ fontSize: 15.5, fontWeight: 800, color: T_WHITE, lineHeight: 1.4 }}>{head}</div>
-                                <div style={{ fontSize: 14.5, color: T_MUTE, lineHeight: 1.6, marginTop: 4 }}>{desc}</div>
+                                <div style={{ fontSize: 18.5, fontWeight: 800, color: T_WHITE, lineHeight: 1.4 }}>{head}</div>
+                                <div style={{ fontSize: 17.5, color: T_MUTE, lineHeight: 1.6, marginTop: 4 }}>{desc}</div>
                             </div>
                         </div>
                     );
@@ -165,7 +165,7 @@ function BulletList({ bullets, accent }: { bullets: string[]; accent: string }) 
                 return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 12, padding: '12px 15px' }}>
                         <span style={{ width: 22, height: 22, borderRadius: 999, background: hexA(accent, 0.2), color: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 900, flexShrink: 0 }}>✓</span>
-                        <span style={{ fontSize: 15, color: T_BODY, fontWeight: 600, lineHeight: 1.5 }}>{b}</span>
+                        <span style={{ fontSize: 18, color: T_BODY, fontWeight: 600, lineHeight: 1.5 }}>{b}</span>
                     </div>
                 );
             })}
@@ -186,7 +186,7 @@ function FeatureGrid({ items, accent }: { items: { icon?: string; emoji?: string
                     ) : (
                         <div style={{ width: 54, height: 54, borderRadius: 14, background: hexA(accent, 0.16), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>{it.emoji}</div>
                     )}
-                    <span style={{ fontSize: 13.5, fontWeight: 700, color: T_WHITE, textAlign: 'center', lineHeight: 1.3 }}>{it.label}</span>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: T_WHITE, textAlign: 'center', lineHeight: 1.3 }}>{it.label}</span>
                 </div>
             ))}
         </div>
@@ -235,7 +235,7 @@ function SlideGallery({ slide, accent }: { slide: Slide; accent: string }) {
                     <img key={i} src={src} alt="" style={{ width: '100%', aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 12, border: `2px solid ${hexA(accent, 0.3)}`, background: 'rgba(255,255,255,0.05)' }} />
                 ))}
             </div>
-            <p style={{ fontSize: 13.5, color: T_MUTE, marginTop: 9, fontWeight: 600 }}>64명의 성경 인물 캐릭터 중 일부</p>
+            <p style={{ fontSize: 16, color: T_MUTE, marginTop: 9, fontWeight: 600 }}>64명의 성경 인물 캐릭터 중 일부</p>
         </div>
     );
 }
@@ -246,11 +246,11 @@ function SlideTable({ table, accent }: { table: { headers: string[]; rows: strin
     return (
         <div style={{ marginTop: 18, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, overflow: 'hidden' }}>
             <div style={{ display: 'grid', gridTemplateColumns: cols, background: hexA(accent, 0.2) }}>
-                {table.headers.map((h, i) => (<div key={i} style={{ padding: '11px 13px', fontSize: 13.5, fontWeight: 800, color: T_WHITE }}>{h}</div>))}
+                {table.headers.map((h, i) => (<div key={i} style={{ padding: '11px 13px', fontSize: 16, fontWeight: 800, color: T_WHITE }}>{h}</div>))}
             </div>
             {table.rows.map((row, r) => (
                 <div key={r} style={{ display: 'grid', gridTemplateColumns: cols, background: r % 2 ? 'rgba(255,255,255,0.03)' : 'transparent', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-                    {row.map((cell, c) => (<div key={c} style={{ padding: '11px 13px', fontSize: c === 0 ? 13 : 12.5, fontWeight: c === 0 ? 800 : 600, color: c === 0 ? accent : (c === 1 ? T_WHITE : T_BODY), lineHeight: 1.5 }}>{cell}</div>))}
+                    {row.map((cell, c) => (<div key={c} style={{ padding: '11px 13px', fontSize: c === 0 ? 15.5 : 15, fontWeight: c === 0 ? 800 : 600, color: c === 0 ? accent : (c === 1 ? T_WHITE : T_BODY), lineHeight: 1.5 }}>{cell}</div>))}
                 </div>
             ))}
         </div>
@@ -267,7 +267,7 @@ function SlideQR({ slide }: { slide: Slide }) {
                 <img src={slide.qr} alt="QR" width={200} height={200} style={{ display: 'block', width: 200, height: 200, imageRendering: 'pixelated' }} />
             </div>
             {slide.qrCaption && (
-                <p style={{ fontSize: 14.5, color: '#cbd5e1', fontWeight: 700, lineHeight: 1.55, maxWidth: 340, margin: 0 }}>{slide.qrCaption}</p>
+                <p style={{ fontSize: 17.5, color: '#cbd5e1', fontWeight: 700, lineHeight: 1.55, maxWidth: 340, margin: 0 }}>{slide.qrCaption}</p>
             )}
         </div>
     );
@@ -298,7 +298,7 @@ export function SlideBody({
                 <img src="/slide/logo-soluma.png" alt="soluma" style={{ width: '52%', maxWidth: 230, height: 'auto', display: 'block', margin: '0 auto 14px', filter: 'invert(1)' }} />
                 <div style={{ fontSize: 13.5, fontWeight: 800, color: GOLD, letterSpacing: 2, marginBottom: 8 }}>{slide.eyebrow}</div>
                 <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.3 }}>{slide.title}</h1>
-                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 15.5, color: T_BODY, marginTop: 12, lineHeight: 1.6 }}>{b}</p>)}
+                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 18.5, color: T_BODY, marginTop: 12, lineHeight: 1.6 }}>{b}</p>)}
             </div>
         );
     }
@@ -308,7 +308,7 @@ export function SlideBody({
             <div style={{ textAlign: 'center', maxWidth: 520 }}>
                 {slide.emoji && <div style={{ fontSize: 52, marginBottom: 14 }}>{slide.emoji}</div>}
                 <h1 style={{ fontSize: 30, fontWeight: 900, color: '#fff', margin: 0 }}>{slide.title}</h1>
-                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 15.5, color: '#cbd5e1', marginTop: 14, lineHeight: 1.7 }}>{b}</p>)}
+                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 18.5, color: '#cbd5e1', marginTop: 14, lineHeight: 1.7 }}>{b}</p>)}
                 <SlideQR slide={slide} />
                 {slide.cta && (
                     <a href={slide.cta.href} target="_blank" rel="noopener noreferrer"
@@ -325,7 +325,7 @@ export function SlideBody({
             <div style={{ textAlign: 'center', maxWidth: 520 }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🙏</div>
                 <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.4 }}>{slide.title}</h1>
-                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 15, color: '#cbd5e1', marginTop: 14, lineHeight: 1.7 }}>{b}</p>)}
+                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 18, color: '#cbd5e1', marginTop: 14, lineHeight: 1.7 }}>{b}</p>)}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/slide/logo-soluma.png" alt="soluma" style={{ width: 130, height: 'auto', display: 'block', margin: '24px auto 0', filter: 'invert(1)', opacity: 0.85 }} />
             </div>
@@ -350,14 +350,14 @@ export function SlideBody({
         return (
             <div style={{ maxWidth: 640, width: '100%' }}>
                 {Head}
-                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 16, color: T_BODY, lineHeight: 1.8, margin: '14px 0 0' }}>{b}</p>)}
+                {slide.body?.map((b, i) => <p key={i} style={{ fontSize: 19, color: T_BODY, lineHeight: 1.8, margin: '14px 0 0' }}>{b}</p>)}
                 <SlideGallery slide={slide} accent={accent} />
                 {slide.table && <SlideTable table={slide.table} accent={accent} />}
                 {k === 'grid' && slide.grid && <FeatureGrid items={slide.grid} accent={accent} />}
                 {slide.bullets && <BulletList bullets={slide.bullets} accent={accent} />}
                 {slide.quote && (
                     <div style={{ marginTop: 20, background: hexA(accent, 0.1), border: `1px solid ${hexA(accent, 0.22)}`, borderLeft: `4px solid ${accent}`, borderRadius: 14, padding: '15px 18px' }}>
-                        <p style={{ margin: 0, fontSize: 16, color: '#fff', fontWeight: 700, lineHeight: 1.65 }}>“{slide.quote}”</p>
+                        <p style={{ margin: 0, fontSize: 19, color: '#fff', fontWeight: 700, lineHeight: 1.65 }}>“{slide.quote}”</p>
                     </div>
                 )}
             </div>
