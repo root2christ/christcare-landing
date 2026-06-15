@@ -13,13 +13,15 @@ export default function ReviewPage() {
     const [idx, setIdx] = useState(0);
     const [showCue, setShowCue] = useState(true);
     const touchX = useRef<number | null>(null);
+    const touchY = useRef<number | null>(null);
 
     const go = (d: number) => setIdx(i => Math.min(Math.max(i + d, 0), SLIDES.length - 1));
 
     useEffect(() => {
+        // 슬라이드 이동은 좌우 화살표만. 스크롤 키(PageUp/Down/Space)는 가로채지 않음
         const h = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(1); }
-            if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(-1); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
         };
         window.addEventListener('keydown', h);
         return () => window.removeEventListener('keydown', h);
@@ -31,12 +33,14 @@ export default function ReviewPage() {
     return (
         <div
             style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: DARK_BG, overflow: 'hidden' }}
-            onTouchStart={e => { touchX.current = e.touches[0].clientX; }}
+            onTouchStart={e => { touchX.current = e.touches[0].clientX; touchY.current = e.touches[0].clientY; }}
             onTouchEnd={e => {
-                if (touchX.current == null) return;
+                if (touchX.current == null || touchY.current == null) return;
                 const dx = e.changedTouches[0].clientX - touchX.current;
-                if (Math.abs(dx) > 55) go(dx < 0 ? 1 : -1);
-                touchX.current = null;
+                const dy = e.changedTouches[0].clientY - touchY.current;
+                // 수평 스와이프가 확실할 때만 슬라이드 이동 — 세로 스크롤은 무시
+                if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
+                touchX.current = null; touchY.current = null;
             }}
         >
             {/* 상단 바 */}
