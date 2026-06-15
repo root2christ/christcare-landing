@@ -360,10 +360,16 @@ export default function SurveyForm() {
                 {/* ── 4. 크라이스트 테스트 30문항 검증 ── */}
                 <SectionHeader emoji="✝️" idLabel="크라이스트" title="크라이스트 테스트 30문항 — 문항·답변 검증" />
                 <Card>
+                    <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 12, padding: '13px 15px', marginBottom: 14 }}>
+                        <p style={{ fontSize: 15.5, fontWeight: 800, color: '#92400e', margin: 0, lineHeight: 1.65 }}>
+                            ⚠️ 여기는 문제를 푸는 곳이 아닙니다.<br />
+                            각 문항의 <strong>질문과 답변(선택지)이 적절한지 검토</strong>해 주세요.
+                        </p>
+                    </div>
                     <p style={{ fontSize: 15.5, lineHeight: 1.8, color: '#334155', margin: 0 }}>
                         아래 30개 문항은 30~40대 장년을 위한 크라이스트 테스트 문항입니다.
                         각 문항의 <strong>질문</strong>과 <strong>답변 선택지</strong>를 보시고,
-                        <strong style={{ color: BLUE }}> 문항과 답변이 자연스럽고 적절한지</strong> 자유롭게 의견을 적어 주세요.
+                        <strong style={{ color: BLUE }}> 정답을 고르는 것이 아니라, 문항과 답변 자체가 자연스럽고 적절한지</strong> 검토 의견을 적어 주세요.
                         (채점 점수는 검증에 영향을 주지 않도록 숨겨져 있습니다.)
                     </p>
                 </Card>
@@ -664,6 +670,7 @@ function ChristCard({ q, memo, onMemo }: {
                 <span style={{ color: BLUE, marginRight: 6 }}>Q{q.id}.</span>{q.question}
             </p>
 
+            <div style={{ fontSize: 12, fontWeight: 800, color: '#94a3b8', marginBottom: 8, letterSpacing: 0.3 }}>답변 선택지 — 검토 대상 (고르는 칸이 아닙니다)</div>
             {/* 답변 선택지 (읽기 전용, 점수 숨김) */}
             {q.type === 'SCENARIO' && q.options && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -692,7 +699,7 @@ function ChristCard({ q, memo, onMemo }: {
 
             {/* 검증 메모 */}
             <div style={{ fontSize: 14, fontWeight: 800, color: '#64748b', margin: '14px 0 0' }}>
-                이 문항과 답변이 자연스럽고 적절한가요? 의견을 적어주세요
+                이 문항·답변(선택지)이 적절한지 검토 의견을 적어주세요 <span style={{ color: '#94a3b8', fontWeight: 700 }}>(정답을 적는 칸이 아닙니다)</span>
             </div>
             <FreeText value={memo} onChange={onMemo} placeholder="문항·답변에 대한 의견 (수정 제안, 어색한 표현, 신학적 우려 등)" />
         </Card>
