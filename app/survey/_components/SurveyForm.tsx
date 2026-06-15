@@ -699,7 +699,7 @@ function ChristCard({ q, memo, onMemo }: {
 
             {/* 검증 메모 */}
             <div style={{ fontSize: 14, fontWeight: 800, color: '#64748b', margin: '14px 0 0' }}>
-                이 문항·답변(선택지)이 적절한지 검토 의견을 적어주세요 <span style={{ color: '#94a3b8', fontWeight: 700 }}>(정답을 적는 칸이 아닙니다)</span>
+                이 문항의 질문과 답변에 대한 의견이 있다면 적어 주세요
             </div>
             <FreeText value={memo} onChange={onMemo} placeholder="문항·답변에 대한 의견 (수정 제안, 어색한 표현, 신학적 우려 등)" />
         </Card>
