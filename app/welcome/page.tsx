@@ -183,7 +183,7 @@ export default function WelcomePage() {
                     </div>
                     <div style={{ fontSize: 13.5, color: '#475569', lineHeight: 1.75 }}>
                         앱에서 <b style={{ color: NAVY }}>my</b> → <b style={{ color: NAVY }}>선물하기</b> → <b style={{ color: NAVY }}>코드 입력</b> 칸에{' '}
-                        <b style={{ color: '#b45309' }}>PASTOR2026</b> 을(를) 입력하시면 구독이 적용됩니다.
+                        <b style={{ color: '#b45309' }}>PASTOR2026</b> 을(를) 입력하시면 앱의 모든 기능을 사용하실 수 있습니다.
                     </div>
                 </div>
 
