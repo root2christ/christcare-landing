@@ -3,7 +3,7 @@
 // 청중(목사님) 화면 — 순수 뷰어.
 // 직접 넘기는 버튼/스와이프/키보드 없음. 오직 발표자(present)가 보내는 슬라이드만 실시간으로 따라간다.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SLIDES } from '../_content';
 import { SlideBody, SYNC_CHANNEL, DARK_BG } from './Deck';
 import { supabase } from '../../../lib/supabase';
@@ -15,18 +15,16 @@ export default function Viewer() {
     const [connected, setConnected] = useState(false);
     const [isFs, setIsFs] = useState(false);
     const [showFsBtn, setShowFsBtn] = useState(true);
-    // 발표자 송출 시퀀스 — 인수인계 순간 오래된 하트비트가 화면을 되돌리지 않도록
-    const seqRef = useRef(0);
 
     useEffect(() => {
         const ch = supabase.channel(SYNC_CHANNEL, { config: { broadcast: { self: false } } });
         ch.on('broadcast', { event: 'slide' }, ({ payload }: any) => {
             const n = payload?.slide;
-            const s = typeof payload?.seq === 'number' ? payload.seq : 0;
             if (typeof n !== 'number' || n < 0 || n >= SLIDES.length) return;
-            if (s < seqRef.current) return; // 오래된 송출 무시 (같은 seq의 하트비트는 허용)
-            seqRef.current = s;
-            setIdx(n);
+            // 뷰어(목사님 화면)는 항상 발표자의 최신 송출을 따라간다.
+            // 발표자가 새로고침해 seq가 리셋돼도 끊기지 않도록 seq 가드를 두지 않음
+            // (발표자는 운전자 모델로 한 명만 송출하므로 깜빡임 없음).
+            setIdx((prev) => (prev === n ? prev : n));
         });
         ch.subscribe((s: string) => { if (s === 'SUBSCRIBED') setConnected(true); });
         return () => { supabase.removeChannel(ch); };
