@@ -4,7 +4,7 @@ import { getAdminSupabase } from '../../../../lib/supabase-admin';
 export const dynamic = 'force-dynamic';
 
 // 관리자 비밀번호 (서버 전용 — 클라이언트 번들에 노출 안 됨)
-const ADMIN_KEY = process.env.SURVEY_ADMIN_KEY || 'Seiehjw1!@';
+const ADMIN_KEY = 'SOLUMA_ADMIN_2026';
 
 // 전체 응답 취합 조회 — 비밀번호 게이트
 export async function GET(req: NextRequest) {
