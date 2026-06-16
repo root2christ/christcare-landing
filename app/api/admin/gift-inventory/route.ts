@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase } from '../../../../lib/supabase-admin';
 import { requireAdmin } from '../../../../lib/admin-auth';
 import { PRODUCT_IDS, bibleProductId, getProductLabel, BibleTranslation } from '../../../../lib/products';
+import { sendPushToUser } from '../../../../lib/push';
 
 const VALID_PRODUCT_IDS = new Set<string>([
     PRODUCT_IDS.TEST_FAITH,
@@ -10,7 +11,9 @@ const VALID_PRODUCT_IDS = new Set<string>([
     PRODUCT_IDS.SUBSCRIPTION_MONTHLY,
     PRODUCT_IDS.SUBSCRIPTION_YEARLY,
 ]);
-const VALID_BIBLE_TRANSLATIONS = new Set<string>(['korean_krv', 'korean_new', 'english_niv', 'english_esv']);
+// 앱이 인식하는 한글 유료 성경 번들 번역본 ID ($3 = 개역개정·새번역·새한글성경 3종 전체).
+// mobile-app SubscriptionService.KOREAN_BIBLE_BUNDLE_TRANSLATION === 'korean_all'
+const VALID_BIBLE_TRANSLATIONS = new Set<string>(['korean_all']);
 
 interface GiftItem {
     productId: string;
@@ -165,6 +168,29 @@ export async function POST(req: NextRequest) {
 
         const anySuccess = itemsResult.some(r => r.success);
         const anyFail = itemsResult.some(r => !r.success);
+
+        // 발급 성공 시 대상 사용자에게 푸시 (실패해도 발급은 정상)
+        if (totalGranted > 0) {
+            try {
+                const successItems = itemsResult.filter(r => r.success);
+                const first = successItems[0];
+                const extra = successItems.length - 1;
+                let summary = '선물이 도착했어요';
+                if (first) {
+                    summary = `${first.productLabel} ${first.quantity}장`;
+                    if (extra > 0) summary += ` 외 ${extra}건`;
+                }
+                await sendPushToUser(
+                    supabase,
+                    targetUserId,
+                    '🎁 선물이 도착했어요',
+                    summary,
+                    { type: 'gift' },
+                );
+            } catch {
+                // 푸시 실패는 무시
+            }
+        }
 
         return NextResponse.json({
             success: anySuccess,

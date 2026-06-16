@@ -55,18 +55,16 @@ const GIFTABLE_SKUS: GiftableSku[] = [
     // 구독
     { key: 'sub_monthly',        productId: 'sub_monthly',        label: '월 구독', price: 2 },
     { key: 'sub_yearly',         productId: 'sub_yearly',         label: '연 구독 (심층분석 2회)', price: 20 },
-    // 성경 평생 소장권 (번역본별)
-    { key: 'bible_krv', productId: 'bible_lifetime_', bibleTranslation: 'korean_krv',  label: '성경 — 개역개정', price: 6 },
-    { key: 'bible_new', productId: 'bible_lifetime_', bibleTranslation: 'korean_new',  label: '성경 — 새번역',   price: 6 },
-    { key: 'bible_niv', productId: 'bible_lifetime_', bibleTranslation: 'english_niv', label: '성경 — NIV',     price: 6 },
-    { key: 'bible_esv', productId: 'bible_lifetime_', bibleTranslation: 'english_esv', label: '성경 — ESV',     price: 6 },
+    // 성경 한글 3종 평생소장 번들 ($3) — 앱이 인식하는 단일 SKU
+    // (bible_lifetime_korean_all / bible_translation 'korean_all')
+    { key: 'bible_korean_all', productId: 'bible_lifetime_', bibleTranslation: 'korean_all', label: '성경 한글 3종 평생소장 (개역개정·새번역·새한글)', price: 3 },
 ];
 
 // SKU 그룹 (UI 섹션 구분용)
 const SKU_SECTIONS: Array<{ title: string; keys: string[] }> = [
     { title: '단품 테스트', keys: ['test_faith_checkup', 'test_christ_basic', 'analysis_deep'] },
     { title: '구독', keys: ['sub_monthly', 'sub_yearly'] },
-    { title: '성경 평생 소장권', keys: ['bible_krv', 'bible_new', 'bible_niv', 'bible_esv'] },
+    { title: '성경 평생소장', keys: ['bible_korean_all'] },
 ];
 
 type TabKey = 'send' | 'history' | 'gift';
@@ -100,6 +98,11 @@ export default function AdminPage() {
     const [granting, setGranting] = useState(false);
     const [grantResult, setGrantResult] = useState('');
     const [grantHistory, setGrantHistory] = useState<GiftGrant[]>([]);
+
+    // ── 크레딧 보내기 ──
+    const [creditAmount, setCreditAmount] = useState('');
+    const [creditResult, setCreditResult] = useState('');
+    const [grantingCredit, setGrantingCredit] = useState(false);
 
     const setQty = (key: string, value: string) => {
         // 숫자만 허용, 최대 2자리
@@ -352,6 +355,50 @@ export default function AdminPage() {
         }
     };
 
+    // ── 크레딧 보내기 ──
+    const handleGrantCredit = async () => {
+        if (!selectedUser) { alert('대상 사용자를 먼저 선택해주세요.'); return; }
+        const amount = Number(creditAmount);
+        if (!Number.isFinite(amount) || amount <= 0) {
+            alert('지급할 크레딧 금액(USD)을 0보다 크게 입력해주세요.');
+            return;
+        }
+        if (amount > 100000) {
+            alert('크레딧 금액은 100000 이하여야 합니다.');
+            return;
+        }
+
+        if (!confirm(
+            `[크레딧 선물 확인]\n\n대상: ${selectedUser.full_name || '(이름 없음)'} (${selectedUser.email || selectedUser.id.slice(0, 8)})\n\n금액: $${amount.toFixed(2)} 크레딧\n메모: ${note.trim() || '(없음)'}\n\n받은 선물함으로 보내시겠습니까?`
+        )) return;
+
+        setGrantingCredit(true);
+        setCreditResult('');
+        try {
+            const res = await authedFetch('/api/admin/credit-grant', {
+                method: 'POST',
+                body: JSON.stringify({
+                    targetUserId: selectedUser.id,
+                    targetEmail: selectedUser.email,
+                    amount,
+                    note: note.trim() || undefined,
+                }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                setCreditResult(`✅ $${amount.toFixed(2)} 크레딧 선물 전송 완료 → ${data.targetEmail || selectedUser.email || selectedUser.full_name} · 받은 선물함에서 사용자가 직접 받으면 충전됩니다`);
+                setCreditAmount('');
+                loadGrantHistory();
+            } else {
+                setCreditResult(`❌ 오류: ${data.error || '알 수 없는 오류'}`);
+            }
+        } catch (e: any) {
+            setCreditResult(`❌ 오류: ${e.message}`);
+        } finally {
+            setGrantingCredit(false);
+        }
+    };
+
     // ── 렌더 ──
 
     if (checkingSession) {
@@ -568,6 +615,50 @@ export default function AdminPage() {
                             )}
                         </div>
 
+                        {/* 크레딧 보내기 — 위에서 선택한 사용자에게 USD 크레딧 지급 */}
+                        <div style={{ ...styles.card, marginTop: 16 }}>
+                            <h2 style={styles.cardTitle}>크레딧 선물</h2>
+                            <p style={styles.cardDesc}>위에서 선택한 사용자의 <b>받은 선물함</b>에 USD 크레딧 선물을 보냅니다. 사용자가 앱에서 직접 "충전하기"를 눌러야 잔액에 반영됩니다. 크레딧은 이용권 구매·선물에 사용됩니다.</p>
+
+                            {!selectedUser ? (
+                                <p style={{ fontSize: 13, color: '#94a3b8', margin: '8px 0' }}>먼저 위에서 대상 사용자를 선택해주세요.</p>
+                            ) : (
+                                <div style={styles.selectedUser}>
+                                    <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>지급 대상</div>
+                                    <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>{selectedUser.full_name || '(이름 없음)'}</div>
+                                    <div style={{ fontSize: 12, color: '#64748b' }}>{selectedUser.email}</div>
+                                </div>
+                            )}
+
+                            <label style={styles.label}>지급 금액 (USD)</label>
+                            <input
+                                type="number"
+                                min={0}
+                                step="0.5"
+                                placeholder="예: 5"
+                                value={creditAmount}
+                                onChange={e => setCreditAmount(e.target.value)}
+                                style={styles.input}
+                                inputMode="decimal"
+                            />
+
+                            <div style={styles.btnRow}>
+                                <button
+                                    onClick={handleGrantCredit}
+                                    disabled={grantingCredit || !selectedUser || !(Number(creditAmount) > 0)}
+                                    style={(selectedUser && Number(creditAmount) > 0) ? styles.primaryBtn : styles.disabledBtn}
+                                >
+                                    {grantingCredit ? '지급 중...' : '크레딧 보내기'}
+                                </button>
+                            </div>
+
+                            {creditResult && (
+                                <div style={{ ...styles.resultBox, backgroundColor: creditResult.startsWith('❌') ? '#fef2f2' : '#f0fdf4', color: creditResult.startsWith('❌') ? '#ef4444' : '#22c55e' }}>
+                                    {creditResult}
+                                </div>
+                            )}
+                        </div>
+
                         <div style={{ ...styles.card, marginTop: 16 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                                 <h2 style={styles.cardTitle}>최근 발급 이력</h2>
@@ -577,19 +668,28 @@ export default function AdminPage() {
                                 <p style={styles.empty}>발급 이력이 없습니다.</p>
                             ) : (
                                 <div style={styles.historyList}>
-                                    {grantHistory.map(g => (
-                                        <div key={g.id} style={styles.historyItem}>
-                                            <div style={styles.historyHeader}>
-                                                <span style={{ ...styles.statusBadge, backgroundColor: '#dbeafe', color: '#2563eb' }}>{g.quantity}장 발급</span>
-                                                <span style={styles.historyDate}>{new Date(g.created_at).toLocaleString('ko-KR')}</span>
+                                    {grantHistory.map(g => {
+                                        const isCredit = g.product_id === 'credit_usd';
+                                        return (
+                                            <div key={g.id} style={styles.historyItem}>
+                                                <div style={styles.historyHeader}>
+                                                    {isCredit ? (
+                                                        <span style={{ ...styles.statusBadge, backgroundColor: '#FEF3C7', color: '#D97706' }}>크레딧 지급</span>
+                                                    ) : (
+                                                        <span style={{ ...styles.statusBadge, backgroundColor: '#dbeafe', color: '#2563eb' }}>{g.quantity}장 발급</span>
+                                                    )}
+                                                    <span style={styles.historyDate}>{new Date(g.created_at).toLocaleString('ko-KR')}</span>
+                                                </div>
+                                                <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', marginTop: 4 }}>
+                                                    {isCredit
+                                                        ? `크레딧 $${Number(g.quantity).toFixed(2)}`
+                                                        : `${g.product_id}${g.bible_translation ? ` (${g.bible_translation})` : ''}`}
+                                                </div>
+                                                <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>대상: {g.target_email || g.target_user_id}</div>
+                                                {g.note && (<div style={{ fontSize: 12, color: '#64748b', fontStyle: 'italic', marginTop: 4 }}>"{g.note}"</div>)}
                                             </div>
-                                            <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', marginTop: 4 }}>
-                                                {g.product_id}{g.bible_translation ? ` (${g.bible_translation})` : ''}
-                                            </div>
-                                            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>대상: {g.target_email || g.target_user_id}</div>
-                                            {g.note && (<div style={{ fontSize: 12, color: '#64748b', fontStyle: 'italic', marginTop: 4 }}>"{g.note}"</div>)}
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
