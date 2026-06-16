@@ -20,49 +20,40 @@ export async function POST(req: NextRequest) {
         }
 
         const supabase = getAdminSupabase();
-        const qlc = q.toLowerCase();
 
-        // profiles 검색 — 이름 OR 이메일 (모든 사용자 대상, 100명 한계 없음)
-        const { data: byName, error: byNameErr } = await supabase
-            .from('profiles')
-            .select('id, full_name, email, church_id, avatar_url')
-            .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
-            .limit(30);
-        if (byNameErr) {
-            console.error('user-search profiles query failed:', byNameErr.message);
-        }
-
-        // auth.users 검색 — 이메일 OR 메타데이터 이름(name/full_name).
-        // profiles.full_name 이 비어 있고 이름이 auth 메타데이터에만 있는 사용자까지 잡기 위함.
-        // 100명 초과 대비 페이지를 끝까지(최대 2000명) 순회한다.
-        const byEmail: any[] = [];
-        try {
-            for (let page = 1; page <= 20; page++) {
-                const { data } = await supabase.auth.admin.listUsers({ page, perPage: 100 });
-                const users = data?.users || [];
-                for (const u of users) {
-                    const metaName = ((u.user_metadata as any)?.name || (u.user_metadata as any)?.full_name || '') as string;
-                    if (
-                        (u.email && u.email.toLowerCase().includes(qlc)) ||
-                        (metaName && metaName.toLowerCase().includes(qlc))
-                    ) {
-                        byEmail.push({ id: u.id, full_name: metaName, email: u.email });
-                    }
-                }
-                if (users.length < 100) break; // 마지막 페이지
+        // ── 검색 1순위: RPC admin_search_users — auth.users 를 DB로 직접 조회 ──
+        // GoTrue admin.listUsers 가 이 프로젝트에서 'Database error finding users' 로 깨져 있어
+        // 우회한다. RPC는 이메일 + 메타데이터 이름(name/full_name) + profiles.full_name 을 한 번에
+        // 검색하고, profiles 표시이름을 우선 노출한다. (function 미설치 시 profiles 폴백)
+        let combined: any[] = [];
+        const { data: rpcRows, error: rpcErr } = await supabase.rpc('admin_search_users', { q });
+        if (!rpcErr && Array.isArray(rpcRows)) {
+            combined = (rpcRows as any[]).map((r) => ({
+                id: r.id,
+                email: r.email,
+                full_name: r.full_name || r.meta_name || '',
+            }));
+        } else {
+            if (rpcErr) {
+                console.error('admin_search_users RPC 실패(미설치?):', rpcErr.message);
             }
-        } catch (e: any) {
-            console.error('user-search listUsers failed:', e?.message);
+            // ── 폴백: profiles 이름 OR 이메일 (RPC 미설치 시) ──
+            const { data: byName, error: byNameErr } = await supabase
+                .from('profiles')
+                .select('id, full_name, email')
+                .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
+                .limit(30);
+            if (byNameErr) console.error('user-search profiles 폴백 실패:', byNameErr.message);
+            combined = (byName || []).map((u: any) => ({ id: u.id, email: u.email, full_name: u.full_name }));
         }
 
+        // 중복 제거 + 상위 20명
         const seen = new Set<string>();
-        const combined: any[] = [];
-        for (const u of [...(byName || []), ...byEmail]) {
-            if (seen.has(u.id)) continue;
+        combined = combined.filter((u) => {
+            if (!u.id || seen.has(u.id)) return false;
             seen.add(u.id);
-            combined.push(u);
-            if (combined.length >= 20) break;
-        }
+            return true;
+        }).slice(0, 20);
 
         // 동명이인 구분용 메타 보강: 프로필 사진 + 소속 교회 (best-effort)
         // byEmail(auth.users) 결과는 profiles 정보가 없으므로 일괄 조회로 채운다.
