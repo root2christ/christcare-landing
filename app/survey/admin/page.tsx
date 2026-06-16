@@ -73,6 +73,7 @@ function AdminInner() {
             if (d.error) { setErr(d.error); return; }
             setRows(d.responses || []);
             setAuthed(true);
+            try { localStorage.setItem('survey_admin_key', key); } catch { /* noop */ }
         } catch (e: any) {
             setErr(e?.message || '네트워크 오류');
         } finally {
@@ -80,10 +81,13 @@ function AdminInner() {
         }
     }, []);
 
-    // ?key= 쿼리파라미터 자동 로그인
+    // ?key= 또는 저장된 키로 자동 로그인 (한 번 들어오면 그 브라우저에선 다시 비번 안 물어봄)
     useEffect(() => {
         const qk = params.get('key');
-        if (qk) { setKeyInput(qk); load(qk); }
+        if (qk) { setKeyInput(qk); load(qk); return; }
+        let saved = '';
+        try { saved = localStorage.getItem('survey_admin_key') || ''; } catch { /* noop */ }
+        if (saved) { setKeyInput(saved); load(saved); }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
