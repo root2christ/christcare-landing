@@ -10,7 +10,6 @@ import {
 const NAVY = '#0f172a';
 const BLUE = '#4f6ef2';
 const BORDER = '#e2e8f0';
-const ADMIN_KEY = 'SOLUMA_ADMIN_2026';
 
 interface ResponseRow {
     respondent_uid: string;
@@ -160,7 +159,7 @@ function AdminInner() {
                     <span style={{ fontSize: 13, color: '#64748b', fontWeight: 700 }}>총 {rows.length}명 응답</span>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={() => load(keyInput || ADMIN_KEY)} style={btn('#eef2ff', BLUE)}>새로고침</button>
+                    <button onClick={() => load(keyInput)} style={btn('#eef2ff', BLUE)}>새로고침</button>
                     <button onClick={exportCsv} style={btn(BLUE, '#fff')}>CSV 내보내기</button>
                 </div>
             </div>
