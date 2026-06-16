@@ -30,10 +30,10 @@ export interface ProductCatalogItem {
 
 export const GIFTABLE_PRODUCTS: ProductCatalogItem[] = [
     { productId: PRODUCT_IDS.TEST_FAITH,           label: '신앙심 테스트',           priceUSD: 1.0 },
-    { productId: PRODUCT_IDS.TEST_CHRIST_BASIC,    label: '크라이스트 테스트',       priceUSD: 1.5 },
+    { productId: PRODUCT_IDS.TEST_CHRIST_BASIC,    label: '크라이스트 테스트',       priceUSD: 1.49 },
     { productId: PRODUCT_IDS.ANALYSIS_DEEP,        label: '심층 분석',               priceUSD: 3.0 },
     { productId: PRODUCT_IDS.SUBSCRIPTION_MONTHLY, label: '월 구독',                 priceUSD: 2.0 },
-    { productId: PRODUCT_IDS.SUBSCRIPTION_YEARLY,  label: '연 구독 (심층분석 4회)',  priceUSD: 20.0 },
+    { productId: PRODUCT_IDS.SUBSCRIPTION_YEARLY,  label: '연 구독 (심층분석 2회)',  priceUSD: 20.0 },
     { productId: PRODUCT_IDS.BIBLE_LIFETIME_PREFIX,label: '성경 평생 소장권',         priceUSD: 6.0, needsBibleTranslation: true },
 ];
 

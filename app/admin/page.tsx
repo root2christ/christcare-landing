@@ -50,11 +50,11 @@ type GiftableSku = {
 const GIFTABLE_SKUS: GiftableSku[] = [
     // 단품
     { key: 'test_faith_checkup', productId: 'test_faith_checkup', label: '신앙심 테스트', price: 1 },
-    { key: 'test_christ_basic',  productId: 'test_christ_basic',  label: '크라이스트 테스트', price: 1.5 },
+    { key: 'test_christ_basic',  productId: 'test_christ_basic',  label: '크라이스트 테스트', price: 1.49 },
     { key: 'analysis_deep',      productId: 'analysis_deep',      label: '심층 분석', price: 3 },
     // 구독
     { key: 'sub_monthly',        productId: 'sub_monthly',        label: '월 구독', price: 2 },
-    { key: 'sub_yearly',         productId: 'sub_yearly',         label: '연 구독 (심층분석 4회)', price: 20 },
+    { key: 'sub_yearly',         productId: 'sub_yearly',         label: '연 구독 (심층분석 2회)', price: 20 },
     // 성경 평생 소장권 (번역본별)
     { key: 'bible_krv', productId: 'bible_lifetime_', bibleTranslation: 'korean_krv',  label: '성경 — 개역개정', price: 6 },
     { key: 'bible_new', productId: 'bible_lifetime_', bibleTranslation: 'korean_new',  label: '성경 — 새번역',   price: 6 },
