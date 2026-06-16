@@ -20,27 +20,40 @@ export async function POST(req: NextRequest) {
         }
 
         const supabase = getAdminSupabase();
+        const qlc = q.toLowerCase();
 
-        // profiles 검색
-        const { data: byName } = await supabase
+        // profiles 검색 — 이름 OR 이메일 (모든 사용자 대상, 100명 한계 없음)
+        const { data: byName, error: byNameErr } = await supabase
             .from('profiles')
             .select('id, full_name, email, church_id, avatar_url')
-            .ilike('full_name', `%${q}%`)
-            .limit(20);
+            .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
+            .limit(30);
+        if (byNameErr) {
+            console.error('user-search profiles query failed:', byNameErr.message);
+        }
 
-        // auth.users 검색 (이메일)
-        let byEmail: any[] = [];
+        // auth.users 검색 — 이메일 OR 메타데이터 이름(name/full_name).
+        // profiles.full_name 이 비어 있고 이름이 auth 메타데이터에만 있는 사용자까지 잡기 위함.
+        // 100명 초과 대비 페이지를 끝까지(최대 2000명) 순회한다.
+        const byEmail: any[] = [];
         try {
-            const { data: { users } } = await supabase.auth.admin.listUsers({ page: 1, perPage: 100 });
-            byEmail = (users || [])
-                .filter(u => u.email?.toLowerCase().includes(q.toLowerCase()))
-                .slice(0, 20)
-                .map(u => ({
-                    id: u.id,
-                    full_name: (u.user_metadata as any)?.name || (u.user_metadata as any)?.full_name || '',
-                    email: u.email,
-                }));
-        } catch { }
+            for (let page = 1; page <= 20; page++) {
+                const { data } = await supabase.auth.admin.listUsers({ page, perPage: 100 });
+                const users = data?.users || [];
+                for (const u of users) {
+                    const metaName = ((u.user_metadata as any)?.name || (u.user_metadata as any)?.full_name || '') as string;
+                    if (
+                        (u.email && u.email.toLowerCase().includes(qlc)) ||
+                        (metaName && metaName.toLowerCase().includes(qlc))
+                    ) {
+                        byEmail.push({ id: u.id, full_name: metaName, email: u.email });
+                    }
+                }
+                if (users.length < 100) break; // 마지막 페이지
+            }
+        } catch (e: any) {
+            console.error('user-search listUsers failed:', e?.message);
+        }
 
         const seen = new Set<string>();
         const combined: any[] = [];
