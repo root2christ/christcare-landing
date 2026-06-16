@@ -24,6 +24,9 @@ type SearchedUser = {
     id: string;
     full_name: string | null;
     email: string | null;
+    avatar_url?: string | null;
+    church_id?: string | null;
+    church_name?: string | null;
 };
 
 type GiftGrant = {
@@ -523,23 +526,42 @@ export default function AdminPage() {
                             </div>
 
                             {searchResults.length > 0 && (
-                                <div style={styles.searchResults}>
-                                    {searchResults.map(u => (
-                                        <button key={u.id} onClick={() => { setSelectedUser(u); setSearchResults([]); }} style={styles.searchResultItem}>
-                                            <div style={{ fontWeight: 700, color: '#1e293b' }}>{u.full_name || '(이름 없음)'}</div>
-                                            <div style={{ fontSize: 12, color: '#64748b' }}>{u.email || u.id}</div>
-                                        </button>
-                                    ))}
-                                </div>
+                                <>
+                                    <p style={styles.dupHint}>같은 이름이 여러 명이면 프로필 사진 · 소속 교회 · 이메일로 구분하세요.</p>
+                                    <div style={styles.searchResults}>
+                                        {searchResults.map(u => (
+                                            <button key={u.id} onClick={() => { setSelectedUser(u); setSearchResults([]); }} style={styles.searchResultItem}>
+                                                {u.avatar_url
+                                                    ? <img src={u.avatar_url} alt="" style={styles.searchAvatar} />
+                                                    : <div style={{ ...styles.searchAvatar, ...styles.searchAvatarFallback }}>{(u.full_name || '?').slice(0, 1)}</div>}
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ fontWeight: 700, color: '#1e293b' }}>{u.full_name || '(이름 없음)'}</div>
+                                                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                                                        {u.church_name && <span style={styles.churchChip}>⛪ {u.church_name}</span>}
+                                                        <span style={{ fontSize: 12, color: '#64748b' }}>{u.email || u.id}</span>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
                             )}
 
                             {selectedUser && (
                                 <div style={styles.selectedUser}>
                                     <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>선택된 사용자</div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div>
-                                            <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>{selectedUser.full_name || '(이름 없음)'}</div>
-                                            <div style={{ fontSize: 12, color: '#64748b' }}>{selectedUser.email}</div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                                            {selectedUser.avatar_url
+                                                ? <img src={selectedUser.avatar_url} alt="" style={styles.searchAvatar} />
+                                                : <div style={{ ...styles.searchAvatar, ...styles.searchAvatarFallback }}>{(selectedUser.full_name || '?').slice(0, 1)}</div>}
+                                            <div style={{ minWidth: 0 }}>
+                                                <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>{selectedUser.full_name || '(이름 없음)'}</div>
+                                                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                                                    {selectedUser.church_name && <span style={styles.churchChip}>⛪ {selectedUser.church_name}</span>}
+                                                    <span style={{ fontSize: 12, color: '#64748b' }}>{selectedUser.email}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                         <button onClick={() => setSelectedUser(null)} style={styles.clearBtn}>변경</button>
                                     </div>
@@ -731,8 +753,12 @@ const styles: Record<string, React.CSSProperties> = {
     historyTitle: { fontSize: 15, fontWeight: 800, color: '#1e293b', margin: '0 0 4px' },
     historyBody: { fontSize: 13, color: '#64748b', margin: 0, lineHeight: 1.5 },
     historyMeta: { display: 'flex', gap: 12, marginTop: 8, fontSize: 12, color: '#94a3b8' },
-    searchResults: { marginTop: 8, border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', maxHeight: 240, overflowY: 'auto' as const },
-    searchResultItem: { display: 'block', width: '100%', padding: '12px 16px', textAlign: 'left' as const, backgroundColor: '#fff', border: 'none', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' },
+    searchResults: { marginTop: 8, border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', maxHeight: 280, overflowY: 'auto' as const },
+    searchResultItem: { display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 14px', textAlign: 'left' as const, backgroundColor: '#fff', border: 'none', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' },
+    dupHint: { fontSize: 12, color: '#94a3b8', margin: '8px 2px 0', lineHeight: 1.5 },
+    searchAvatar: { width: 36, height: 36, borderRadius: 18, objectFit: 'cover' as const, flex: 'none', backgroundColor: '#eef2ff' },
+    searchAvatarFallback: { display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, color: '#6366f1', textTransform: 'uppercase' as const },
+    churchChip: { fontSize: 11, fontWeight: 700, color: '#4338ca', backgroundColor: '#eef2ff', padding: '2px 7px', borderRadius: 7 },
     selectedUser: { marginTop: 12, padding: 14, borderRadius: 12, backgroundColor: '#eef2ff', border: '1px solid #c7d2fe' },
 
     // 다중 SKU 발급

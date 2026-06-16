@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
         // profiles 검색
         const { data: byName } = await supabase
             .from('profiles')
-            .select('id, full_name, email, church_id')
+            .select('id, full_name, email, church_id, avatar_url')
             .ilike('full_name', `%${q}%`)
             .limit(20);
 
@@ -50,6 +50,38 @@ export async function POST(req: NextRequest) {
             combined.push(u);
             if (combined.length >= 20) break;
         }
+
+        // 동명이인 구분용 메타 보강: 프로필 사진 + 소속 교회 (best-effort)
+        // byEmail(auth.users) 결과는 profiles 정보가 없으므로 일괄 조회로 채운다.
+        try {
+            const ids = combined.map(u => u.id);
+            if (ids.length > 0) {
+                const { data: profs } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, avatar_url, church_id')
+                    .in('id', ids);
+                const pmap = new Map((profs || []).map((p: any) => [p.id, p]));
+                for (const u of combined) {
+                    const p = pmap.get(u.id);
+                    if (p) {
+                        u.avatar_url = u.avatar_url ?? p.avatar_url ?? null;
+                        u.church_id = u.church_id ?? p.church_id ?? null;
+                        if (!u.full_name && p.full_name) u.full_name = p.full_name;
+                    }
+                }
+                const churchIds = Array.from(new Set(combined.map(u => u.church_id).filter(Boolean)));
+                if (churchIds.length > 0) {
+                    const { data: chs } = await supabase
+                        .from('churches')
+                        .select('id, name')
+                        .in('id', churchIds as string[]);
+                    const cmap = new Map((chs || []).map((c: any) => [c.id, c.name]));
+                    for (const u of combined) {
+                        u.church_name = u.church_id ? (cmap.get(u.church_id) || null) : null;
+                    }
+                }
+            }
+        } catch { }
 
         return NextResponse.json({ users: combined });
     } catch (e: any) {
