@@ -62,7 +62,7 @@ function AdminInner() {
     const [rows, setRows] = useState<ResponseRow[]>([]);
     const [err, setErr] = useState('');
     const [loading, setLoading] = useState(false);
-    const [tab, setTab] = useState<'list' | 'christ'>('list');
+    const [tab, setTab] = useState<'stats' | 'ai' | 'list' | 'christ'>('stats');
 
     const load = useCallback(async (key: string) => {
         setLoading(true); setErr('');
@@ -169,13 +169,18 @@ function AdminInner() {
             </div>
 
             {/* 탭 */}
-            <div style={{ display: 'flex', gap: 8, padding: '12px 16px 0', maxWidth: 1100, margin: '0 auto' }}>
+            <div style={{ display: 'flex', gap: 8, padding: '12px 16px 0', maxWidth: 1100, margin: '0 auto', flexWrap: 'wrap' }}>
+                <Tab active={tab === 'stats'} onClick={() => setTab('stats')}>문항별 통계</Tab>
+                <Tab active={tab === 'ai'} onClick={() => setTab('ai')}>AI 요약</Tab>
                 <Tab active={tab === 'list'} onClick={() => setTab('list')}>응답자별 보기</Tab>
-                <Tab active={tab === 'christ'} onClick={() => setTab('christ')}>크라이스트 문항별 메모</Tab>
+                <Tab active={tab === 'christ'} onClick={() => setTab('christ')}>크라이스트 메모</Tab>
             </div>
 
             <div style={{ maxWidth: 1100, margin: '0 auto', padding: '14px 16px 60px' }}>
                 {rows.length === 0 && <p style={{ color: '#64748b', fontSize: 15, padding: 20 }}>아직 응답이 없습니다.</p>}
+
+                {tab === 'stats' && <StatsView rows={rows} />}
+                {tab === 'ai' && <AiSummaryView adminKey={keyInput} />}
 
                 {tab === 'list' && rows.map((r) => <RespondentCard key={r.respondent_uid} r={r} />)}
 
@@ -281,4 +286,190 @@ function Tab({ active, onClick, children }: { active: boolean; onClick: () => vo
 
 function btn(bg: string, color: string): React.CSSProperties {
     return { border: 'none', background: bg, color, fontWeight: 800, fontSize: 14, padding: '10px 14px', borderRadius: 11, cursor: 'pointer' };
+}
+
+// ───────────── 문항별 통계 ─────────────
+const sCard: React.CSSProperties = { background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 14, padding: '14px 16px', marginBottom: 10 };
+const sMeta: React.CSSProperties = { fontSize: 12, color: '#94a3b8', marginBottom: 10 };
+const sToggle: React.CSSProperties = { border: 'none', background: '#f1f5f9', color: '#475569', fontWeight: 700, fontSize: 13, padding: '7px 12px', borderRadius: 9, cursor: 'pointer' };
+const sMemo: React.CSSProperties = { background: '#f8fafc', borderRadius: 10, padding: '10px 12px', fontSize: 14, lineHeight: 1.6 };
+
+function Metric({ label, value }: { label: string; value: string }) {
+    return (
+        <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 12, padding: '12px 14px' }}>
+            <div style={{ fontSize: 13, color: '#64748b' }}>{label}</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: NAVY, marginTop: 2 }}>{value}</div>
+        </div>
+    );
+}
+
+function QTitle({ q }: { q: SurveyQuestion }) {
+    return (
+        <p style={{ fontSize: 15, fontWeight: 800, margin: '0 0 2px', lineHeight: 1.45, color: NAVY }}>
+            <span style={{ color: BLUE, marginRight: 6 }}>Q{q.no}.</span>{q.label ? `[${q.label}] ` : ''}{q.question.split('\n')[0]}
+        </p>
+    );
+}
+
+function StatsView({ rows }: { rows: ResponseRow[] }) {
+    const total = rows.length;
+    if (total === 0) return null;
+    const christCount = rows.filter((r) => Object.values(r.christ_memos || {}).some((m) => (m || '').trim())).length;
+    const completed = rows.filter((r) => Object.keys(r.answers || {}).filter((k) => !k.endsWith(FREE_SUFFIX)).length >= 40).length;
+
+    return (
+        <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px,1fr))', gap: 12, marginBottom: 20 }}>
+                <Metric label="총 응답" value={`${total}명`} />
+                <Metric label="본설문 완료(40문항+)" value={`${completed}명`} />
+                <Metric label="크라이스트 메모" value={`${christCount}명`} />
+            </div>
+            {SURVEY_SECTIONS.map((sec) => (
+                <div key={sec.id} style={{ marginBottom: 22 }}>
+                    <div style={{ fontSize: 14, fontWeight: 900, color: BLUE, margin: '0 0 10px', letterSpacing: 0.3 }}>{sec.title}</div>
+                    {sec.questions.map((q) => <QuestionStat key={q.id} q={q} rows={rows} />)}
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function QuestionStat({ q, rows }: { q: SurveyQuestion; rows: ResponseRow[] }) {
+    const [open, setOpen] = useState(false);
+
+    // 서술형
+    if (q.kind === 'text') {
+        const answers = rows
+            .map((r) => ({ name: r.name || '(이름없음)', church: r.church || '', text: val(r.answers?.[q.id]).trim() }))
+            .filter((a) => a.text);
+        return (
+            <div style={sCard}>
+                <QTitle q={q} />
+                <div style={sMeta}>서술형 · {answers.length}건</div>
+                {answers.length > 0 && (
+                    <button onClick={() => setOpen((o) => !o)} style={sToggle}>{open ? '접기 ▲' : `답변 ${answers.length}건 펼쳐보기 ▼`}</button>
+                )}
+                {open && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                        {answers.map((a, i) => (
+                            <div key={i} style={sMemo}>
+                                <span style={{ fontWeight: 800, color: NAVY }}>{a.name}{a.church ? ` · ${a.church}` : ''}</span>
+                                <div style={{ color: '#334155', marginTop: 3, whiteSpace: 'pre-wrap' }}>{a.text}</div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // 객관식 (radio / checkbox)
+    const counts: Record<string, number> = {};
+    let answered = 0;
+    for (const r of rows) {
+        const v = r.answers?.[q.id];
+        if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) continue;
+        answered++;
+        if (Array.isArray(v)) v.forEach((o) => { counts[o] = (counts[o] || 0) + 1; });
+        else counts[String(v)] = (counts[String(v)] || 0) + 1;
+    }
+    const opts = [...((q.options && q.options.length) ? q.options : Object.keys(counts))];
+    Object.keys(counts).forEach((k) => { if (!opts.includes(k)) opts.push(k); }); // 기타 자유입력 값 포함
+
+    const comments = rows
+        .map((r) => ({ name: r.name || '(이름없음)', church: r.church || '', text: val(r.answers?.[q.id + FREE_SUFFIX]).trim() }))
+        .filter((c) => c.text);
+
+    return (
+        <div style={sCard}>
+            <QTitle q={q} />
+            <div style={sMeta}>{q.kind === 'checkbox' ? '복수선택' : '객관식'} · {answered}명 응답</div>
+            <div style={{ marginTop: 2 }}>
+                {opts.map((o) => {
+                    const c = counts[o] || 0;
+                    const pct = answered ? Math.round((c / answered) * 100) : 0;
+                    return (
+                        <div key={o} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                            <span title={o} style={{ width: 100, fontSize: 12.5, color: c ? '#475569' : '#cbd5e1', textAlign: 'right', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o}</span>
+                            <div style={{ flex: 1, background: '#eef2f7', borderRadius: 4, height: 18 }}>
+                                <div style={{ width: `${pct}%`, background: c ? BLUE : 'transparent', height: '100%', borderRadius: 4, minWidth: c ? 3 : 0 }} />
+                            </div>
+                            <span style={{ width: 62, fontSize: 12.5, fontWeight: c ? 800 : 400, color: c ? NAVY : '#cbd5e1', flexShrink: 0 }}>{c}명·{pct}%</span>
+                        </div>
+                    );
+                })}
+            </div>
+            {comments.length > 0 && (
+                <>
+                    <button onClick={() => setOpen((o) => !o)} style={{ ...sToggle, marginTop: 8 }}>{open ? '자유의견 접기 ▲' : `자유의견 ${comments.length}건 ▼`}</button>
+                    {open && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                            {comments.map((c, i) => (
+                                <div key={i} style={sMemo}>
+                                    <span style={{ fontWeight: 800, color: NAVY }}>{c.name}{c.church ? ` · ${c.church}` : ''}</span>
+                                    <div style={{ color: '#334155', marginTop: 3, whiteSpace: 'pre-wrap' }}>{c.text}</div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+}
+
+// ───────────── AI 자동 요약 ─────────────
+function renderSummary(text: string): React.ReactNode {
+    return text.split('\n').map((raw, i) => {
+        const t = raw.replace(/\*\*/g, '').trimEnd();
+        const tr = t.trim();
+        if (tr.startsWith('## ')) return <div key={i} style={{ fontSize: 15.5, fontWeight: 900, color: NAVY, margin: '16px 0 6px' }}>{tr.slice(3)}</div>;
+        if (tr.startsWith('# ')) return <div key={i} style={{ fontSize: 17, fontWeight: 900, color: NAVY, margin: '14px 0 8px' }}>{tr.slice(2)}</div>;
+        if (tr.startsWith('- ') || tr.startsWith('• ') || tr.startsWith('* ')) return <div key={i} style={{ display: 'flex', gap: 8, margin: '4px 0' }}><span style={{ color: BLUE, flexShrink: 0 }}>•</span><span>{tr.replace(/^[-•*]\s/, '')}</span></div>;
+        if (!tr) return <div key={i} style={{ height: 6 }} />;
+        return <div key={i} style={{ margin: '4px 0' }}>{t}</div>;
+    });
+}
+
+function AiSummaryView({ adminKey }: { adminKey: string }) {
+    const [loading, setLoading] = useState(false);
+    const [summary, setSummary] = useState('');
+    const [err, setErr] = useState('');
+    const [meta, setMeta] = useState<{ count?: number; opinions?: number }>({});
+
+    const run = async () => {
+        setLoading(true); setErr('');
+        try {
+            const res = await fetch(`/api/survey/summarize?key=${encodeURIComponent(adminKey)}`, { method: 'POST' });
+            const d = await res.json();
+            if (d.error) { setErr(d.error); return; }
+            setSummary(d.summary || '');
+            setMeta({ count: d.count, opinions: d.opinions });
+        } catch (e: any) {
+            setErr(e?.message || '네트워크 오류');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div>
+            <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 14, padding: '18px 18px' }}>
+                <p style={{ fontSize: 16, fontWeight: 900, margin: '0 0 4px', color: NAVY }}>AI 자동 요약</p>
+                <p style={{ fontSize: 13.5, color: '#64748b', margin: '0 0 14px', lineHeight: 1.6 }}>
+                    목사님들의 서술형 답변·자유의견·크라이스트 메모를 AI가 분석해 핵심 주제·공통 우려·제안으로 정리합니다.
+                </p>
+                <button onClick={run} disabled={loading} style={{ border: 'none', background: loading ? '#94a3b8' : NAVY, color: '#fff', fontWeight: 800, fontSize: 15, padding: '12px 18px', borderRadius: 12, cursor: loading ? 'default' : 'pointer' }}>
+                    {loading ? 'AI가 분석 중… (~15초)' : (summary ? '다시 요약하기' : 'AI 요약 생성하기')}
+                </button>
+                {err && <p style={{ color: '#dc2626', fontSize: 13.5, marginTop: 12 }}>{err}</p>}
+                {meta.count != null && !err && <p style={{ fontSize: 12.5, color: '#94a3b8', marginTop: 10 }}>응답자 {meta.count}명 · 의견 {meta.opinions}건 분석</p>}
+            </div>
+            {summary && (
+                <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 14, padding: '18px 20px', marginTop: 14, fontSize: 15, lineHeight: 1.75, color: '#1e293b' }}>
+                    {renderSummary(summary)}
+                </div>
+            )}
+        </div>
+    );
 }
