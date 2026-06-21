@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 // 관리자 비밀번호 (서버 전용)
-const ADMIN_KEY = 'SOLUMA_ADMIN_2026';
+const ADMIN_KEY = 'soluma2026!';
 
 const ALL_Q = SURVEY_SECTIONS.flatMap((s) => s.questions);
 
