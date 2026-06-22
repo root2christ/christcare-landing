@@ -126,19 +126,6 @@ function AdminInner() {
         URL.revokeObjectURL(url);
     }, [rows]);
 
-    // ── 응답 삭제 (테스트/스팸 정리) ──
-    const handleDelete = useCallback(async (uid: string, name: string) => {
-        if (!window.confirm(`'${name}' 응답을 삭제할까요?\n되돌릴 수 없습니다.`)) return;
-        try {
-            const res = await fetch(`/api/survey/admin?key=${encodeURIComponent(keyInput)}&uid=${encodeURIComponent(uid)}`, { method: 'DELETE' });
-            const d = await res.json();
-            if (d.error) { alert('삭제 실패: ' + d.error); return; }
-            setRows((prev) => prev.filter((r) => r.respondent_uid !== uid));
-        } catch (e: any) {
-            alert('삭제 오류: ' + (e?.message || ''));
-        }
-    }, [keyInput]);
-
     // ── 비밀번호 게이트 ──
     if (!authed) {
         return (
@@ -195,7 +182,7 @@ function AdminInner() {
                 {tab === 'stats' && <StatsView rows={rows} />}
                 {tab === 'ai' && <AiSummaryView adminKey={keyInput} />}
 
-                {tab === 'list' && rows.map((r) => <RespondentCard key={r.respondent_uid} r={r} onDelete={handleDelete} />)}
+                {tab === 'list' && rows.map((r) => <RespondentCard key={r.respondent_uid} r={r} />)}
 
                 {tab === 'christ' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -231,12 +218,11 @@ function AdminInner() {
     );
 }
 
-function RespondentCard({ r, onDelete }: { r: ResponseRow; onDelete: (uid: string, name: string) => void }) {
+function RespondentCard({ r }: { r: ResponseRow }) {
     const [open, setOpen] = useState(false);
     return (
         <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 14, padding: '14px 16px', marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-            <button onClick={() => setOpen((o) => !o)} style={{ flex: 1, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <button onClick={() => setOpen((o) => !o)} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
                     <div>
                         <span style={{ fontSize: 16.5, fontWeight: 900, color: NAVY }}>{r.name || '(이름없음)'}</span>
@@ -250,8 +236,6 @@ function RespondentCard({ r, onDelete }: { r: ResponseRow; onDelete: (uid: strin
                     {' · '}수정 {fmtSeoul(r.updated_at)} (KST)
                 </div>
             </button>
-            <button onClick={() => onDelete(r.respondent_uid, r.name || '(이름없음)')} style={{ border: 'none', background: '#fef2f2', color: '#dc2626', fontWeight: 800, fontSize: 12.5, padding: '7px 11px', borderRadius: 9, cursor: 'pointer', flexShrink: 0 }}>삭제</button>
-            </div>
 
             {open && (
                 <div style={{ marginTop: 14, borderTop: `1px solid ${BORDER}`, paddingTop: 12 }}>
