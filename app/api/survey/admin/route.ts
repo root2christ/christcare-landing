@@ -24,3 +24,22 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: e?.message || 'error' }, { status: 500 });
     }
 }
+
+// 응답 1건 삭제 (respondent_uid 기준) — 비밀번호 게이트. 테스트/스팸 정리용.
+export async function DELETE(req: NextRequest) {
+    try {
+        const key = req.nextUrl.searchParams.get('key') || req.headers.get('x-admin-key') || '';
+        if (key !== ADMIN_KEY) {
+            return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+        }
+        const uid = req.nextUrl.searchParams.get('uid') || '';
+        if (!uid) return NextResponse.json({ error: 'uid required' }, { status: 400 });
+
+        const sb = getAdminSupabase();
+        const { error } = await sb.from('survey_responses').delete().eq('respondent_uid', uid);
+        if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ ok: true });
+    } catch (e: any) {
+        return NextResponse.json({ error: e?.message || 'error' }, { status: 500 });
+    }
+}
