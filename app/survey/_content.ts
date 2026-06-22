@@ -705,7 +705,7 @@ export const CHRIST_QUESTIONS: ChristQuestion[] = [
   },
   {
     id: 15, category: 'S', type: 'AGREE_DISAGREE',
-    question: '예배와 기도의 깊이가 인간관계에서 얻는 에너지보다 더 오래 지속된다.',
+    question: '예배와 기도에서 받는 영적 충만함이 사람들과의 교제에서 얻는 에너지보다 더 오래 지속된다.',
     leftLabel: '비동의', rightLabel: '동의',
   },
 
