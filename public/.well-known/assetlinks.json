@@ -4,7 +4,10 @@
     "target": {
       "namespace": "android_app",
       "package_name": "com.root2christ.christapp",
-      "sha256_cert_fingerprints": ["TODO_REPLACE_WITH_SHA256"]
+      "sha256_cert_fingerprints": [
+        "4D:7B:AE:23:80:2D:5C:66:11:CB:35:C0:2B:D0:21:4A:88:E9:EC:83:6A:45:F8:FE:6E:C7:1F:D6:2C:66:F2:46",
+        "62:D8:3B:26:0D:41:E7:FD:E2:D8:18:7F:AB:61:78:62:89:F6:D1:7B:62:79:C0:FB:C2:8B:AA:73:C4:34:42:0B"
+      ]
     }
   }
 ]
