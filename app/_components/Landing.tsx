@@ -10,6 +10,8 @@ const T = {
     tagline2: '크리스천을 위한 영적 성장 앱',
     google: 'Google Play에서 다운로드',
     apple: 'App Store에서 다운로드',
+    testCta: '🕊️ 크라이스트 테스트 해보기',
+    testSub: '성경 속 나와 닮은 인물 찾기 · 무료',
     features: ['🧪 크라이스트 테스트', '📖 성경 읽기', '☀️ 매일 큐티', '🙏 기도요청', '🏆 챌린지', '👥 소그룹'],
     rights: 'All rights reserved.',
   },
@@ -18,6 +20,8 @@ const T = {
     tagline2: 'A spiritual growth app for Christians',
     google: 'Get it on Google Play',
     apple: 'Download on the App Store',
+    testCta: '🕊️ Take the Christ Test',
+    testSub: 'Find the Bible figure you’re most like · Free',
     features: ['🧪 C.H.R.I.S.T Test', '📖 Bible Reading', '☀️ Daily Devotion', '🙏 Prayer Requests', '🏆 Challenges', '👥 Small Groups'],
     rights: 'All rights reserved.',
   },
@@ -72,10 +76,24 @@ export default function Landing({ initialLang }: { initialLang: Lang }) {
         <h1 style={{ fontSize: 40, fontWeight: 900, color: '#1e293b', marginBottom: 8, letterSpacing: -1 }}>
           soluma
         </h1>
-        <p style={{ fontSize: 18, color: '#64748b', marginBottom: 40, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 18, color: '#64748b', marginBottom: 32, lineHeight: 1.6 }}>
           {t.tagline1}<br />
           {t.tagline2}
         </p>
+
+        {/* 크라이스트 테스트 (바이럴 진입점) */}
+        <a
+          href="/t"
+          style={{
+            display: 'block', textDecoration: 'none', width: 300, maxWidth: '100%',
+            margin: '0 auto 34px', background: 'linear-gradient(180deg, #38BDF8, #0EA5E9)',
+            color: '#fff', padding: '18px 20px', borderRadius: 18,
+            boxShadow: '0 12px 26px rgba(14,165,233,.34)',
+          }}
+        >
+          <div style={{ fontSize: 17, fontWeight: 800 }}>{t.testCta}</div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, opacity: 0.92, marginTop: 3 }}>{t.testSub}</div>
+        </a>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
           <a
@@ -90,7 +108,7 @@ export default function Landing({ initialLang }: { initialLang: Lang }) {
             {t.google}
           </a>
           <a
-            href="https://apps.apple.com/app/id000000000"
+            href="https://apps.apple.com/app/id6779090825"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 10,
               background: '#fff', color: '#1e293b', padding: '16px 32px',
