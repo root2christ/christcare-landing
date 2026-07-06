@@ -75,7 +75,7 @@ export const UI = {
     copied: '링크가 복사됐어요 · 붙여넣기 하세요',
     retake: '다시 하기',
     ctaTitle: '이건 시작일 뿐이에요',
-    ctaBody: 'CHRIST 6차원 심층 분석과\n나와 닮은 인물의 통독 여정은 soluma 앱에서',
+    ctaBody: 'CHRIST 6차원 심층 분석과\n나와 닮은 인물의 탐구 여정은 soluma 앱에서',
     ctaBtn: 'soluma 앱에서 더 깊이 보기',
     langBtn: 'EN',
   },
