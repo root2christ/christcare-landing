@@ -1,0 +1,12 @@
+{
+  "_comment": "soluma 앱 스토어 버전 안내용. 스토어 릴리스마다 latest 갱신 (앱의 versionCheck.ts가 조회). minSupported 미만 바이너리는 매 실행 안내.",
+  "android": {
+    "latest": "1.1.0",
+    "storeUrl": "https://play.google.com/store/apps/details?id=com.root2christ.christapp"
+  },
+  "ios": {
+    "latest": "1.1.0",
+    "storeUrl": "https://apps.apple.com/app/id6779090825"
+  },
+  "minSupported": "1.1.0"
+}
