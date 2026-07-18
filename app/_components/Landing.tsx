@@ -81,7 +81,9 @@ export default function Landing({ initialLang }: { initialLang: Lang }) {
           {t.tagline2}
         </p>
 
-        {/* 크라이스트 테스트 (바이럴 진입점) */}
+        {/* 크라이스트 테스트 (바이럴 진입점) — 2026-07-18 사장님 요청으로 임시 숨김.
+            /t 페이지 자체는 살아있어 직접 URL로는 접근 가능. 되살리려면 아래 블록 주석 해제. */}
+        {false && (
         <a
           href="/t"
           style={{
@@ -94,6 +96,7 @@ export default function Landing({ initialLang }: { initialLang: Lang }) {
           <div style={{ fontSize: 17, fontWeight: 800 }}>{t.testCta}</div>
           <div style={{ fontSize: 12.5, fontWeight: 600, opacity: 0.92, marginTop: 3 }}>{t.testSub}</div>
         </a>
+        )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
           <a
