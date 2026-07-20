@@ -183,7 +183,8 @@ export default function ChurchDashboard() {
                         ) : channel ? (
                             <>
                                 <div style={{ position: 'relative', display: 'inline-block', padding: 12, background: '#fff', borderRadius: 14, border: '1px solid #eef2f7' }}>
-                                    <QRCodeSVG value={`${origin}/wl?c=${channel}`} size={196} level="M" style={{ opacity: expired ? 0.15 : 1, display: 'block' }} />
+                                    {/* QR은 항상 apex(https://christcare.us) — www 주소는 앱 딥링크 파서가 못 읽던 버그의 원인 */}
+                                    <QRCodeSVG value={`https://christcare.us/wl?c=${channel}`} size={196} level="M" style={{ opacity: expired ? 0.15 : 1, display: 'block' }} />
                                     {expired && (
                                         <div style={S.qrExpired}>
                                             <p style={{ fontWeight: 800, color: '#334155', marginBottom: 10 }}>QR이 만료됐어요</p>
