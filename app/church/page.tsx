@@ -37,6 +37,7 @@ export default function ChurchDashboard() {
     const [qrLoading, setQrLoading] = useState(false);
     const [qrErr, setQrErr] = useState('');
     const [expired, setExpired] = useState(false);
+    const [verifying, setVerifying] = useState(false); // 앱 승인 후 세션 생성 중
     const [rows, setRows] = useState<Row[]>([]);
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<'all' | 'newcomer' | 'member'>('all');
@@ -109,8 +110,15 @@ export default function ChurchDashboard() {
             const json = await res.json();
             if (json?.expired) { setExpired(true); return; }
             if (json?.token_hash) {
-                const { error } = await supabase.auth.verifyOtp({ token_hash: json.token_hash, type: 'magiclink' });
-                if (error) { setQrErr('로그인 확인에 실패했습니다. QR을 새로고침해 주세요.'); setExpired(true); }
+                setVerifying(true); // 승인 확인됨 — 로그인 처리 중
+                // magiclink 토큰은 버전에 따라 type이 'email'/'magiclink' — 순차 시도(토큰 소비 방지 위해 email 먼저)
+                let r = await supabase.auth.verifyOtp({ token_hash: json.token_hash, type: 'email' });
+                if (r.error) r = await supabase.auth.verifyOtp({ token_hash: json.token_hash, type: 'magiclink' });
+                if (r.error) {
+                    setVerifying(false);
+                    setQrErr('로그인 확인 실패: ' + r.error.message);
+                    setExpired(true);
+                }
                 // 성공 시 onAuthStateChange 가 session 을 채우고, 아래 effect 들이 폴링을 정리한다.
             }
         } catch {
@@ -181,10 +189,16 @@ export default function ChurchDashboard() {
                                         </div>
                                     )}
                                 </div>
-                                <p style={{ fontWeight: 800, color: '#0f766e', margin: '16px 0 4px' }}>폰 카메라로 스캔하세요</p>
-                                <p style={{ color: '#64748b', fontSize: 13.5, lineHeight: 1.6 }}>
-                                    스캔하면 soluma 앱이 열립니다. 앱에서 <b>로그인 승인</b>을 누르면 이 화면이 자동으로 로그인됩니다.
-                                </p>
+                                {verifying ? (
+                                    <p style={{ fontWeight: 800, color: '#0f766e', margin: '16px 0 4px' }}>승인 확인됨 — 로그인 중…</p>
+                                ) : (
+                                    <>
+                                        <p style={{ fontWeight: 800, color: '#0f766e', margin: '16px 0 4px' }}>폰 카메라로 스캔하세요</p>
+                                        <p style={{ color: '#64748b', fontSize: 13.5, lineHeight: 1.6 }}>
+                                            스캔하면 soluma 앱이 열립니다. 앱에서 <b>로그인 승인</b>을 누르면 이 화면이 자동으로 로그인됩니다.
+                                        </p>
+                                    </>
+                                )}
                             </>
                         ) : null}
                         {!!qrErr && (
