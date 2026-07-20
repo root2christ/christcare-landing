@@ -38,6 +38,7 @@ export default function ChurchDashboard() {
     const [qrErr, setQrErr] = useState('');
     const [expired, setExpired] = useState(false);
     const [verifying, setVerifying] = useState(false); // 앱 승인 후 세션 생성 중
+    const [dbg, setDbg] = useState(''); // 진단용 폴링 상태
     const [rows, setRows] = useState<Row[]>([]);
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<'all' | 'newcomer' | 'member'>('all');
@@ -108,6 +109,7 @@ export default function ChurchDashboard() {
         try {
             const res = await fetch(`/api/church/qr-poll?c=${encodeURIComponent(channel)}`);
             const json = await res.json();
+            setDbg(`ch ${channel.slice(0, 8)} · ${json?.token_hash ? 'TOKEN!' : json?.expired ? 'expired' : json?.error ? 'err:' + json.error : 'waiting'} · ${new Date().toLocaleTimeString()}`);
             if (json?.expired) { setExpired(true); return; }
             if (json?.token_hash) {
                 setVerifying(true); // 승인 확인됨 — 로그인 처리 중
@@ -207,6 +209,7 @@ export default function ChurchDashboard() {
                                 {!channel && <button style={{ ...S.btnSm, marginTop: 10 }} onClick={startQr}>다시 시도</button>}
                             </div>
                         )}
+                        {!!dbg && <p style={{ marginTop: 10, fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' }}>{dbg}</p>}
                     </div>
                 ) : sent ? (
                     <div style={S.card}>
