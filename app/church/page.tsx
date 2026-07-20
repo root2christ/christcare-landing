@@ -136,7 +136,7 @@ export default function ChurchDashboard() {
     // 채널 만료 타이머 (약 2분)
     useEffect(() => {
         if (!channel || session || expired) return;
-        const t = setTimeout(() => setExpired(true), 120000);
+        const t = setTimeout(() => setExpired(true), 240000);
         return () => clearTimeout(t);
     }, [channel, session, expired]);
 
