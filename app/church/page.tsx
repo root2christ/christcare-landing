@@ -7,6 +7,7 @@
  * 데이터 접근은 RPC(인증 사역자만)가 게이트 — 화이트리스트 불필요.
  */
 import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from '../../lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 
@@ -27,9 +28,15 @@ const FIELD_LABELS: Record<string, string> = {
 export default function ChurchDashboard() {
     const [session, setSession] = useState<Session | null>(null);
     const [ready, setReady] = useState(false);
+    const [mode, setMode] = useState<'qr' | 'email'>('qr'); // 로그인 방식 (QR 기본)
     const [email, setEmail] = useState('');
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
+    // QR 로그인 상태
+    const [channel, setChannel] = useState<string | null>(null);
+    const [qrLoading, setQrLoading] = useState(false);
+    const [qrErr, setQrErr] = useState('');
+    const [expired, setExpired] = useState(false);
     const [rows, setRows] = useState<Row[]>([]);
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<'all' | 'newcomer' | 'member'>('all');
@@ -78,6 +85,58 @@ export default function ChurchDashboard() {
         }
     };
 
+    // ── QR 로그인 ──
+    // 새 로그인 채널 발급 (uuid). QR = christcare.us/wl?c=<channel>
+    const startQr = useCallback(async () => {
+        setQrLoading(true); setQrErr(''); setExpired(false); setChannel(null);
+        try {
+            const res = await fetch('/api/church/qr-start', { method: 'POST' });
+            const json = await res.json();
+            if (!res.ok || !json?.channel) throw new Error(json?.error || 'QR 생성 실패');
+            setChannel(json.channel as string);
+        } catch (e: any) {
+            setQrErr(e?.message || 'QR 코드를 만들지 못했습니다.');
+        } finally {
+            setQrLoading(false);
+        }
+    }, []);
+
+    // 앱이 승인하면 token_hash 를 받아 verifyOtp 로 세션 생성
+    const poll = useCallback(async () => {
+        if (!channel) return;
+        try {
+            const res = await fetch(`/api/church/qr-poll?c=${encodeURIComponent(channel)}`);
+            const json = await res.json();
+            if (json?.expired) { setExpired(true); return; }
+            if (json?.token_hash) {
+                const { error } = await supabase.auth.verifyOtp({ token_hash: json.token_hash, type: 'magiclink' });
+                if (error) { setQrErr('로그인 확인에 실패했습니다. QR을 새로고침해 주세요.'); setExpired(true); }
+                // 성공 시 onAuthStateChange 가 session 을 채우고, 아래 effect 들이 폴링을 정리한다.
+            }
+        } catch {
+            // 네트워크 일시 오류는 무시하고 다음 주기에 재시도
+        }
+    }, [channel]);
+
+    // QR 모드 진입 시 채널이 없으면 발급
+    useEffect(() => {
+        if (ready && mode === 'qr' && !session && !channel && !qrLoading && !qrErr) startQr();
+    }, [ready, mode, session, channel, qrLoading, qrErr, startQr]);
+
+    // 채널 만료 타이머 (약 2분)
+    useEffect(() => {
+        if (!channel || session || expired) return;
+        const t = setTimeout(() => setExpired(true), 120000);
+        return () => clearTimeout(t);
+    }, [channel, session, expired]);
+
+    // 2초 폴링 (로그인 전 · QR 모드 · 미만료일 때만)
+    useEffect(() => {
+        if (mode !== 'qr' || session || !channel || expired) return;
+        const id = setInterval(poll, 2000);
+        return () => clearInterval(id);
+    }, [mode, session, channel, expired, poll]);
+
     const logout = async () => { await supabase.auth.signOut(); setSession(null); setRows([]); };
 
     const filtered = useMemo(() => {
@@ -95,11 +154,47 @@ export default function ChurchDashboard() {
 
     // ── 로그인 전 ──
     if (!session) {
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://christcare.us';
         return (
             <Shell>
                 <h1 style={S.h1}>교회 관리자</h1>
-                <p style={S.sub}>사역자 인증을 받은 계정의 이메일로 로그인하세요. 앱에서 사용하는 이메일과 동일해야 합니다.</p>
-                {sent ? (
+                <p style={S.sub}>앱에 로그인된 사역자 계정으로 로그인하세요. QR을 폰으로 스캔하면 가장 빠릅니다.</p>
+
+                {/* 방식 토글 */}
+                <div style={S.tabs}>
+                    <button onClick={() => setMode('qr')} style={{ ...S.tab, ...(mode === 'qr' ? S.tabOn : {}) }}>QR로 로그인</button>
+                    <button onClick={() => setMode('email')} style={{ ...S.tab, ...(mode === 'email' ? S.tabOn : {}) }}>이메일로 로그인</button>
+                </div>
+
+                {mode === 'qr' ? (
+                    <div style={{ ...S.card, textAlign: 'center' }}>
+                        {qrLoading || (!channel && !qrErr) ? (
+                            <p style={{ color: '#64748b', padding: '40px 0' }}>QR 준비 중…</p>
+                        ) : channel ? (
+                            <>
+                                <div style={{ position: 'relative', display: 'inline-block', padding: 12, background: '#fff', borderRadius: 14, border: '1px solid #eef2f7' }}>
+                                    <QRCodeSVG value={`${origin}/wl?c=${channel}`} size={196} level="M" style={{ opacity: expired ? 0.15 : 1, display: 'block' }} />
+                                    {expired && (
+                                        <div style={S.qrExpired}>
+                                            <p style={{ fontWeight: 800, color: '#334155', marginBottom: 10 }}>QR이 만료됐어요</p>
+                                            <button style={S.btnSm} onClick={startQr}>QR 새로고침</button>
+                                        </div>
+                                    )}
+                                </div>
+                                <p style={{ fontWeight: 800, color: '#0f766e', margin: '16px 0 4px' }}>폰 카메라로 스캔하세요</p>
+                                <p style={{ color: '#64748b', fontSize: 13.5, lineHeight: 1.6 }}>
+                                    스캔하면 soluma 앱이 열립니다. 앱에서 <b>로그인 승인</b>을 누르면 이 화면이 자동으로 로그인됩니다.
+                                </p>
+                            </>
+                        ) : null}
+                        {!!qrErr && (
+                            <div style={{ marginTop: 12 }}>
+                                <p style={S.err}>{qrErr}</p>
+                                {!channel && <button style={{ ...S.btnSm, marginTop: 10 }} onClick={startQr}>다시 시도</button>}
+                            </div>
+                        )}
+                    </div>
+                ) : sent ? (
                     <div style={S.card}>
                         <p style={{ fontWeight: 700, color: '#0f766e', marginBottom: 6 }}>메일을 확인해주세요 📩</p>
                         <p style={{ color: '#475569', fontSize: 14, lineHeight: 1.6 }}>
@@ -119,7 +214,7 @@ export default function ChurchDashboard() {
                         </button>
                     </div>
                 )}
-                {!!err && <p style={S.err}>{err}</p>}
+                {!!err && mode === 'email' && <p style={S.err}>{err}</p>}
                 <p style={S.hint}>사역자 인증은 앱(잡박스 → 사역자 등록)에서 먼저 받아주세요.</p>
             </Shell>
         );
@@ -214,7 +309,12 @@ const S: Record<string, React.CSSProperties> = {
     card: { background: '#fff', border: '1px solid #eef2f7', borderRadius: 16, padding: 20, boxShadow: '0 4px 14px rgba(15,23,42,.05)' },
     input: { width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 10, padding: '13px 14px', fontSize: 15, marginBottom: 12 },
     btn: { width: '100%', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontSize: 15.5, fontWeight: 800, cursor: 'pointer' },
+    btnSm: { background: '#0f766e', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontSize: 14, fontWeight: 800, cursor: 'pointer' },
     linkBtn: { background: 'none', border: 'none', color: '#0f766e', fontWeight: 700, cursor: 'pointer', marginTop: 12, padding: 0, fontSize: 14 },
+    tabs: { display: 'flex', gap: 6, background: '#eef2f7', borderRadius: 12, padding: 4, marginBottom: 16 },
+    tab: { flex: 1, border: 'none', background: 'transparent', borderRadius: 9, padding: '10px', fontSize: 14, fontWeight: 800, color: '#64748b', cursor: 'pointer' },
+    tabOn: { background: '#fff', color: '#0f766e', boxShadow: '0 1px 3px rgba(15,23,42,.08)' },
+    qrExpired: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.86)', borderRadius: 14 },
     err: { color: '#dc2626', fontSize: 14, marginTop: 12 },
     hint: { color: '#94a3b8', fontSize: 13, marginTop: 18, textAlign: 'center' },
     logout: { background: 'none', border: '1px solid #e2e8f0', borderRadius: 10, padding: '7px 14px', fontSize: 13, fontWeight: 700, color: '#64748b', cursor: 'pointer' },
