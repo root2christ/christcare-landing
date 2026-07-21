@@ -234,14 +234,7 @@ export default function ChurchDashboard() {
                                 {!channel && <button style={{ ...S.btnSm, marginTop: 10 }} onClick={startQr}>다시 시도</button>}
                             </div>
                         )}
-                        {!!dbg && <p style={{ marginTop: 10, fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' }}>{dbg}</p>}
-                        {evlog.length > 0 && (
-                            <div style={{ marginTop: 6, textAlign: 'left' }}>
-                                {evlog.map((l, i) => (
-                                    <p key={i} style={{ fontSize: 10.5, color: '#b0a99e', fontFamily: 'monospace', margin: '2px 0' }}>{l}</p>
-                                ))}
-                            </div>
-                        )}
+                        {/* 진단 로그(dbg/evlog)는 QR 로그인 안정화 후 표시 제거 (2026-07-21) — 상태는 유지(문제 시 재노출 용이) */}
                     </div>
                 ) : sent ? (
                     <div style={S.card}>
