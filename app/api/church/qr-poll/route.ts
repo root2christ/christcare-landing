@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase } from '../../../../lib/supabase-admin';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 /** 채널 유효시간(분). 이보다 오래된 채널은 무효로 본다. */
 const MAX_AGE_MS = 5 * 60 * 1000;

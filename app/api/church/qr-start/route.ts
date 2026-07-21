@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminSupabase } from '../../../../lib/supabase-admin';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 /**
  * POST /api/church/qr-start

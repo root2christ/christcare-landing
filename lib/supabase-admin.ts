@@ -14,5 +14,10 @@ export function getAdminSupabase() {
     }
     return createClient(SUPABASE_URL, key, {
         auth: { autoRefreshToken: false, persistSession: false },
+        // ⚠️ Next.js가 라우트 핸들러 안의 fetch(GET)를 데이터 캐시에 박제하는 것 방지 (2026-07-21)
+        //    — qr-poll이 "토큰 없음" 첫 응답을 영원히 재사용해 QR 로그인이 안 되던 근본 원인
+        global: {
+            fetch: (url: any, init?: any) => fetch(url, { ...(init || {}), cache: 'no-store' }),
+        },
     });
 }

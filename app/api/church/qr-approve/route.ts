@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase } from '../../../../lib/supabase-admin';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
