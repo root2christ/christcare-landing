@@ -20,6 +20,15 @@ type Row = {
     created_at: string;
 };
 
+// 우리 교회를 '내 교회'로 설정한 앱 교인 (list_my_church_people RPC)
+type Person = {
+    user_id: string;
+    display_name: string;
+    is_minister: boolean;
+    minister_role: string | null;
+    joined_at: string | null;
+};
+
 const FIELD_LABELS: Record<string, string> = {
     name: '이름', phone: '연락처', gender: '성별', age: '나이대',
     area: '거주 지역', visit: '방문 계기', faith: '신앙 배경', message: '기도제목 / 하고 싶은 말',
@@ -46,6 +55,8 @@ export default function ChurchDashboard() {
         setEvlog((p) => [...p.slice(-7), `${new Date().toLocaleTimeString()} ${m}`]);
     }, []);
     const [rows, setRows] = useState<Row[]>([]);
+    const [people, setPeople] = useState<Person[]>([]);
+    const [view, setView] = useState<'cards' | 'people'>('cards'); // 명부 보기: 등록 카드 / 앱 교인
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<'all' | 'newcomer' | 'member'>('all');
     const [openId, setOpenId] = useState<string | null>(null);
@@ -63,10 +74,14 @@ export default function ChurchDashboard() {
         try {
             // 사역자 전용 게이트 — 인증 목사 또는 지정 사역자만
             const { data: ok } = await supabase.rpc('is_verified_minister');
-            if (ok === false) { setNotMinister(true); setRows([]); return; }
-            const { data, error } = await supabase.rpc('get_my_church_roster');
-            if (error) throw error;
-            setRows((data as Row[]) || []);
+            if (ok === false) { setNotMinister(true); setRows([]); setPeople([]); return; }
+            const [rq, pq] = await Promise.all([
+                supabase.rpc('get_my_church_roster'),
+                supabase.rpc('list_my_church_people'), // RPC 미적용 환경이면 error — 아래에서 []로 폴백
+            ]);
+            if (rq.error) throw rq.error;
+            setRows((rq.data as Row[]) || []);
+            setPeople(!pq.error && Array.isArray(pq.data) ? (pq.data as Person[]) : []);
         } catch (e: any) {
             setErr(e?.message || '명부를 불러오지 못했습니다.');
             setRows([]);
@@ -261,7 +276,7 @@ export default function ChurchDashboard() {
                     </div>
                 )}
                 {!!err && mode === 'email' && <p style={S.err}>{err}</p>}
-                <p style={S.hint}>사역자 인증은 앱(잡박스 → 사역자 등록)에서 먼저 받아주세요.</p>
+                <p style={S.hint}>사역자 인증은 앱의 My 탭 또는 잡박스에서 &lsquo;사역자 등록&rsquo;으로 먼저 받아주세요.</p>
             </Shell>
         );
     }
@@ -274,14 +289,25 @@ export default function ChurchDashboard() {
                 <button style={S.logout} onClick={logout}>로그아웃</button>
             </div>
 
-            <div style={{ display: 'flex', gap: 8, margin: '14px 0 18px', flexWrap: 'wrap' }}>
-                {([['all', '전체'], ['newcomer', '새신자'], ['member', '기존 교인']] as const).map(([k, label]) => (
-                    <button key={k} onClick={() => setFilter(k)}
-                        style={{ ...S.chip, ...(filter === k ? S.chipOn : {}) }}>
-                        {label} <span style={{ opacity: 0.7 }}>{counts[k]}</span>
-                    </button>
-                ))}
+            <div style={{ ...S.tabs, margin: '16px 0 14px', maxWidth: 420 }}>
+                <button onClick={() => setView('cards')} style={{ ...S.tab, ...(view === 'cards' ? S.tabOn : {}) }}>
+                    등록 카드 <span style={{ opacity: 0.7 }}>{rows.length}</span>
+                </button>
+                <button onClick={() => setView('people')} style={{ ...S.tab, ...(view === 'people' ? S.tabOn : {}) }}>
+                    앱 교인 <span style={{ opacity: 0.7 }}>{people.length}</span>
+                </button>
             </div>
+
+            {view === 'cards' && (
+                <div style={{ display: 'flex', gap: 8, margin: '0 0 18px', flexWrap: 'wrap' }}>
+                    {([['all', '전체'], ['newcomer', '새신자'], ['member', '기존 교인']] as const).map(([k, label]) => (
+                        <button key={k} onClick={() => setFilter(k)}
+                            style={{ ...S.chip, ...(filter === k ? S.chipOn : {}) }}>
+                            {label} <span style={{ opacity: 0.7 }}>{counts[k]}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {loading ? <p style={{ color: '#64748b' }}>불러오는 중…</p>
                 : notMinister ? (
@@ -290,11 +316,51 @@ export default function ChurchDashboard() {
                         <p style={{ color: '#64748b', fontSize: 14, lineHeight: 1.7 }}>
                             교회 명부는 <b>인증 사역자</b>만 볼 수 있어요.<br />
                             담임목사님께 사역자 등록을 요청하시거나,<br />
-                            앱(잡박스 → 사역자 등록)에서 인증을 받아주세요.
+                            앱의 My 탭 또는 잡박스에서 &lsquo;사역자 등록&rsquo;으로 인증을 받아주세요.
                         </p>
                     </div>
                 )
                 : err ? <p style={S.err}>{err}</p>
+                : view === 'people' ? (
+                    people.length === 0 ? (
+                        <div style={S.empty}>
+                            <p style={{ fontWeight: 700, marginBottom: 6 }}>아직 우리 교회를 설정한 앱 교인이 없어요</p>
+                            <p style={{ color: '#64748b', fontSize: 14 }}>교인들이 soluma 앱에서 우리 교회를 &lsquo;내 교회&rsquo;로 설정하면 여기에 표시됩니다.</p>
+                        </div>
+                    ) : (
+                        <>
+                            <p style={{ color: '#94a3b8', fontSize: 13, margin: '0 0 10px' }}>
+                                soluma 앱에서 우리 교회를 &lsquo;내 교회&rsquo;로 설정한 사용자입니다.
+                            </p>
+                            <div style={S.tableWrap}>
+                                <table style={S.table}>
+                                    <thead>
+                                        <tr>
+                                            <th style={S.th}>이름</th><th style={S.th}>구분</th><th style={S.th}>가입일</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {people.map((p) => (
+                                            <tr key={p.user_id}>
+                                                <td style={S.td}><b>{p.display_name}</b></td>
+                                                <td style={S.td}>
+                                                    {p.is_minister ? (
+                                                        <span style={{ ...S.badge, background: '#eef2ff', color: '#4f46e5' }}>
+                                                            {p.minister_role || '사역자'}
+                                                        </span>
+                                                    ) : (
+                                                        <span style={{ ...S.badge, background: '#f1f5f9', color: '#64748b' }}>교인</span>
+                                                    )}
+                                                </td>
+                                                <td style={S.td}>{p.joined_at ? new Date(p.joined_at).toLocaleDateString('ko-KR') : '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )
+                )
                 : filtered.length === 0 ? (
                     <div style={S.empty}>
                         <p style={{ fontWeight: 700, marginBottom: 6 }}>아직 등록자가 없어요</p>
