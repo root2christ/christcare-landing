@@ -32,8 +32,9 @@ export default function ChurchDashboard() {
     const [email, setEmail] = useState('');
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
-    // QR 로그인 상태
-    const [channel, setChannel] = useState<string | null>(null);
+    // QR 로그인 상태 — channels[0]=현재 QR, [1]=직전(교체 경계에 스캔된 승인도 수신)
+    const [channels, setChannels] = useState<string[]>([]);
+    const channel = channels[0] || null;
     const [qrLoading, setQrLoading] = useState(false);
     const [qrErr, setQrErr] = useState('');
     const [expired, setExpired] = useState(false);
@@ -94,74 +95,86 @@ export default function ChurchDashboard() {
 
     // ── QR 로그인 ──
     // 새 로그인 채널 발급 (uuid). QR = christcare.us/wl?c=<channel>
+    // QR은 만료로 죽지 않는다 — 3.5분마다 자동 교체, 직전 채널도 서버 수명(5분) 동안 계속 감시.
     const startQr = useCallback(async () => {
-        setQrLoading(true); setQrErr(''); setExpired(false); setChannel(null);
+        setQrLoading(true); setQrErr(''); setExpired(false);
         try {
-            const res = await fetch('/api/church/qr-start', { method: 'POST' });
+            const res = await fetch('/api/church/qr-start', { method: 'POST', cache: 'no-store' });
             const json = await res.json();
             if (!res.ok || !json?.channel) throw new Error(json?.error || 'QR 생성 실패');
-            setChannel(json.channel as string);
+            setChannels((prev) => [json.channel as string, ...prev].slice(0, 2));
+            logEv('QR 발급 ' + (json.channel as string).slice(0, 8));
         } catch (e: any) {
             setQrErr(e?.message || 'QR 코드를 만들지 못했습니다.');
         } finally {
             setQrLoading(false);
         }
-    }, []);
+    }, [logEv]);
 
-    // 앱이 승인하면 token_hash 를 받아 verifyOtp 로 세션 생성
+    // 앱이 승인하면 token_hash 를 받아 verifyOtp 로 세션 생성 — 현재+직전 채널 모두 감시
     const poll = useCallback(async () => {
-        if (!channel) return;
-        try {
-            const res = await fetch(`/api/church/qr-poll?c=${encodeURIComponent(channel)}`, { cache: 'no-store' });
-            const json = await res.json();
-            setDbg(`ch ${channel.slice(0, 8)} · ${json?.token_hash ? 'TOKEN!' : json?.expired ? 'expired' : json?.error ? 'err:' + json.error : 'waiting'} · ${new Date().toLocaleTimeString()}`);
-            if (json?.expired) { logEv('expired'); setExpired(true); return; }
-            if (json?.error) { logEv('poll err: ' + json.error); return; }
-            if (json?.token_hash) {
-                if (verifyingRef.current) return; // 이미 verify 진행 중 — 중복 시도 방지
-                verifyingRef.current = true;
-                logEv('TOKEN 수신 → verifyOtp 시도');
-                setVerifying(true);
-                // magiclink 토큰은 버전에 따라 type이 'email'/'magiclink' — 순차 시도
-                let r = await supabase.auth.verifyOtp({ token_hash: json.token_hash, type: 'email' });
-                if (r.error) {
-                    logEv('verify(email) 실패: ' + r.error.message);
-                    r = await supabase.auth.verifyOtp({ token_hash: json.token_hash, type: 'magiclink' });
+        if (channels.length === 0) return;
+        for (const ch of channels) {
+            try {
+                const res = await fetch(`/api/church/qr-poll?c=${encodeURIComponent(ch)}`, { cache: 'no-store' });
+                const json = await res.json();
+                if (ch === channels[0]) {
+                    setDbg(`ch ${ch.slice(0, 8)} · ${json?.token_hash ? 'TOKEN!' : json?.expired ? 'expired' : json?.error ? 'err:' + json.error : 'waiting'} · ${new Date().toLocaleTimeString()}`);
                 }
-                if (r.error) {
-                    logEv('verify(magiclink) 실패: ' + r.error.message);
-                    verifyingRef.current = false;
-                    setVerifying(false);
-                    setQrErr('로그인 확인 실패: ' + r.error.message);
-                    setExpired(true);
-                } else {
-                    logEv('verifyOtp 성공 — 세션 생성');
+                if (json?.expired) {
+                    // 서버 수명(5분) 종료 — 이 채널만 목록에서 제거 (QR 죽음 아님, 자동 교체가 계속 돎)
+                    setChannels((prev) => prev.filter((c) => c !== ch));
+                    continue;
                 }
-                // 성공 시 onAuthStateChange 가 session 을 채우고, 아래 effect 들이 폴링을 정리한다.
+                if (json?.error) { logEv('poll err: ' + json.error); continue; }
+                if (json?.token_hash) {
+                    if (verifyingRef.current) return; // 이미 verify 진행 중 — 중복 시도 방지
+                    verifyingRef.current = true;
+                    logEv('TOKEN 수신(' + ch.slice(0, 8) + ') → 로그인 처리');
+                    setVerifying(true);
+                    // magiclink 토큰은 버전에 따라 type이 'email'/'magiclink' — 순차 시도
+                    let r = await supabase.auth.verifyOtp({ token_hash: json.token_hash, type: 'email' });
+                    if (r.error) {
+                        logEv('verify(email) 실패: ' + r.error.message);
+                        r = await supabase.auth.verifyOtp({ token_hash: json.token_hash, type: 'magiclink' });
+                    }
+                    if (r.error) {
+                        logEv('verify(magiclink) 실패: ' + r.error.message);
+                        verifyingRef.current = false;
+                        setVerifying(false);
+                        setQrErr('로그인 확인 실패: ' + r.error.message);
+                    } else {
+                        logEv('로그인 성공');
+                    }
+                    return;
+                    // 성공 시 onAuthStateChange 가 session 을 채우고, 아래 effect 들이 폴링을 정리한다.
+                }
+            } catch (e: any) {
+                logEv('poll 예외: ' + String(e?.message || e).slice(0, 60));
             }
-        } catch (e: any) {
-            logEv('poll 예외: ' + String(e?.message || e).slice(0, 60));
         }
-    }, [channel, logEv]);
+    }, [channels, logEv]);
 
     // QR 모드 진입 시 채널이 없으면 발급
     useEffect(() => {
-        if (ready && mode === 'qr' && !session && !channel && !qrLoading && !qrErr) startQr();
-    }, [ready, mode, session, channel, qrLoading, qrErr, startQr]);
+        if (ready && mode === 'qr' && !session && channels.length === 0 && !qrLoading && !qrErr) startQr();
+    }, [ready, mode, session, channels, qrLoading, qrErr, startQr]);
 
-    // 채널 만료 타이머 (약 2분)
+    // QR 자동 교체 (3.5분마다) — 만료로 죽는 QR 없음. 탭이 다시 보일 때도 즉시 갱신.
     useEffect(() => {
-        if (!channel || session || expired) return;
-        const t = setTimeout(() => setExpired(true), 240000);
-        return () => clearTimeout(t);
-    }, [channel, session, expired]);
+        if (mode !== 'qr' || session) return;
+        const id = setInterval(() => { startQr(); }, 210000);
+        const onVis = () => { if (document.visibilityState === 'visible') startQr(); };
+        document.addEventListener('visibilitychange', onVis);
+        return () => { clearInterval(id); document.removeEventListener('visibilitychange', onVis); };
+    }, [mode, session, startQr]);
 
-    // 2초 폴링 (로그인 전 · QR 모드 · 미만료일 때만)
+    // 2초 폴링 (로그인 전 · QR 모드)
     useEffect(() => {
-        if (mode !== 'qr' || session || !channel || expired) return;
+        if (mode !== 'qr' || session || channels.length === 0) return;
         const id = setInterval(poll, 2000);
         return () => clearInterval(id);
-    }, [mode, session, channel, expired, poll]);
+    }, [mode, session, channels, poll]);
 
     const logout = async () => { await supabase.auth.signOut(); setSession(null); setRows([]); };
 
@@ -199,14 +212,9 @@ export default function ChurchDashboard() {
                         ) : channel ? (
                             <>
                                 <div style={{ position: 'relative', display: 'inline-block', padding: 12, background: '#fff', borderRadius: 14, border: '1px solid #eef2f7' }}>
-                                    {/* QR은 항상 apex(https://christcare.us) — www 주소는 앱 딥링크 파서가 못 읽던 버그의 원인 */}
-                                    <QRCodeSVG value={`https://christcare.us/wl?c=${channel}`} size={196} level="M" style={{ opacity: expired ? 0.15 : 1, display: 'block' }} />
-                                    {expired && (
-                                        <div style={S.qrExpired}>
-                                            <p style={{ fontWeight: 800, color: '#334155', marginBottom: 10 }}>QR이 만료됐어요</p>
-                                            <button style={S.btnSm} onClick={startQr}>QR 새로고침</button>
-                                        </div>
-                                    )}
+                                    {/* QR은 항상 apex(https://christcare.us) — www 주소는 앱 딥링크 파서가 못 읽던 버그의 원인.
+                                        3.5분마다 자동 교체되므로 만료 오버레이 없음 (죽지 않는 QR). */}
+                                    <QRCodeSVG value={`https://christcare.us/wl?c=${channel}`} size={196} level="M" style={{ display: 'block' }} />
                                 </div>
                                 {verifying ? (
                                     <p style={{ fontWeight: 800, color: '#0f766e', margin: '16px 0 4px' }}>승인 확인됨 — 로그인 중…</p>
