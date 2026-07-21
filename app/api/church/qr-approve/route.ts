@@ -33,6 +33,14 @@ export async function POST(req: NextRequest) {
         const email = gu.data.user.email;
         if (!email) return json({ ok: false, error: 'no_email' });
 
+        // 사역자 전용 (2026-07-21): 인증 목사 또는 목사가 지정한 사역자만 웹 로그인 승인 가능
+        const uid = gu.data.user.id;
+        const [pq, mq] = await Promise.all([
+            admin.from('pastors').select('user_id').eq('user_id', uid).eq('verification_status', 'verified').maybeSingle(),
+            admin.from('church_ministers').select('user_id').eq('user_id', uid).limit(1).maybeSingle(),
+        ]);
+        if (!pq.data && !mq.data) return json({ ok: false, error: 'not_minister' });
+
         // 2) 채널 존재 확인
         const chq = await admin.from('web_login_channels').select('channel, created_at').eq('channel', channel).maybeSingle();
         if (chq.error) return json({ ok: false, error: 'channel_query: ' + chq.error.message });

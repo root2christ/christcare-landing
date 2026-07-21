@@ -57,9 +57,13 @@ export default function ChurchDashboard() {
         return () => subscription.unsubscribe();
     }, []);
 
+    const [notMinister, setNotMinister] = useState(false); // 사역자 아님 (접근 차단 안내)
     const load = useCallback(async () => {
-        setLoading(true); setErr('');
+        setLoading(true); setErr(''); setNotMinister(false);
         try {
+            // 사역자 전용 게이트 — 인증 목사 또는 지정 사역자만
+            const { data: ok } = await supabase.rpc('is_verified_minister');
+            if (ok === false) { setNotMinister(true); setRows([]); return; }
             const { data, error } = await supabase.rpc('get_my_church_roster');
             if (error) throw error;
             setRows((data as Row[]) || []);
@@ -280,6 +284,16 @@ export default function ChurchDashboard() {
             </div>
 
             {loading ? <p style={{ color: '#64748b' }}>불러오는 중…</p>
+                : notMinister ? (
+                    <div style={S.empty}>
+                        <p style={{ fontWeight: 800, marginBottom: 8 }}>사역자 전용 페이지입니다</p>
+                        <p style={{ color: '#64748b', fontSize: 14, lineHeight: 1.7 }}>
+                            교회 명부는 <b>인증 사역자</b>만 볼 수 있어요.<br />
+                            담임목사님께 사역자 등록을 요청하시거나,<br />
+                            앱(잡박스 → 사역자 등록)에서 인증을 받아주세요.
+                        </p>
+                    </div>
+                )
                 : err ? <p style={S.err}>{err}</p>
                 : filtered.length === 0 ? (
                     <div style={S.empty}>
