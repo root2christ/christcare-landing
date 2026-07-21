@@ -45,8 +45,9 @@ export async function GET(req: NextRequest) {
         // 아직 승인 전
         if (!data.token_hash) return NextResponse.json({});
 
-        // 승인됨 — 1회용으로 반환하고 행 삭제
-        await sb.from('web_login_channels').delete().eq('channel', channel);
+        // 승인됨 — 토큰 반환. 행은 즉시 삭제하지 않는다(2026-07-21 설계 변경):
+        // verifyOtp 실패 시 재시도·진단이 가능해야 하고, 토큰 자체가 Supabase에서 1회용이라
+        // 재사용 위험이 없다. 행 정리는 5분 만료 청소가 담당.
         return NextResponse.json({ token_hash: data.token_hash });
     } catch (e: any) {
         console.error('[church/qr-poll] exception:', e?.message);

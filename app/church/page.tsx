@@ -6,7 +6,7 @@
  * 자기 교회 등록자(새신자+기존교인) 명부를 데스크톱에서 조회.
  * 데이터 접근은 RPC(인증 사역자만)가 게이트 — 화이트리스트 불필요.
  */
-import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, Fragment } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from '../../lib/supabase';
 import type { Session } from '@supabase/supabase-js';
@@ -39,6 +39,11 @@ export default function ChurchDashboard() {
     const [expired, setExpired] = useState(false);
     const [verifying, setVerifying] = useState(false); // 앱 승인 후 세션 생성 중
     const [dbg, setDbg] = useState(''); // 진단용 폴링 상태
+    const [evlog, setEvlog] = useState<string[]>([]); // 진단용 이벤트 로그 (최근 8건)
+    const verifyingRef = useRef(false); // verifyOtp 중복 시도 방지
+    const logEv = useCallback((m: string) => {
+        setEvlog((p) => [...p.slice(-7), `${new Date().toLocaleTimeString()} ${m}`]);
+    }, []);
     const [rows, setRows] = useState<Row[]>([]);
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<'all' | 'newcomer' | 'member'>('all');
@@ -107,26 +112,37 @@ export default function ChurchDashboard() {
     const poll = useCallback(async () => {
         if (!channel) return;
         try {
-            const res = await fetch(`/api/church/qr-poll?c=${encodeURIComponent(channel)}`);
+            const res = await fetch(`/api/church/qr-poll?c=${encodeURIComponent(channel)}`, { cache: 'no-store' });
             const json = await res.json();
             setDbg(`ch ${channel.slice(0, 8)} · ${json?.token_hash ? 'TOKEN!' : json?.expired ? 'expired' : json?.error ? 'err:' + json.error : 'waiting'} · ${new Date().toLocaleTimeString()}`);
-            if (json?.expired) { setExpired(true); return; }
+            if (json?.expired) { logEv('expired'); setExpired(true); return; }
+            if (json?.error) { logEv('poll err: ' + json.error); return; }
             if (json?.token_hash) {
-                setVerifying(true); // 승인 확인됨 — 로그인 처리 중
-                // magiclink 토큰은 버전에 따라 type이 'email'/'magiclink' — 순차 시도(토큰 소비 방지 위해 email 먼저)
+                if (verifyingRef.current) return; // 이미 verify 진행 중 — 중복 시도 방지
+                verifyingRef.current = true;
+                logEv('TOKEN 수신 → verifyOtp 시도');
+                setVerifying(true);
+                // magiclink 토큰은 버전에 따라 type이 'email'/'magiclink' — 순차 시도
                 let r = await supabase.auth.verifyOtp({ token_hash: json.token_hash, type: 'email' });
-                if (r.error) r = await supabase.auth.verifyOtp({ token_hash: json.token_hash, type: 'magiclink' });
                 if (r.error) {
+                    logEv('verify(email) 실패: ' + r.error.message);
+                    r = await supabase.auth.verifyOtp({ token_hash: json.token_hash, type: 'magiclink' });
+                }
+                if (r.error) {
+                    logEv('verify(magiclink) 실패: ' + r.error.message);
+                    verifyingRef.current = false;
                     setVerifying(false);
                     setQrErr('로그인 확인 실패: ' + r.error.message);
                     setExpired(true);
+                } else {
+                    logEv('verifyOtp 성공 — 세션 생성');
                 }
                 // 성공 시 onAuthStateChange 가 session 을 채우고, 아래 effect 들이 폴링을 정리한다.
             }
-        } catch {
-            // 네트워크 일시 오류는 무시하고 다음 주기에 재시도
+        } catch (e: any) {
+            logEv('poll 예외: ' + String(e?.message || e).slice(0, 60));
         }
-    }, [channel]);
+    }, [channel, logEv]);
 
     // QR 모드 진입 시 채널이 없으면 발급
     useEffect(() => {
@@ -211,6 +227,13 @@ export default function ChurchDashboard() {
                             </div>
                         )}
                         {!!dbg && <p style={{ marginTop: 10, fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' }}>{dbg}</p>}
+                        {evlog.length > 0 && (
+                            <div style={{ marginTop: 6, textAlign: 'left' }}>
+                                {evlog.map((l, i) => (
+                                    <p key={i} style={{ fontSize: 10.5, color: '#b0a99e', fontFamily: 'monospace', margin: '2px 0' }}>{l}</p>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 ) : sent ? (
                     <div style={S.card}>
