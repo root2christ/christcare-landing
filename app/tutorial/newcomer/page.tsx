@@ -64,18 +64,27 @@ export default function NewcomerTutorial() {
                 </div>
 
                 <div style={S.step}>
+                    <img src="/tutorial/newcomer/entry.png" alt="새신자 등록 시작 화면" style={S.shot} />
                     <div style={S.stepText}>
                         <p style={S.stepTitle}><span style={S.stepNum}>2</span>교회 선택</p>
                         <p style={S.p}>
-                            교회 이름으로 검색해 선택합니다. 목록에 없는 교회는 검색 창에서 바로 등록할 수 있어요.
+                            <b>[교회 선택하기]</b>를 누르면 검색 창이 열립니다. 출석하려는(또는 출석 중인) 교회를 찾아주세요.
                         </p>
-                        <p style={S.stepTitle}><span style={S.stepNum}>3</span>새신자 / 기존신자 선택</p>
+                    </div>
+                </div>
+
+                <div style={S.step}>
+                    <img src="/tutorial/newcomer/search.png" alt="교회 검색 — 이름 검색과 지도에서 찾기" style={S.shot} />
+                    <div style={S.stepText}>
+                        <p style={S.stepTitle}><span style={S.stepNum}>3</span>이름으로 검색 또는 지도에서 찾기</p>
                         <p style={S.p}>
-                            처음 나가는 교회라면 <b>새신자</b>, 원래 다니던 교회를 앱에 연결하는 것이라면 <b>기존신자</b>를 선택하세요.
+                            교회 이름 2글자 이상으로 검색하거나, <b>지도에서 찾기</b>로 주변 교회를 고를 수 있어요.
+                            목록에 없는 교회는 검색 창에서 바로 등록할 수 있습니다.
                         </p>
-                        <p style={S.stepTitle}><span style={S.stepNum}>4</span>질문 작성 후 제출</p>
+                        <p style={S.stepTitle}><span style={S.stepNum}>4</span>새신자 / 기존신자 선택 후 질문 작성</p>
                         <p style={S.p}>
-                            이름·연락처·거주 지역·방문 계기·신앙 배경·기도제목 같은 기본 문항에 답하고 제출하면 끝!
+                            처음 나가는 교회라면 <b>새신자</b>, 원래 다니던 교회를 앱에 연결하는 것이라면 <b>기존신자</b>를 선택하고 —
+                            이름·연락처·거주 지역·방문 계기·신앙 배경·기도제목 같은 문항에 답해 제출하면 끝!
                             제출 내용은 <b>그 교회의 인증 사역자만</b> 볼 수 있습니다.
                         </p>
                     </div>
