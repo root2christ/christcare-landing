@@ -82,8 +82,23 @@ export default function ChallengesTutorial() {
                 </div>
 
                 <div style={S.step}>
+                    <img src="/tutorial/challenges/list.png" alt="도전 챌린지 목록 — 성경 66권 통독 릴레이, 30일 중보기도 릴레이, 매일 큐티 50일" style={S.shot} />
                     <div style={S.stepText}>
-                        <p style={S.stepTitle}><span style={S.stepNum}>2</span>오늘 실천하고 기록하기</p>
+                        <p style={S.stepTitle}><span style={S.stepNum}>2</span>도전 챌린지에서 골라 참여하기</p>
+                        <p style={S.p}>
+                            나의 챌린지 아래 <b>도전! 챌린지</b> 섹션에는 <b>찬양 365 프로젝트 등 15가지</b> 도전 챌린지가 준비돼 있어요.
+                            <b>성경 66권 통독 릴레이</b>(참여자들이 릴레이로 성경 66권을 나눠 읽어 함께 완독, 51/66 books),
+                            <b>30일 중보기도 릴레이</b>(매일 한 명씩 다른 성도를 위해 중보기도, 22/30 prayers),
+                            <b>매일 큐티 50일</b>처럼 각 카드에 소개와 전체 진행률이 보여요.
+                            마음에 드는 챌린지의 <b>[참여하기]</b>를 누르면 나의 챌린지에 추가되고,
+                            완료할 때마다 <b>달란트(+5T/일)</b>가 적립됩니다.
+                        </p>
+                    </div>
+                </div>
+
+                <div style={S.step}>
+                    <div style={S.stepText}>
+                        <p style={S.stepTitle}><span style={S.stepNum}>3</span>오늘 실천하고 기록하기</p>
                         <p style={S.p}>
                             실천한 날에는 챌린지 카드의 <b>[기록하기]</b>를 눌러 진행률을 쌓으세요.
                             &lsquo;40일 새벽기도&rsquo;처럼 <b>기록 가능 시간(5시~7시)</b>이 정해진 챌린지는
@@ -96,7 +111,7 @@ export default function ChallengesTutorial() {
 
                 <div style={S.step}>
                     <div style={S.stepText}>
-                        <p style={S.stepTitle}><span style={S.stepNum}>3</span>완주까지 이어가기</p>
+                        <p style={S.stepTitle}><span style={S.stepNum}>4</span>완주까지 이어가기</p>
                         <p style={S.p}>
                             진행률 게이지가 100%가 되면 완주예요.
                             오른쪽 위 <b>기록</b>에서 그동안의 기록을 돌아볼 수 있고,
