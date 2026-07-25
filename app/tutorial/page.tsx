@@ -13,13 +13,13 @@ const FEATURES: { emoji: string; title: string; desc: string; href?: string; tag
     { emoji: '🌅', title: '매일 큐티', desc: '365일 새 묵상과 기도, 한 해의 동행', href: '/tutorial/qt' },
     { emoji: '📚', title: '성경 통독 플랜', desc: '자유·1년 1독·연대기·맥체인 4가지 플랜', href: '/tutorial/plan' },
     { emoji: '🤝', title: '함께 암송', desc: '전원이 완료해야 내일이 열리는 암송', href: '/tutorial/memorization' },
-    { emoji: '📝', title: '말씀 노트', desc: '은혜받은 말씀과 적용을 기록해요' },
-    { emoji: '🙏', title: '기도', desc: '기도제목 나눔과 중보기도' },
-    { emoji: '✝️', title: '크라이스트 테스트', desc: '나는 성경 속 어떤 인물일까?' },
-    { emoji: '⛪', title: '우리 교회', desc: '교인 명단·채팅·새신자 등록 (교회 공동체)' },
-    { emoji: '🤝', title: '잡박스', desc: '교회의 필요와 성도의 재능을 연결' },
-    { emoji: '🕊️', title: '사역자 기능', desc: '새신자 관리·교인 명부·웹 대시보드' },
-    { emoji: '🏆', title: '챌린지', desc: '함께 도전하는 신앙 습관 만들기' },
+    { emoji: '📝', title: '말씀 노트', desc: '은혜받은 말씀과 적용을 기록해요', href: '/tutorial/note' },
+    { emoji: '🙏', title: '기도', desc: '기도제목 나눔과 중보기도', href: '/tutorial/prayer' },
+    { emoji: '✝️', title: '크라이스트 테스트', desc: '나는 성경 속 어떤 인물일까?', href: '/tutorial/test' },
+    { emoji: '⛪', title: '우리 교회', desc: '교인 명단·채팅·새신자 등록 (교회 공동체)', href: '/tutorial/church' },
+    { emoji: '🤝', title: '잡박스', desc: '교회의 필요와 성도의 재능을 연결', href: '/tutorial/jobbox' },
+    { emoji: '🕊️', title: '사역자 기능', desc: '새신자 관리·교인 명부·웹 대시보드', href: '/tutorial/minister' },
+    { emoji: '🏆', title: '챌린지', desc: '함께 도전하는 신앙 습관 만들기', href: '/tutorial/challenges' },
 ];
 
 const S: Record<string, React.CSSProperties> = {
