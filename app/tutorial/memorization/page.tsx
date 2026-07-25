@@ -51,7 +51,7 @@ export default function MemorizationTutorial() {
                         <li><b>지난 2주 본문을 매일 함께 복습</b>(누적)해서, 외운 말씀이 잊히지 않아요.</li>
                         <li>완료 인증은 <b>녹음 제출</b> — 멤버끼리 서로의 녹음을 들으며 격려할 수 있어요.</li>
                         <li>이틀 넘게 못 하는 멤버가 있어도, 완료한 사람이 있으면 <b>자동으로 넘어가는 배려 장치</b>가 있어요. 아직 안 한 멤버는 <b>콕 찌르기</b>(하루 1번)로 살짝 깨워줄 수도 있고요.</li>
-                        <li>테마를 완주하면 <b>같은 방에서 새 테마</b>로 계속할 수 있고, 함께 암송의 모든 기능은 <b>전부 무료</b>예요.</li>
+                        <li>테마를 완주하면 <b>같은 방에서 새 테마</b>로 계속할 수 있어요.</li>
                     </ul>
                 </div>
 
@@ -67,7 +67,7 @@ export default function MemorizationTutorial() {
                     </tbody>
                 </table>
                 <p style={{ ...S.p, fontSize: 13.5, color: '#94a3b8', marginTop: 8 }}>
-                    · 어느 방식이든 함께 암송은 <span style={S.badgeFree}>전부 무료</span> 입니다.
+                    · 함께 암송은 매일의 녹음을 안전하게 보관·재생하는 <span style={S.badgePremium}>프리미엄</span> 전용 기능입니다 (월 $1.49 — 모든 프리미엄 기능 포함).
                 </p>
 
                 <h2 style={S.h2}>사용법</h2>
