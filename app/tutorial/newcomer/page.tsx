@@ -94,7 +94,7 @@ export default function NewcomerTutorial() {
                 <div style={S.card}>
                     <ul style={S.ul}>
                         <li>교회 사역자·목사님에게 <b>푸시 알림</b>이 가고, 사역자의 <b>교회 명부</b>에 카드가 정리돼요.</li>
-                        <li>내 프로필에 교회가 연결되어 <b>우리 교회 명단·교회 기도</b>를 볼 수 있게 됩니다.</li>
+                        <li>내 프로필에 교회가 연결되어 <b>우리 교회 명단·채팅</b>을 볼 수 있게 됩니다.</li>
                         <li>작성한 내용은 명부에서 새신자/기존신자로 구분되어 관리돼요.</li>
                     </ul>
                 </div>
