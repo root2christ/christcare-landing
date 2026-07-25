@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 /** 기능 카드 목록 — 준비되는 대로 href 를 연결한다 */
 const FEATURES: { emoji: string; title: string; desc: string; href?: string; tag?: string }[] = [
     { emoji: '✍️', title: '성경 필사', desc: '한 절씩 따라 쓰며 말씀을 마음에 새겨요', href: '/tutorial/scripture' },
-    { emoji: '📖', title: '성경 읽기', desc: '개역한글 무료, 구절 하이라이트·카드 공유' },
-    { emoji: '🌅', title: '매일 큐티', desc: '365일 새 묵상과 기도, 한 해의 동행' },
-    { emoji: '📚', title: '성경 통독 플랜', desc: '연대기·맥체인·순서 통독 3가지 플랜' },
-    { emoji: '🎙️', title: '암송', desc: '말씀을 외우고 목소리로 남기는 훈련' },
+    { emoji: '📖', title: '성경 읽기', desc: '개역한글 무료, 구절 하이라이트·카드 공유', href: '/tutorial/bible' },
+    { emoji: '🌅', title: '매일 큐티', desc: '365일 새 묵상과 기도, 한 해의 동행', href: '/tutorial/qt' },
+    { emoji: '📚', title: '성경 통독 플랜', desc: '자유·1년 1독·연대기·맥체인 4가지 플랜', href: '/tutorial/plan' },
+    { emoji: '🤝', title: '함께 암송', desc: '전원이 완료해야 내일이 열리는 암송', href: '/tutorial/memorization' },
     { emoji: '📝', title: '말씀 노트', desc: '은혜받은 말씀과 적용을 기록해요' },
     { emoji: '🙏', title: '기도', desc: '기도제목 나눔과 중보기도' },
     { emoji: '✝️', title: '크라이스트 테스트', desc: '나는 성경 속 어떤 인물일까?' },
