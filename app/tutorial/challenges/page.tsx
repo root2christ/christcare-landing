@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: '챌린지 — soluma 사용 설명서',
-    description: '40일 새벽기도, 100일 감사일기 등 함께 도전하며 신앙 습관을 만드는 챌린지. 사용법과 무료 안내.',
+    description: '40일 새벽기도, 100일 감사일기 등 함께 도전하며 신앙 습관을 만드는 챌린지. 사용법과 프리미엄 안내.',
 };
 
 const S: Record<string, React.CSSProperties> = {
@@ -54,17 +54,19 @@ export default function ChallengesTutorial() {
                     </ul>
                 </div>
 
-                <h2 style={S.h2}>무료와 프리미엄</h2>
+                <h2 style={S.h2}>프리미엄 안내</h2>
                 <table style={S.table}>
                     <thead>
                         <tr><th style={S.th}>기능</th><th style={S.th}>구분</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td style={S.td}>챌린지 참여 · 기록 · 진행률 확인</td><td style={S.td}><span style={S.badgeFree}>무료</span></td></tr>
+                        <tr><td style={S.td}>챌린지 참여 · 기록 · 진행률 확인 · 달란트(+5T/일) 적립</td><td style={S.td}><span style={S.badgePremium}>프리미엄</span></td></tr>
                     </tbody>
                 </table>
                 <p style={{ ...S.p, fontSize: 13.5, color: '#94a3b8', marginTop: 8 }}>
-                    · 챌린지는 무료로 사용할 수 있어요.
+                    · 챌린지 참여는 <span style={S.badgePremium}>프리미엄</span> 전용이에요. 아직 구독 전이라면 화면에 들어갈 때 구독 안내가 먼저 나오고,
+                    구독(월 $1.49 · 연 $15)하시면 바로 참여할 수 있어요. 기록할 때마다 받는 <b>달란트(+5T/일)</b> 적립은 그대로예요.
+                    구독료는 미자립교회 지원과 선교 사업에 쓰입니다.
                 </p>
 
                 <h2 style={S.h2}>사용법</h2>

@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: '소그룹 — soluma 사용 설명서',
-    description: '아는 사람들과 소그룹을 만들어 기도제목·나눔·채팅을 함께하는 소그룹. 사용법과 무료 안내.',
+    description: '아는 사람들과 소그룹을 만들어 기도제목·나눔·채팅을 함께하는 소그룹. 사용법과 프리미엄 안내.',
 };
 
 const S: Record<string, React.CSSProperties> = {
@@ -53,17 +53,18 @@ export default function SmallGroupTutorial() {
                     </ul>
                 </div>
 
-                <h2 style={S.h2}>무료와 프리미엄</h2>
+                <h2 style={S.h2}>프리미엄 안내</h2>
                 <table style={S.table}>
                     <thead>
                         <tr><th style={S.th}>기능</th><th style={S.th}>구분</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td style={S.td}>소그룹 만들기 · 초대 참여 · 기도제목 · 나눔 · 채팅</td><td style={S.td}><span style={S.badgeFree}>무료</span></td></tr>
+                        <tr><td style={S.td}>소그룹 만들기 · 초대 참여 · 기도제목 · 나눔 · 채팅</td><td style={S.td}><span style={S.badgePremium}>프리미엄</span></td></tr>
                     </tbody>
                 </table>
                 <p style={{ ...S.p, fontSize: 13.5, color: '#94a3b8', marginTop: 8 }}>
-                    · 소그룹은 전부 무료로 이용할 수 있어요.
+                    · 소그룹은 <span style={S.badgePremium}>프리미엄</span> 전용 기능이에요. 아직 구독 전이라면 화면에 들어갈 때 구독 안내가 먼저 나오고,
+                    구독(월 $1.49 · 연 $15)하시면 바로 이용할 수 있어요. 구독료는 미자립교회 지원과 선교 사업에 쓰입니다.
                 </p>
 
                 <h2 style={S.h2}>사용법</h2>

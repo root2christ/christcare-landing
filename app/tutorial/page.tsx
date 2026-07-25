@@ -15,19 +15,19 @@ const FEATURES: { emoji: string; title: string; desc: string; href?: string; tag
     { emoji: '❓', title: '성경 퀴즈 365', pricing: 'free', desc: '매일 새로운 퀴즈로 말씀 지식 점검', href: '/tutorial/quiz' },
     { emoji: '🤝', title: '함께 암송', pricing: 'premium', priceNote: '녹음 보관·상호 청취가 포함된 프리미엄 전용', desc: '전원이 완료해야 내일이 열리는 암송', href: '/tutorial/memorization' },
     { emoji: '📝', title: '말씀 노트', pricing: 'free', desc: '은혜받은 말씀과 적용을 기록해요', href: '/tutorial/note' },
-    { emoji: '🙏', title: '기도', pricing: 'free', desc: '기도제목 나눔과 중보기도', href: '/tutorial/prayer' },
-    { emoji: '💌', title: '기도 편지', pricing: 'free', desc: '선교사님들의 소식에 기도로 동역해요', href: '/tutorial/prayerletter' },
+    { emoji: '🙏', title: '기도', pricing: 'premium', desc: '기도제목 나눔과 중보기도', href: '/tutorial/prayer' },
+    { emoji: '💌', title: '기도 편지', pricing: 'premium', desc: '선교사님들의 소식에 기도로 동역해요', href: '/tutorial/prayerletter' },
     { emoji: '✝️', title: '크라이스트 테스트', pricing: 'mixed', priceNote: '무료: 테스트·결과 · 프리미엄: 심층 결과지', desc: '나는 성경 속 어떤 인물일까?', href: '/tutorial/test' },
     { emoji: '🌱', title: '신앙의 계절', pricing: 'free', desc: '지금 내 믿음은 어느 계절일까? 신앙 건강 체크', href: '/tutorial/faith' },
     { emoji: '🖼️', title: '인물 탐구', pricing: 'free', desc: '통독으로 모으는 성경 인물 도감', href: '/tutorial/gallery' },
     { emoji: '⛪', title: '우리 교회', pricing: 'free', desc: '교인 명단·채팅 (교회 공동체)', href: '/tutorial/church' },
     { emoji: '🪪', title: '새신자 등록', pricing: 'free', desc: '종이 등록 카드를 앱으로 — 사역자에게 바로 전달', href: '/tutorial/newcomer' },
     { emoji: '📅', title: '교회 출석', pricing: 'free', desc: '내 교회 예배 출석을 기록·확인해요', href: '/tutorial/attendance' },
-    { emoji: '👥', title: '소그룹', pricing: 'free', desc: '초대코드로 모이는 우리끼리 나눔방', href: '/tutorial/smallgroup' },
-    { emoji: '🙌', title: '간증', pricing: 'free', desc: '하나님이 하신 일을 나누고 서로 격려해요', href: '/tutorial/testimony' },
+    { emoji: '👥', title: '소그룹', pricing: 'premium', desc: '초대코드로 모이는 우리끼리 나눔방', href: '/tutorial/smallgroup' },
+    { emoji: '🙌', title: '간증', pricing: 'premium', desc: '하나님이 하신 일을 나누고 서로 격려해요', href: '/tutorial/testimony' },
     { emoji: '🤝', title: '잡박스', pricing: 'free', desc: '교회의 필요와 성도의 재능을 연결', href: '/tutorial/jobbox' },
     { emoji: '🕊️', title: '사역자 기능', pricing: 'free', desc: '새신자 관리·교인 명부·웹 대시보드', href: '/tutorial/minister' },
-    { emoji: '🏆', title: '챌린지', pricing: 'free', desc: '찬양 365 등 15가지 도전, 달란트 적립', href: '/tutorial/challenges' },
+    { emoji: '🏆', title: '챌린지', pricing: 'premium', desc: '찬양 365 등 15가지 도전, 달란트 적립', href: '/tutorial/challenges' },
     { emoji: '🎁', title: '선물 · 달란트', pricing: 'mixed', priceNote: '열람·적립 무료 · 선물 구매만 유료', desc: '활동으로 모으는 달란트, 마음을 전하는 선물', href: '/tutorial/gifts' },
     { emoji: '💎', title: '프리미엄 구독', pricing: 'premium', priceNote: '월 $1.49 · 연 $15 — 구독료는 미자립교회·선교에', desc: '프리미엄으로 열리는 모든 기능 안내', href: '/tutorial/premium' },
     { emoji: '🔍', title: '이단 감별 자가 진단', pricing: 'free', desc: '내가 다니는 교회, 건강한지 점검해요', href: '/tutorial/heresy' },
@@ -56,7 +56,46 @@ const S: Record<string, React.CSSProperties> = {
     priceMixed: { fontSize: 11.5, fontWeight: 800, color: '#a8730a', background: '#fdf0d8', borderRadius: 999, padding: '2px 10px' },
     priceNote: { fontSize: 11.5, color: '#94a3b8', lineHeight: 1.5 },
     pricePremium: { fontSize: 11.5, fontWeight: 800, color: '#7c3aed', background: '#f3e8ff', borderRadius: 999, padding: '2px 10px' },
+    tableH2: { fontSize: 22, fontWeight: 900, color: '#1e293b', margin: '48px 0 6px' },
+    tableSub: { color: '#64748b', fontSize: 14, lineHeight: 1.7, margin: '0 0 16px' },
+    tableWrap: { overflowX: 'auto' as const, background: '#fff', border: '1px solid #eef2f7', borderRadius: 16, boxShadow: '0 2px 8px rgba(15,23,42,.04)' },
+    table: { width: '100%', borderCollapse: 'collapse' as const, minWidth: 480 },
+    th: { textAlign: 'left' as const, fontSize: 13.5, fontWeight: 900, color: '#475569', padding: '12px 16px', borderBottom: '2px solid #e2e8f0', background: '#f8fafc' },
+    thC: { textAlign: 'center' as const, fontSize: 13.5, fontWeight: 900, padding: '12px 10px', borderBottom: '2px solid #e2e8f0', background: '#f8fafc', width: 90 },
+    td: { fontSize: 14.5, color: '#1e293b', fontWeight: 700, padding: '10px 16px', borderBottom: '1px solid #f1f5f9' },
+    tdNote: { display: 'block', fontSize: 12, color: '#94a3b8', fontWeight: 500, lineHeight: 1.5, marginTop: 2 },
+    tdC: { textAlign: 'center' as const, padding: '10px 10px', borderBottom: '1px solid #f1f5f9', fontSize: 17 },
 };
+
+/** 하단 요약 표 — free/premium 에 ✓, note 는 기능명 아래 작은 글씨 */
+const PRICING_TABLE: { name: string; href?: string; free?: boolean; premium?: boolean; note?: string }[] = [
+    { name: '성경 읽기', href: '/tutorial/bible', free: true, note: '개역한글 전부 무료 · 일부 번역본은 소장권 구매' },
+    { name: '성경 필사', href: '/tutorial/scripture', free: true, premium: true, note: '무료: 열람·진행률 / 프리미엄: 따라쓰기·음성' },
+    { name: '매일 큐티', href: '/tutorial/qt', free: true, premium: true, note: '무료: 오늘의 큐티 확인 / 프리미엄: 묵상 진행' },
+    { name: '성경 통독 플랜', href: '/tutorial/plan', free: true },
+    { name: '성경 퀴즈 365', href: '/tutorial/quiz', free: true },
+    { name: '말씀 노트', href: '/tutorial/note', free: true },
+    { name: '크라이스트 테스트', href: '/tutorial/test', free: true, premium: true, note: '무료: 테스트·결과 / 프리미엄: 심층 결과지' },
+    { name: '신앙의 계절', href: '/tutorial/faith', free: true },
+    { name: '인물 탐구', href: '/tutorial/gallery', free: true },
+    { name: '함께 암송', href: '/tutorial/memorization', premium: true },
+    { name: '기도', href: '/tutorial/prayer', premium: true },
+    { name: '기도 편지', href: '/tutorial/prayerletter', premium: true },
+    { name: '간증', href: '/tutorial/testimony', premium: true },
+    { name: '소그룹', href: '/tutorial/smallgroup', premium: true },
+    { name: '릴레이 기도', premium: true },
+    { name: '스터디 그룹', premium: true },
+    { name: 'AI 신앙 상담', premium: true },
+    { name: '챌린지 (찬양 365 포함)', href: '/tutorial/challenges', premium: true },
+    { name: '우리 교회 (명단·채팅)', href: '/tutorial/church', free: true },
+    { name: '새신자 등록', href: '/tutorial/newcomer', free: true },
+    { name: '교회 출석', href: '/tutorial/attendance', free: true },
+    { name: '사역자 기능', href: '/tutorial/minister', free: true },
+    { name: '잡박스', href: '/tutorial/jobbox', free: true },
+    { name: '선물 · 달란트', href: '/tutorial/gifts', free: true, note: '달란트 적립·열람 무료 · 선물 구매는 개별 결제' },
+    { name: '이단 감별 자가 진단', href: '/tutorial/heresy', free: true },
+    { name: '설정 · 언어', href: '/tutorial/settings', free: true },
+];
 
 export default function TutorialHub() {
     return (
@@ -94,6 +133,39 @@ export default function TutorialHub() {
                         )
                     ))}
                 </div>
+
+                <h2 style={S.tableH2}>무료 · 프리미엄 한눈에 보기</h2>
+                <p style={S.tableSub}>
+                    모든 기능의 무료/프리미엄 여부를 한 표로 정리했습니다. 양쪽에 모두 체크된 기능은
+                    핵심은 무료, 일부만 프리미엄입니다 (아래 작은 글씨 참고).
+                </p>
+                <div style={S.tableWrap}>
+                    <table style={S.table}>
+                        <thead>
+                            <tr>
+                                <th style={S.th}>기능</th>
+                                <th style={{ ...S.thC, color: '#0f766e' }}>무료</th>
+                                <th style={{ ...S.thC, color: '#7c3aed' }}>프리미엄</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {PRICING_TABLE.map((r) => (
+                                <tr key={r.name}>
+                                    <td style={S.td}>
+                                        {r.href ? <Link href={r.href} style={{ color: '#1e293b', textDecoration: 'none' }}>{r.name}</Link> : r.name}
+                                        {r.note && <span style={S.tdNote}>{r.note}</span>}
+                                    </td>
+                                    <td style={S.tdC}>{r.free ? '✅' : ''}</td>
+                                    <td style={S.tdC}>{r.premium ? '✅' : ''}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                <p style={{ ...S.tableSub, marginTop: 12 }}>
+                    프리미엄 구독: 월 $1.49 · 연 $15 — 구독료는 미자립교회 지원과 선교 사업에 쓰입니다.{' '}
+                    <Link href="/tutorial/premium" style={{ color: '#7c3aed', fontWeight: 800 }}>자세히 보기 →</Link>
+                </p>
             </div>
         </div>
     );
