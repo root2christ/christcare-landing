@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase } from '../../../../lib/supabase-admin';
+import { requireAdmin } from '../../../../lib/admin-auth';
 import { SURVEY_SECTIONS, FREE_SUFFIX, CHRIST_QUESTIONS } from '../../../survey/_content';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
-
-// 관리자 비밀번호 (서버 전용)
-const ADMIN_KEY = 'soluma2026!';
 
 const ALL_Q = SURVEY_SECTIONS.flatMap((s) => s.questions);
 
@@ -16,13 +14,12 @@ function asText(v: unknown): string {
 }
 
 // 목회자 자문 설문의 서술형/자유의견/크라이스트 메모를 AI로 요약
+// Authorization: Bearer <supabase-access-token>
 export async function POST(req: NextRequest) {
-    try {
-        const key = req.nextUrl.searchParams.get('key') || req.headers.get('x-admin-key') || '';
-        if (key !== ADMIN_KEY) {
-            return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-        }
+    const auth = await requireAdmin(req);
+    if ('response' in auth) return auth.response;
 
+    try {
         const sb = getAdminSupabase();
         const { data, error } = await sb
             .from('survey_responses')

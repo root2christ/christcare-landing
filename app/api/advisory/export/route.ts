@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase } from '../../../../lib/supabase-admin';
+import { requireAdmin } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
-// 관리자: 전체 자문 CSV 다운로드  (/api/advisory/export?key=...)
+// 관리자: 전체 자문 CSV 다운로드  (/api/advisory/export)
+// Authorization: Bearer <supabase-access-token>
 export async function GET(req: NextRequest) {
-    const key = req.nextUrl.searchParams.get('key');
-    if (key !== (process.env.ADVISORY_ADMIN_KEY || 'soluma-advisory-2026')) {
-        return new NextResponse('Unauthorized', { status: 401 });
-    }
+    const auth = await requireAdmin(req);
+    if ('response' in auth) return auth.response;
+
     try {
         const sb = getAdminSupabase();
         const [{ data: pastors }, { data: fb }] = await Promise.all([

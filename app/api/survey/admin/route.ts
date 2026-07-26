@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase } from '../../../../lib/supabase-admin';
+import { requireAdmin } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
-// 관리자 비밀번호 (서버 전용 — 클라이언트 번들에 노출 안 됨)
-const ADMIN_KEY = 'soluma2026!';
-
-// 전체 응답 취합 조회 — 비밀번호 게이트
+// 전체 응답 취합 조회 (응답자 PII 포함) — 관리자 토큰 검증
+// Authorization: Bearer <supabase-access-token>
 export async function GET(req: NextRequest) {
+    const auth = await requireAdmin(req);
+    if ('response' in auth) return auth.response;
+
     try {
-        const key = req.nextUrl.searchParams.get('key') || req.headers.get('x-admin-key') || '';
-        if (key !== ADMIN_KEY) {
-            return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-        }
         const sb = getAdminSupabase();
         const { data, error } = await sb
             .from('survey_responses')
@@ -25,13 +23,12 @@ export async function GET(req: NextRequest) {
     }
 }
 
-// 응답 1건 삭제 (respondent_uid 기준) — 비밀번호 게이트. 테스트/스팸 정리용.
+// 응답 1건 삭제 (respondent_uid 기준) — 관리자 토큰 검증. 테스트/스팸 정리용.
 export async function DELETE(req: NextRequest) {
+    const auth = await requireAdmin(req);
+    if ('response' in auth) return auth.response;
+
     try {
-        const key = req.nextUrl.searchParams.get('key') || req.headers.get('x-admin-key') || '';
-        if (key !== ADMIN_KEY) {
-            return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-        }
         const uid = req.nextUrl.searchParams.get('uid') || '';
         if (!uid) return NextResponse.json({ error: 'uid required' }, { status: 400 });
 

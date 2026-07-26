@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { supabase } from '../../../lib/supabase';
+import type { Session } from '@supabase/supabase-js';
 import {
     SURVEY_SECTIONS, FREE_SUFFIX, CHRIST_QUESTIONS, SurveyQuestion,
 } from '../_content';
@@ -10,6 +10,12 @@ import {
 const NAVY = '#0f172a';
 const BLUE = '#4f6ef2';
 const BORDER = '#e2e8f0';
+
+// 관리자 이메일 화이트리스트 (매직링크 발송 대상 판별용 — 서버에서 재검증됨)
+const ADMIN_EMAILS_CLIENT = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'master@root2christ.com')
+    .split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+
+type AuthedFetch = (url: string, init?: RequestInit) => Promise<Response>;
 
 interface ResponseRow {
     respondent_uid: string;
@@ -48,48 +54,112 @@ function fmtSeoul(iso: string | null | undefined): string {
 }
 
 export default function SurveyAdminPage() {
-    return (
-        <Suspense fallback={<div style={{ minHeight: '100dvh', background: '#f8fafc' }} />}>
-            <AdminInner />
-        </Suspense>
-    );
-}
+    const [session, setSession] = useState<Session | null>(null);
+    const [checkingSession, setCheckingSession] = useState(true);
+    const [loginEmail, setLoginEmail] = useState('');
+    const [loggingIn, setLoggingIn] = useState(false);
+    const [loginNotice, setLoginNotice] = useState('');
 
-function AdminInner() {
-    const params = useSearchParams();
-    const [keyInput, setKeyInput] = useState('');
-    const [authed, setAuthed] = useState(false);
     const [rows, setRows] = useState<ResponseRow[]>([]);
     const [err, setErr] = useState('');
     const [loading, setLoading] = useState(false);
     const [tab, setTab] = useState<'stats' | 'ai' | 'list' | 'christ'>('stats');
 
-    const load = useCallback(async (key: string) => {
+    // 세션 확인 + 서버측 관리자 권한 검증 (비관리자는 즉시 로그아웃)
+    useEffect(() => {
+        const verifyAndSet = async (s: Session | null) => {
+            if (!s) { setSession(null); setCheckingSession(false); return; }
+            try {
+                const res = await fetch('/api/admin/check-permission', {
+                    headers: { Authorization: `Bearer ${s.access_token}` },
+                });
+                if (res.ok) {
+                    setSession(s);
+                } else {
+                    await supabase.auth.signOut();
+                    setSession(null);
+                    setLoginNotice('관리자 권한이 없는 계정입니다.');
+                }
+            } catch {
+                setSession(s); // 네트워크 오류면 일단 두고 API 호출 시 재검증
+            } finally {
+                setCheckingSession(false);
+            }
+        };
+
+        supabase.auth.getSession().then(({ data }) => verifyAndSet(data.session));
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => verifyAndSet(s));
+        return () => subscription.unsubscribe();
+    }, []);
+
+    // 공통 fetch (관리자 토큰 자동 첨부)
+    const authedFetch = useCallback<AuthedFetch>(async (url, init) => {
+        const token = session?.access_token;
+        if (!token) throw new Error('세션이 만료되었습니다. 다시 로그인해 주세요.');
+        return fetch(url, {
+            ...init,
+            headers: { ...(init?.headers || {}), Authorization: `Bearer ${token}` },
+        });
+    }, [session]);
+
+    const load = useCallback(async () => {
         setLoading(true); setErr('');
         try {
-            const res = await fetch(`/api/survey/admin?key=${encodeURIComponent(key)}`);
-            if (res.status === 401) { setErr('비밀번호가 올바르지 않습니다.'); setAuthed(false); return; }
+            const res = await authedFetch('/api/survey/admin');
+            if (res.status === 401 || res.status === 403) {
+                setErr('관리자 권한이 없거나 세션이 만료되었습니다. 다시 로그인해 주세요.');
+                return;
+            }
             const d = await res.json();
             if (d.error) { setErr(d.error); return; }
             setRows(d.responses || []);
-            setAuthed(true);
-            try { localStorage.setItem('survey_admin_key', key); } catch { /* noop */ }
         } catch (e: any) {
             setErr(e?.message || '네트워크 오류');
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [authedFetch]);
 
-    // ?key= 또는 저장된 키로 자동 로그인 (한 번 들어오면 그 브라우저에선 다시 비번 안 물어봄)
+    // 로그인(또는 토큰 갱신) 시 1회 자동 로드
+    const loadedTokenRef = useRef<string | null>(null);
     useEffect(() => {
-        const qk = params.get('key');
-        if (qk) { setKeyInput(qk); load(qk); return; }
-        let saved = '';
-        try { saved = localStorage.getItem('survey_admin_key') || ''; } catch { /* noop */ }
-        if (saved) { setKeyInput(saved); load(saved); }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        if (!session) return;
+        if (loadedTokenRef.current === session.access_token) return;
+        loadedTokenRef.current = session.access_token;
+        load();
+    }, [session, load]);
+
+    // ── 매직링크 로그인 (응답은 관리자/비관리자 동일 — 이메일 enumeration 방지) ──
+    const handleLogin = async () => {
+        const email = loginEmail.trim().toLowerCase();
+        setLoggingIn(true);
+        setLoginNotice('');
+
+        const startTime = Date.now();
+        if (ADMIN_EMAILS_CLIENT.includes(email)) {
+            try {
+                await fetch('/api/admin/send-magic-link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                });
+            } catch { /* 정보 노출 방지 — 에러 표시 X */ }
+        }
+        const elapsed = Date.now() - startTime;
+        const minDuration = 700 + Math.random() * 200;
+        if (elapsed < minDuration) await new Promise((r) => setTimeout(r, minDuration - elapsed));
+
+        setLoginEmail('');
+        setLoggingIn(false);
+        setLoginNotice('관리자 계정이라면 로그인 링크를 메일로 보냈습니다. 메일의 링크로 로그인한 뒤 이 페이지로 돌아와 주세요.');
+    };
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        loadedTokenRef.current = null;
+        setRows([]);
+        setSession(null);
+    };
 
     // ── CSV 내보내기 ──
     const exportCsv = useCallback(() => {
@@ -126,28 +196,39 @@ function AdminInner() {
         URL.revokeObjectURL(url);
     }, [rows]);
 
-    // ── 비밀번호 게이트 ──
-    if (!authed) {
+    // ── 관리자 로그인 게이트 (Supabase 매직링크 + 서버 화이트리스트 검증) ──
+    if (checkingSession) {
+        return (
+            <div style={{ minHeight: '100dvh', background: 'linear-gradient(160deg,#0b1220,#1e293b)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 22 }}>
+                <p style={{ color: '#94a3b8', fontSize: 15 }}>세션 확인 중…</p>
+            </div>
+        );
+    }
+
+    if (!session) {
         return (
             <div style={{ minHeight: '100dvh', background: 'linear-gradient(160deg,#0b1220,#1e293b)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 22 }}>
                 <div style={{ background: '#fff', borderRadius: 22, padding: '32px 24px', width: '100%', maxWidth: 380 }}>
                     <h1 style={{ fontSize: 21, fontWeight: 900, color: NAVY, margin: '0 0 6px' }}>설문 관리자</h1>
-                    <p style={{ fontSize: 14, color: '#64748b', margin: '0 0 18px' }}>관리자 비밀번호를 입력해 주세요.</p>
+                    <p style={{ fontSize: 14, color: '#64748b', margin: '0 0 18px' }}>관리자 이메일로 로그인 링크를 받으세요.</p>
                     <input
-                        type="password"
-                        value={keyInput}
-                        onChange={(e) => setKeyInput(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') load(keyInput); }}
-                        placeholder="비밀번호"
+                        type="email"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' && !loggingIn) handleLogin(); }}
+                        placeholder="이메일"
+                        autoComplete="off"
+                        autoCapitalize="off"
+                        spellCheck={false}
                         style={{ width: '100%', height: 50, borderRadius: 12, border: `1.5px solid ${BORDER}`, padding: '0 14px', fontSize: 16, boxSizing: 'border-box', marginBottom: 12 }}
                     />
-                    {err && <p style={{ color: '#dc2626', fontSize: 13, margin: '0 0 10px' }}>{err}</p>}
+                    {loginNotice && <p style={{ color: '#64748b', fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' }}>{loginNotice}</p>}
                     <button
-                        onClick={() => load(keyInput)}
-                        disabled={loading}
-                        style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', background: NAVY, color: '#fff', fontSize: 16, fontWeight: 800, cursor: 'pointer', opacity: loading ? 0.6 : 1 }}
+                        onClick={handleLogin}
+                        disabled={loggingIn}
+                        style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', background: NAVY, color: '#fff', fontSize: 16, fontWeight: 800, cursor: 'pointer', opacity: loggingIn ? 0.6 : 1 }}
                     >
-                        {loading ? '확인 중…' : '입장'}
+                        {loggingIn ? '처리 중…' : '로그인 링크 받기'}
                     </button>
                 </div>
             </div>
@@ -160,13 +241,24 @@ function AdminInner() {
             <div style={{ position: 'sticky', top: 0, zIndex: 10, background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                 <div>
                     <h1 style={{ fontSize: 18, fontWeight: 900, margin: 0 }}>설문 응답 취합</h1>
-                    <span style={{ fontSize: 13, color: '#64748b', fontWeight: 700 }}>총 {rows.length}명 응답</span>
+                    <span style={{ fontSize: 13, color: '#64748b', fontWeight: 700 }}>
+                        총 {rows.length}명 응답 · {session.user.email}
+                    </span>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={() => load(keyInput)} style={btn('#eef2ff', BLUE)}>새로고침</button>
+                    <button onClick={() => load()} disabled={loading} style={btn('#eef2ff', BLUE)}>
+                        {loading ? '불러오는 중…' : '새로고침'}
+                    </button>
                     <button onClick={exportCsv} style={btn(BLUE, '#fff')}>CSV 내보내기</button>
+                    <button onClick={handleLogout} style={btn('#f1f5f9', '#475569')}>로그아웃</button>
                 </div>
             </div>
+
+            {err && (
+                <div style={{ maxWidth: 1100, margin: '12px auto 0', padding: '0 16px' }}>
+                    <p style={{ color: '#dc2626', fontSize: 13.5, margin: 0 }}>{err}</p>
+                </div>
+            )}
 
             {/* 탭 */}
             <div style={{ display: 'flex', gap: 8, padding: '12px 16px 0', maxWidth: 1100, margin: '0 auto', flexWrap: 'wrap' }}>
@@ -180,7 +272,7 @@ function AdminInner() {
                 {rows.length === 0 && <p style={{ color: '#64748b', fontSize: 15, padding: 20 }}>아직 응답이 없습니다.</p>}
 
                 {tab === 'stats' && <StatsView rows={rows} />}
-                {tab === 'ai' && <AiSummaryView adminKey={keyInput} />}
+                {tab === 'ai' && <AiSummaryView authedFetch={authedFetch} />}
 
                 {tab === 'list' && rows.map((r) => <RespondentCard key={r.respondent_uid} r={r} />)}
 
@@ -431,7 +523,7 @@ function renderSummary(text: string): React.ReactNode {
     });
 }
 
-function AiSummaryView({ adminKey }: { adminKey: string }) {
+function AiSummaryView({ authedFetch }: { authedFetch: AuthedFetch }) {
     const [loading, setLoading] = useState(false);
     const [summary, setSummary] = useState('');
     const [err, setErr] = useState('');
@@ -440,7 +532,11 @@ function AiSummaryView({ adminKey }: { adminKey: string }) {
     const run = async () => {
         setLoading(true); setErr('');
         try {
-            const res = await fetch(`/api/survey/summarize?key=${encodeURIComponent(adminKey)}`, { method: 'POST' });
+            const res = await authedFetch('/api/survey/summarize', { method: 'POST' });
+            if (res.status === 401 || res.status === 403) {
+                setErr('관리자 권한이 없거나 세션이 만료되었습니다. 다시 로그인해 주세요.');
+                return;
+            }
             const d = await res.json();
             if (d.error) { setErr(d.error); return; }
             setSummary(d.summary || '');

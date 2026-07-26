@@ -177,12 +177,13 @@ export default function AdminPage() {
     }, [session]);
 
     const loadHistory = useCallback(async () => {
+        if (!session) return;
         try {
-            const res = await fetch('/api/push'); // GET은 토큰 없어도 동작 (이력 조회)
+            const res = await authedFetch('/api/push'); // GET도 관리자 토큰 필요
             const data = await res.json();
             setNotifications(data.notifications || []);
         } catch { }
-    }, []);
+    }, [authedFetch, session]);
 
     const loadGrantHistory = useCallback(async () => {
         if (!session) return;

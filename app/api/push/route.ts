@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { timingSafeEqual } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '../../../lib/admin-auth';
 
@@ -6,6 +7,31 @@ const supabase = createClient(
     'https://oklgzhkkqbziwoyhypom.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbGd6aGtrcWJ6aXdveWh5cG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3OTc2OTEsImV4cCI6MjA4NDM3MzY5MX0.rTCBqVNIjdkaWcMcOGBkgQyQlDop4B3lz4kqyGSGb1c'
 );
+
+/** 길이 노출 없는 상수시간 비교 */
+function safeEqual(a: string, b: string): boolean {
+    const ab = Buffer.from(a, 'utf8');
+    const bb = Buffer.from(b, 'utf8');
+    if (ab.length !== bb.length) return false;
+    return timingSafeEqual(ab, bb);
+}
+
+/**
+ * Vercel Cron 전용 인증.
+ * CRON_SECRET 이 설정돼 있지 않으면 무조건 거부한다 (폴백 허용 금지).
+ */
+function verifyCron(req: NextRequest): NextResponse | null {
+    const secret = process.env.CRON_SECRET;
+    if (!secret) {
+        console.error('[push] CRON_SECRET 미설정 — process-scheduled 거부');
+        return NextResponse.json({ error: 'cron이 설정되지 않았습니다' }, { status: 503 });
+    }
+    const header = req.headers.get('Authorization') || req.headers.get('authorization') || '';
+    if (!header.startsWith('Bearer ') || !safeEqual(header.slice(7).trim(), secret)) {
+        return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+    }
+    return null;
+}
 
 async function sendExpoPush(tokens: string[], title: string, body: string, data?: any) {
     const messages = tokens.map(token => ({
@@ -98,13 +124,16 @@ export async function POST(req: NextRequest) {
     }
 }
 
-// GET: 발송 이력 조회 + 예약 알림 발송 처리 (cron에서 호출)
+// GET: 발송 이력 조회(관리자) + 예약 알림 발송 처리(Vercel Cron)
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const action = searchParams.get('action');
 
-    // 예약 알림 처리 (cron 호출용)
+    // 예약 알림 처리 — Vercel Cron 전용 (Authorization: Bearer ${CRON_SECRET})
     if (action === 'process-scheduled') {
+        const cronErr = verifyCron(req);
+        if (cronErr) return cronErr;
+
         const now = new Date().toISOString();
         const { data: scheduled } = await supabase
             .from('push_notifications')
@@ -134,7 +163,10 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ processed });
     }
 
-    // 기본: 발송 이력 조회
+    // 기본: 발송 이력 조회 — 관리자 토큰 검증 (Authorization: Bearer ...)
+    const auth = await requireAdmin(req);
+    if ('response' in auth) return auth.response;
+
     const { data, error } = await supabase
         .from('push_notifications')
         .select('*')
