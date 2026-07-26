@@ -76,7 +76,7 @@ export default function ChallengesTutorial() {
                     <div style={S.stepText}>
                         <p style={S.stepTitle}><span style={S.stepNum}>1</span>챌린지 화면 한눈에 보기</p>
                         <ul style={S.ul}>
-                            <li><span style={{ ...S.dot, background: '#10b981' }} /><b>① 릴레이</b> — 상단의 <b>시간 릴레이</b>(끊김 없는 기도 사슬)와 <b>중보 릴레이</b>(돌아가며 음성 중보)로 함께 기도를 이어가요.</li>
+                            <li><span style={{ ...S.dot, background: '#10b981' }} /><b>① 시간 릴레이</b> — 성도들이 기도 시간대를 나눠 맡아 <b>끊김 없는 기도 사슬</b>을 이어가요.</li>
                             <li><span style={{ ...S.dot, background: '#3b82f6' }} /><b>② 나의 챌린지</b> — 참여 중인 챌린지 목록이에요. <b>40일 새벽기도 챌린지</b>, <b>100일 감사일기</b>, <b>주 3회 말씀 암송</b>, <b>21일 금식기도</b>처럼 각 카드에 진행률(0/40 days 등)이 보여요.</li>
                             <li><span style={{ ...S.dot, background: '#f59e0b' }} /><b>③ 공개 · +5T 배지</b> — 공개 챌린지 여부와 기록 시 받는 달란트 보상이 표시돼요.</li>
                         </ul>

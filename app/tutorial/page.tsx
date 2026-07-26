@@ -83,7 +83,7 @@ const PRICING_TABLE: { name: string; href?: string; free?: boolean; premium?: bo
     { name: '기도 편지', href: '/tutorial/prayerletter', premium: true },
     { name: '간증', href: '/tutorial/testimony', premium: true },
     { name: '소그룹', href: '/tutorial/smallgroup', premium: true },
-    { name: '릴레이 기도 · 시간 릴레이', premium: true },
+    { name: '시간 릴레이 (끊김 없는 기도 사슬)', premium: true },
     { name: '인물 탐구 그룹 (스터디 그룹)', premium: true },
     { name: 'AI 신앙 상담', premium: true },
     { name: '챌린지 (찬양 365 포함)', href: '/tutorial/challenges', premium: true },

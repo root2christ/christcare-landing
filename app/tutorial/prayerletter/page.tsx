@@ -47,9 +47,26 @@ export default function PrayerLetterTutorial() {
                 <div style={S.card}>
                     <ul style={S.ul}>
                         <li>선교사님·사역자님들의 <b>기도 편지 소식</b>을 받아보고 함께 기도로 동역할 수 있어요.</li>
-                        <li><b>함께 기도하기</b>를 누르며 한마음으로 기도에 참여해요.</li>
-                        <li>긴급한 기도 제목은 <b>긴급 기도</b>로 표시되어 놓치지 않아요.</li>
+                        <li><b>함께 기도하기</b>를 누르며 한마음으로 기도에 참여해요 — 몇 명이 함께 기도했는지 보여요.</li>
+                        <li>긴급한 기도 제목은 <b>긴급 기도</b>로 표시되어 목록 맨 위에 올라와요.</li>
+                        <li><b>댓글</b>로 응원과 마음을 전할 수 있어요. 내가 쓴 댓글은 언제든 고치거나 지울 수 있어요.</li>
+                        <li>편지는 <b>인증 사역자·선교사님만</b> 쓸 수 있어요 — 검증되지 않은 글이 섞이지 않습니다.</li>
                     </ul>
+                </div>
+
+                <h2 style={S.h2}>누가 쓰고, 누가 읽나요?</h2>
+                <div style={S.card}>
+                    <ul style={S.ul}>
+                        <li><b>쓰는 사람</b> — 목사님이 임명한 <b>인증 사역자</b>와 인증 목사님. 일반 성도에게는 [편지 쓰기] 버튼이 보이지 않고,
+                            앱 밖에서 우회해도 서버에서 막힙니다.</li>
+                        <li><b>공개 범위</b> — 편지를 쓸 때 <b>전체 공개</b>(모든 사용자)와 <b>우리 교회만</b>(같은 교회 교인) 중에서 고릅니다.</li>
+                        <li><b>댓글 관리</b> — 편지를 쓴 사역자는 부적절한 댓글을 <b>숨김</b> 처리할 수 있어요.
+                            삭제가 아니라 숨김이라 언제든 되돌릴 수 있고, 쓴 사람 본인에게는 계속 보입니다.</li>
+                    </ul>
+                </div>
+                <div style={{ ...S.tip, marginTop: 12 }}>
+                    💡 <b>기도 나눔</b>과 무엇이 다른가요? — 기도 나눔은 성도 누구나 <b>자기 기도제목</b>을 올리고 서로 중보하는 곳이고,
+                    기도 편지는 사역자·선교사님이 <b>사역지 소식</b>을 전하면 성도가 읽고 기도로 후원하는 곳이에요.
                 </div>
 
                 <h2 style={S.h2}>프리미엄 안내</h2>
@@ -58,9 +75,9 @@ export default function PrayerLetterTutorial() {
                         <tr><th style={S.th}>기능</th><th style={S.th}>구분</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td style={S.td}>기도 편지 읽기</td><td style={S.td}><span style={S.badgePremium}>프리미엄</span></td></tr>
-                        <tr><td style={S.td}>기도 편지 쓰기 · 보내기</td><td style={S.td}><span style={S.badgePremium}>프리미엄</span></td></tr>
-                        <tr><td style={S.td}>함께 기도하기 · 공유</td><td style={S.td}><span style={S.badgePremium}>프리미엄</span></td></tr>
+                        <tr><td style={S.td}>기도 편지 읽기 · 함께 기도하기 · 공유</td><td style={S.td}><span style={S.badgePremium}>프리미엄</span></td></tr>
+                        <tr><td style={S.td}>댓글 쓰기 · 내 댓글 수정·삭제</td><td style={S.td}><span style={S.badgePremium}>프리미엄</span></td></tr>
+                        <tr><td style={S.td}>편지 쓰기 (인증 사역자 전용)</td><td style={S.td}><span style={S.badgePremium}>프리미엄</span></td></tr>
                     </tbody>
                 </table>
                 <p style={{ ...S.p, fontSize: 13.5, color: '#94a3b8', marginTop: 8 }}>
@@ -87,7 +104,7 @@ export default function PrayerLetterTutorial() {
                             <b>선교사님들의 소식</b>이 카드로 쌓입니다 — &ldquo;기도로 함께 동역해주세요&rdquo;.
                             각 카드에는 보낸 분의 이름과 사역지(예: 탄자니아, 캠퍼스 사역), 날짜,
                             편지 제목과 내용 일부가 보여요. 급한 기도 제목에는 <b>긴급 기도</b> 배지가 붙습니다.
-                            카드 아래 <b>♡ 함께 기도하기</b>로 기도에 동참하고,
+                            카드 아래 <b>함께 기도하기</b>로 기도에 동참하고,
                             <b>카톡 공유</b>로 주변에 기도 제목을 전할 수 있어요.
                         </p>
                     </div>
@@ -95,10 +112,27 @@ export default function PrayerLetterTutorial() {
 
                 <div style={S.step}>
                     <div style={S.stepText}>
-                        <p style={S.stepTitle}><span style={S.stepNum}>3</span>내 기도 편지 쓰기</p>
+                        <p style={S.stepTitle}><span style={S.stepNum}>3</span>편지를 눌러 전문 읽고 댓글 남기기</p>
                         <p style={S.p}>
-                            화면 오른쪽 위의 <b>봉투 아이콘 ✉️</b>을 눌러보세요.
-                            마음을 담아 기도를 편지로 써서 보낼 수 있습니다.
+                            카드를 누르면 <b>편지 전문</b>이 열립니다. 아래쪽 입력창에 <b>댓글</b>을 남겨
+                            사역자님께 응원과 기도를 전해보세요. 내가 쓴 댓글은 <b>수정·삭제</b>할 수 있어요.
+                        </p>
+                    </div>
+                </div>
+
+                <div style={S.step}>
+                    <div style={S.stepText}>
+                        <p style={S.stepTitle}><span style={S.stepNum}>4</span>편지 쓰기 (인증 사역자·선교사님)</p>
+                        <p style={S.p}>
+                            사역자로 인증되어 있으면 화면 오른쪽 위에 <b>[편지 쓰기]</b>가 보입니다.
+                            제목과 본문, <b>사역지</b>를 적고 <b>공개 범위</b>(전체 공개 / 우리 교회만)를 고른 뒤,
+                            급한 기도라면 <b>긴급 기도</b>에 체크해 올리면 됩니다.
+                            올린 편지는 언제든 수정·삭제할 수 있고, 달린 댓글 중 부적절한 것은 <b>숨김</b> 처리할 수 있어요.
+                        </p>
+                        <p style={S.p}>
+                            아직 사역자 인증 전이라면{' '}
+                            <Link href="/tutorial/minister" style={{ color: '#0f766e', fontWeight: 800 }}>사역자 기능</Link>에서
+                            인증 절차를 확인하세요.
                         </p>
                     </div>
                 </div>
