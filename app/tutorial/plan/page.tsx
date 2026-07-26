@@ -49,7 +49,7 @@ export default function PlanTutorial() {
                         <li>내 스타일에 맞는 <b>4가지 통독 방식</b> 중에서 고를 수 있어요 — 전부 365일 기준.</li>
                         <li><b>진행률과 이어 읽을 위치가 자동으로 기억</b>돼요 — 어디까지 읽었는지 외울 필요가 없어요.</li>
                         <li><b>대시보드</b>에서 오늘 읽을 분량과 지금까지의 진행 상황을 한눈에 확인해요.</li>
-                        <li>통독 플랜은 <b>전부 무료</b>예요.</li>
+                        <li><b>자유 통독은 무료</b>예요 — 순서에 매이지 않고 원하는 대로 읽어나갈 수 있어요.</li>
                     </ul>
                 </div>
 
@@ -91,10 +91,13 @@ export default function PlanTutorial() {
                         <tr><th style={S.th}>기능</th><th style={S.th}>구분</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td style={S.td}>통독 플랜 전체 (자유 통독 · 1년 1독 · 연대기 · 맥체인)</td><td style={S.td}><span style={S.badgeFree}>무료</span></td></tr>
+                        <tr><td style={S.td}>자유 통독 (순서 없이 읽고 싶은 곳부터) · 진행률 기록</td><td style={S.td}><span style={S.badgeFree}>무료</span></td></tr>
+                        <tr><td style={S.td}>1년 1독 · 연대기 · 맥체인 플랜 시작하기</td><td style={S.td}><span style={S.badgePremium}>프리미엄</span></td></tr>
                     </tbody>
                 </table>
                 <p style={{ ...S.p, fontSize: 13.5, color: '#94a3b8', marginTop: 8 }}>
+                    · 날짜별 분량이 정해진 세 가지 플랜(1년 1독·연대기·맥체인)은 <b>프리미엄 전용</b>이에요.
+                    구독(월 $1.49 · 연 $15)하시면 바로 시작할 수 있고, 구독료는 미자립교회 지원과 선교 사업에 쓰입니다.<br />
                     · 성경 본문은 개역한글이 무료입니다. 유료 번역본 안내는{' '}
                     <Link href="/tutorial/bible" style={{ color: '#0f766e', fontWeight: 800 }}>성경 읽기 설명서</Link>를 참고하세요.
                 </p>
