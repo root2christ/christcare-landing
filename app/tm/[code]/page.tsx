@@ -1,8 +1,19 @@
 'use client';
 
+import { useEffect } from 'react';
+
 export default function JoinTogetherMem({ params }: { params: { code: string } }) {
   const code = (params.code || '').toUpperCase();
   const appUrl = `christ-app://tm/${code}`;
+
+  // 앱이 설치돼 있으면 이 페이지를 보여주지 않고 바로 연다.
+  // (App Links / Universal Links 가 먼저 가로채는 게 정석이지만, 인앱 브라우저나
+  //  검증 미완 기기에서는 안 잡히므로 커스텀 스킴으로 한 번 더 시도한다.
+  //  앱이 없으면 아무 일도 일어나지 않고 아래 안내 화면이 그대로 보인다.)
+  useEffect(() => {
+    const t = setTimeout(() => { window.location.href = appUrl; }, 400);
+    return () => clearTimeout(t);
+  }, [appUrl]);
 
   return (
     <div style={{

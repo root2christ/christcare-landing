@@ -3,12 +3,28 @@
     "apps": [],
     "details": [
       {
-        "appIDs": ["6Z2LVQB9HN.com.root2christ.christapp"],
+        "appIDs": [
+          "6Z2LVQB9HN.com.root2christ.christapp"
+        ],
         "components": [
-          { "/": "/join/*" },
-          { "/": "/g/*" },
-          { "/": "/invite/*" },
-          { "/": "/share/*" }
+          {
+            "/": "/join/*"
+          },
+          {
+            "/": "/g/*"
+          },
+          {
+            "/": "/invite/*"
+          },
+          {
+            "/": "/share/*"
+          },
+          {
+            "/": "/tm/*"
+          },
+          {
+            "/": "/sg/*"
+          }
         ]
       }
     ]
