@@ -13,7 +13,7 @@ const FEATURES: { emoji: string; title: string; desc: string; href?: string; tag
     { emoji: '🌅', title: '매일 큐티', pricing: 'mixed', priceNote: '무료: 오늘의 큐티 확인 · 프리미엄: 묵상 진행', desc: '365일 새 묵상과 기도, 한 해의 동행', href: '/tutorial/qt' },
     { emoji: '📚', title: '성경 통독 플랜', pricing: 'mixed', priceNote: '무료: 자유 통독 · 프리미엄: 1년 1독·연대기·맥체인', desc: '자유·1년 1독·연대기·맥체인 4가지 플랜', href: '/tutorial/plan' },
     { emoji: '❓', title: '성경 퀴즈 365', pricing: 'mixed', priceNote: '무료: 둘러보기 · 프리미엄: 퀴즈 도전', desc: '매일 새로운 퀴즈로 말씀 지식 점검', href: '/tutorial/quiz' },
-    { emoji: '🤝', title: '함께 암송', pricing: 'premium', priceNote: '녹음 보관·상호 청취가 포함된 프리미엄 전용', desc: '전원이 완료해야 내일이 열리는 암송', href: '/tutorial/memorization' },
+    { emoji: '🤝', title: '함께 암송', pricing: 'premium', priceNote: '녹음 보관·상호 청취가 포함된 프리미엄 전용', desc: '요일마다 한 절씩, 다 같이 외우는 암송', href: '/tutorial/memorization' },
     { emoji: '📝', title: '말씀 노트', pricing: 'free', desc: '은혜받은 말씀과 적용을 기록해요', href: '/tutorial/note' },
     { emoji: '🙏', title: '기도', pricing: 'premium', desc: '기도제목 나눔과 중보기도', href: '/tutorial/prayer' },
     { emoji: '💌', title: '기도 편지', pricing: 'premium', desc: '선교사님들의 소식에 기도로 동역해요', href: '/tutorial/prayerletter' },
