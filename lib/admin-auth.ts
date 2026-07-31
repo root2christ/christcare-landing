@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyAdminSessionToken, ADMIN_COOKIE } from './admin-password';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://oklgzhkkqbziwoyhypom.supabase.co';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rbGd6aGtrcWJ6aXdveWh5cG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3OTc2OTEsImV4cCI6MjA4NDM3MzY5MX0.rTCBqVNIjdkaWcMcOGBkgQyQlDop4B3lz4kqyGSGb1c';
@@ -33,6 +34,13 @@ export interface AdminContext {
  *   4. 모두 통과 시 valid=true
  */
 export async function verifyAdminFromRequest(req: NextRequest): Promise<AdminContext> {
+    // ① 비밀번호 로그인으로 받은 세션 쿠키 (2026-07-31 추가)
+    //    쿠키는 httpOnly + 서명이라 브라우저에서 위조할 수 없다.
+    //    기존 매직링크(Supabase 토큰) 방식도 그대로 통한다 — 둘 중 하나만 맞으면 된다.
+    if (verifyAdminSessionToken(req.cookies.get(ADMIN_COOKIE)?.value)) {
+        return { valid: true, email: 'admin@password-login', userId: 'password-login' };
+    }
+
     const auth = req.headers.get('Authorization') || req.headers.get('authorization');
     if (!auth || !auth.startsWith('Bearer ')) {
         return { valid: false, error: '인증 토큰이 없습니다', status: 401 };

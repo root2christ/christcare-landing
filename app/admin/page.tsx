@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../lib/supabase';
-import type { Session } from '@supabase/supabase-js';
 
-// 관리자 이메일 화이트리스트 (정확 일치 필요)
-// 환경변수 NEXT_PUBLIC_ADMIN_EMAILS (쉼표 구분) 없으면 기본값
-const ADMIN_EMAILS_CLIENT = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'master@root2christ.com')
-    .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+/**
+ * 2026-07-31: 매직링크 → **비밀번호 로그인**(사장님 지시).
+ *
+ * ⚠️ 이 파일은 브라우저로 그대로 내려간다. 그래서 비밀번호도, 세션 토큰도 **여기 두지 않는다.**
+ *    로그인은 /api/admin/login 이 서버에서만 대조하고, 통과하면 httpOnly 쿠키를 심어준다.
+ *    화면 코드가 아는 것은 "로그인됐다"는 사실 하나뿐이다.
+ */
 
 type Notification = {
     id: string;
@@ -73,12 +74,12 @@ const SKU_SECTIONS: Array<{ title: string; keys: string[] }> = [
 type TabKey = 'send' | 'history' | 'gift';
 
 export default function AdminPage() {
-    const [session, setSession] = useState<Session | null>(null);
+    const [authed, setAuthed] = useState(false);
     const [checkingSession, setCheckingSession] = useState(true);
 
-    const [loginEmail, setLoginEmail] = useState('');
+    const [loginPassword, setLoginPassword] = useState('');
     const [loggingIn, setLoggingIn] = useState(false);
-    const [loginError, setLoginError] = useState(''); // check-permission 실패 시에만 사용
+    const [loginError, setLoginError] = useState('');
 
     const [tab, setTab] = useState<TabKey>('send');
 
@@ -129,117 +130,81 @@ export default function AdminPage() {
     const totalCount = selectedItems.reduce((s, x) => s + x.qty, 0);
     const totalValue = selectedItems.reduce((s, x) => s + x.sku.price * x.qty, 0);
 
-    // 세션 확인 + 권한 검증 (admin 아니면 자동 로그아웃)
+    // 로그인돼 있는지 — 쿠키가 살아 있는지 서버에 묻는다
     useEffect(() => {
-        const verifyAndSet = async (s: Session | null) => {
-            if (!s) {
-                setSession(null);
-                setCheckingSession(false);
-                return;
-            }
-            // 서버에서 admin 권한 확인
-            try {
-                const res = await fetch('/api/admin/check-permission', {
-                    headers: { 'Authorization': `Bearer ${s.access_token}` },
-                });
-                if (res.ok) {
-                    setSession(s);
-                } else {
-                    // 비admin이 어쩌다 토큰 얻어도 즉시 로그아웃
-                    await supabase.auth.signOut();
-                    setSession(null);
-                    setLoginError('관리자 권한이 없는 계정입니다.');
-                }
-            } catch {
-                setSession(s); // 네트워크 에러면 일단 두고 API 호출 시 재검증
-            } finally {
-                setCheckingSession(false);
-            }
-        };
-
-        supabase.auth.getSession().then(({ data }) => verifyAndSet(data.session));
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => verifyAndSet(s));
-        return () => subscription.unsubscribe();
+        fetch('/api/admin/login')
+            .then((r) => setAuthed(r.ok))
+            .catch(() => setAuthed(false))
+            .finally(() => setCheckingSession(false));
     }, []);
 
-    // 공통 fetch (토큰 자동 첨부)
+    // 공통 fetch — 인증은 httpOnly 쿠키가 알아서 실려 간다(same-origin)
     const authedFetch = useCallback(async (url: string, init?: RequestInit) => {
-        const token = session?.access_token;
-        if (!token) throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
-        return fetch(url, {
+        const res = await fetch(url, {
             ...init,
-            headers: {
-                ...(init?.headers || {}),
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
+            credentials: 'same-origin',
+            headers: { ...(init?.headers || {}), 'Content-Type': 'application/json' },
         });
-    }, [session]);
+        if (res.status === 401) {
+            setAuthed(false);
+            throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        return res;
+    }, []);
 
     const loadHistory = useCallback(async () => {
-        if (!session) return;
+        if (!authed) return;
         try {
             const res = await authedFetch('/api/push'); // GET도 관리자 토큰 필요
             const data = await res.json();
             setNotifications(data.notifications || []);
         } catch { }
-    }, [authedFetch, session]);
+    }, [authedFetch, authed]);
 
     const loadGrantHistory = useCallback(async () => {
-        if (!session) return;
+        if (!authed) return;
         try {
             const res = await authedFetch('/api/admin/gift-inventory');
             const data = await res.json();
             setGrantHistory(data.grants || []);
         } catch { }
-    }, [authedFetch, session]);
+    }, [authedFetch, authed]);
 
     useEffect(() => {
-        if (!session) return;
+        if (!authed) return;
         if (tab === 'history') loadHistory();
         if (tab === 'gift') loadGrantHistory();
-    }, [session, tab, loadHistory, loadGrantHistory]);
+    }, [authed, tab, loadHistory, loadGrantHistory]);
 
     // ── 로그인 ──
-    // 보안: 입력이 admin이든 아니든 응답·시간·UI 완전 동일 (해커가 admin 여부 추측 불가)
+    // 비밀번호는 서버로만 보낸다. 맞으면 서버가 httpOnly 쿠키를 심어준다(여기서는 못 읽는다).
     const handleLogin = async () => {
-        const email = loginEmail.trim().toLowerCase();
-
+        if (!loginPassword) return;
         setLoggingIn(true);
         setLoginError('');
-
-        const startTime = Date.now();
-        const isAdmin = ADMIN_EMAILS_CLIENT.includes(email);
-
-        if (isAdmin) {
-            // 실제 서버 호출 → Magic Link 발송
-            try {
-                await fetch('/api/admin/send-magic-link', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email }),
-                });
-            } catch {
-                // 에러 메시지 표시 X (정보 노출 방지)
+        try {
+            const res = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: loginPassword }),
+            });
+            if (res.ok) {
+                setLoginPassword('');
+                setAuthed(true);
+            } else {
+                const j = await res.json().catch(() => ({}));
+                setLoginError(j?.error || '비밀번호가 맞지 않습니다.');
             }
+        } catch {
+            setLoginError('연결에 실패했습니다. 잠시 뒤 다시 시도해주세요.');
+        } finally {
+            setLoggingIn(false);
         }
-
-        // 시간 동기화 — admin이든 아니든 동일하게 600~900ms 후 응답
-        // (실제 서버 호출이 더 오래 걸리면 그대로, 짧으면 패딩)
-        const elapsed = Date.now() - startTime;
-        const minDuration = 700 + Math.random() * 200; // 700~900ms
-        if (elapsed < minDuration) {
-            await new Promise(r => setTimeout(r, minDuration - elapsed));
-        }
-
-        // 항상 동일한 UI 변화 (메시지 X, 단순히 입력란 비움)
-        setLoginEmail('');
-        setLoggingIn(false);
     };
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-        setSession(null);
+        try { await fetch('/api/admin/login', { method: 'DELETE' }); } catch { /* noop */ }
+        setAuthed(false);
     };
 
     // ── 알림 보내기 ──
@@ -415,22 +380,26 @@ export default function AdminPage() {
         );
     }
 
-    if (!session) {
+    if (!authed) {
         return (
             <div style={styles.container}>
                 <div style={styles.loginCard}>
                     <h1 style={styles.loginTitle}>soluma 관리자</h1>
                     <input
-                        type="text"
-                        value={loginEmail}
-                        onChange={e => setLoginEmail(e.target.value)}
+                        type="password"
+                        placeholder="비밀번호"
+                        value={loginPassword}
+                        onChange={e => setLoginPassword(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && !loggingIn && handleLogin()}
                         style={{ ...styles.input, marginTop: 20 }}
                         disabled={loggingIn}
-                        autoComplete="off"
+                        autoComplete="current-password"
                         autoCapitalize="off"
                         spellCheck={false}
                     />
+                    {loginError ? (
+                        <p style={{ color: '#f87171', fontSize: 13, marginTop: 10, marginBottom: 0 }}>{loginError}</p>
+                    ) : null}
                     <button onClick={handleLogin} disabled={loggingIn} style={{ ...styles.primaryBtn, marginTop: 16 }}>
                         {loggingIn ? '...' : '로그인'}
                     </button>
@@ -445,7 +414,7 @@ export default function AdminPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                     <div>
                         <h1 style={{ ...styles.pageTitle, marginBottom: 4 }}>soluma 관리자</h1>
-                        <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>{session.user.email}</p>
+                        <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>관리자</p>
                     </div>
                     <button onClick={handleLogout} style={styles.refreshBtn}>로그아웃</button>
                 </div>
