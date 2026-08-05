@@ -95,6 +95,32 @@ export default function PastorInvitePage() {
                     </p>
                 </div>
 
+                {/* ── 비전 ── */}
+                <Section tag="ROOT의 비전" title="솔루마는 목적이 아니라 시작입니다" accent={GREEN_DEEP}>
+                    <P>
+                        주식회사 루트(ROOT)가 솔루마를 만드는 궁극적인 목적은 플랫폼 운영이나 수익 창출이 아닙니다.
+                        우리가 꿈꾸는 가장 큰 비전은 <b style={{ color: NAVY }}>기독교 비영리 재단의 설립</b>입니다.
+                        솔루마를 통해 만들어지는 가치와 수익이 다시 하나님 나라를 위해 사용되기를 소망합니다.
+                    </P>
+                    <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 14, padding: '16px 18px', margin: '4px 0 12px' }}>
+                        <div style={{ fontSize: 13, fontWeight: 900, color: GREEN_DEEP, marginBottom: 8 }}>재단을 통해 감당하고자 하는 사역</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
+                            {['비자립 교회 지원', '국내외 선교 사역 지원', '선교사·목회자 가정 지원', '다음 세대 장학 사업', '긴급 구호와 사랑 나눔', '복음 전파 프로젝트 후원'].map((v, i) => (
+                                <span key={i} style={{ fontSize: 13.5, fontWeight: 700, color: '#166534' }}>✓ {v}</span>
+                            ))}
+                        </div>
+                    </div>
+                    <P>
+                        재정을 흘려보내는 것에 머무르지 않고, 직접 현장을 찾아가 섬기고 함께 기도하며 몸으로 순종하는 공동체가 되고자 합니다.
+                    </P>
+                    <div style={{ textAlign: 'center', background: NAVY, borderRadius: 16, padding: '20px 18px', marginTop: 6 }}>
+                        <div style={{ fontSize: 12, fontWeight: 900, color: '#86efac', letterSpacing: 2, marginBottom: 8 }}>비전 선언문</div>
+                        <div style={{ fontSize: 15.5, fontWeight: 800, color: '#fff', lineHeight: 1.7 }}>
+                            “모든 것은 뿌리 되신 하나님으로부터,<br />그리고 하나님께로.”
+                        </div>
+                    </div>
+                </Section>
+
                 {/* ── 인사말 ── */}
                 <Section tag="인사말" title="목사님, 그동안의 기도와 조언에 감사드립니다" accent={GOLD}>
                     <P>
@@ -231,32 +257,6 @@ export default function PastorInvitePage() {
                                 </div>
                             </div>
                         ))}
-                    </div>
-                </Section>
-
-                {/* ── 비전 ── */}
-                <Section tag="ROOT의 비전" title="솔루마는 목적이 아니라 시작입니다" accent={GREEN_DEEP}>
-                    <P>
-                        주식회사 루트(ROOT)가 솔루마를 만드는 궁극적인 목적은 플랫폼 운영이나 수익 창출이 아닙니다.
-                        우리가 꿈꾸는 가장 큰 비전은 <b style={{ color: NAVY }}>기독교 비영리 재단의 설립</b>입니다.
-                        솔루마를 통해 만들어지는 가치와 수익이 다시 하나님 나라를 위해 사용되기를 소망합니다.
-                    </P>
-                    <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 14, padding: '16px 18px', margin: '4px 0 12px' }}>
-                        <div style={{ fontSize: 13, fontWeight: 900, color: GREEN_DEEP, marginBottom: 8 }}>재단을 통해 감당하고자 하는 사역</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
-                            {['비자립 교회 지원', '국내외 선교 사역 지원', '선교사·목회자 가정 지원', '다음 세대 장학 사업', '긴급 구호와 사랑 나눔', '복음 전파 프로젝트 후원'].map((v, i) => (
-                                <span key={i} style={{ fontSize: 13.5, fontWeight: 700, color: '#166534' }}>✓ {v}</span>
-                            ))}
-                        </div>
-                    </div>
-                    <P>
-                        재정을 흘려보내는 것에 머무르지 않고, 직접 현장을 찾아가 섬기고 함께 기도하며 몸으로 순종하는 공동체가 되고자 합니다.
-                    </P>
-                    <div style={{ textAlign: 'center', background: NAVY, borderRadius: 16, padding: '20px 18px', marginTop: 6 }}>
-                        <div style={{ fontSize: 12, fontWeight: 900, color: '#86efac', letterSpacing: 2, marginBottom: 8 }}>비전 선언문</div>
-                        <div style={{ fontSize: 15.5, fontWeight: 800, color: '#fff', lineHeight: 1.7 }}>
-                            “모든 것은 뿌리 되신 하나님으로부터,<br />그리고 하나님께로.”
-                        </div>
                     </div>
                 </Section>
 
