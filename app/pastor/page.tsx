@@ -1,0 +1,283 @@
+import type { Metadata } from 'next';
+import StoreQr from './_components/StoreQr';
+
+export const metadata: Metadata = {
+    title: 'soluma 정식 런칭 초대장 — 2026. 8. 15',
+    description: '목사님을 soluma 정식 런칭에 초대합니다. 다운로드 방법 · 앱 소개 · 교회를 위한 기능 · 사용법 · ROOT의 비전',
+    openGraph: {
+        title: '📜 soluma 정식 런칭 초대장',
+        description: '2026년 8월 15일, 솔루마가 정식 출시됩니다. 목사님을 초대합니다.',
+        url: 'https://christcare.us/pastor',
+        siteName: 'soluma',
+        images: ['/app-icon.png'],
+        type: 'website',
+    },
+};
+
+// 목사님께 링크로 전달하는 정식 런칭 초대장 (2026-08-15).
+// 발표회(/advisory·/qr)와 같은 디자인 언어 — 인라인 스타일, 카드 섹션, QR.
+
+const NAVY = '#0f172a';
+const GREEN = '#16a34a';
+const GREEN_DEEP = '#15803d';
+const GOLD = '#b45309';
+const SUB = '#475569';
+const FAINT = '#64748b';
+const LINE = '#e7e3da';
+
+const IOS_URL = 'https://apps.apple.com/app/id6779090825';
+const AOS_URL = 'https://play.google.com/store/apps/details?id=com.root2christ.christapp';
+
+function Section({ tag, title, accent = GREEN, children }: { tag: string; title: string; accent?: string; children: React.ReactNode }) {
+    return (
+        <div style={{ marginTop: 20, background: '#fff', border: `1px solid ${LINE}`, borderRadius: 22, padding: '26px 22px', boxShadow: '0 2px 12px rgba(15,23,42,0.04)' }}>
+            <div style={{ fontSize: 12.5, fontWeight: 900, color: accent, letterSpacing: 1.5, marginBottom: 5 }}>{tag}</div>
+            <h2 style={{ fontSize: 21, fontWeight: 900, color: NAVY, margin: '0 0 14px', lineHeight: 1.35 }}>{title}</h2>
+            {children}
+        </div>
+    );
+}
+
+function P({ children }: { children: React.ReactNode }) {
+    return <p style={{ fontSize: 15, color: SUB, lineHeight: 1.85, margin: '0 0 12px' }}>{children}</p>;
+}
+
+function Feature({ emoji, title, desc }: { emoji: string; title: string; desc: string }) {
+    return (
+        <div style={{ flex: '1 1 240px', minWidth: 220, background: '#fbfaf7', border: `1px solid ${LINE}`, borderRadius: 16, padding: '16px 15px' }}>
+            <div style={{ fontSize: 24, lineHeight: 1, marginBottom: 8 }}>{emoji}</div>
+            <div style={{ fontSize: 15.5, fontWeight: 800, color: NAVY, marginBottom: 5 }}>{title}</div>
+            <div style={{ fontSize: 13.5, color: SUB, lineHeight: 1.7 }}>{desc}</div>
+        </div>
+    );
+}
+
+function Step({ n, title, children }: { n: string; title: string; children?: React.ReactNode }) {
+    return (
+        <div style={{ display: 'flex', gap: 14, marginBottom: 15 }}>
+            <div style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 999, background: GREEN, color: '#fff', fontSize: 14.5, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{n}</div>
+            <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: NAVY, lineHeight: 1.45 }}>{title}</div>
+                {children && <div style={{ fontSize: 14.5, color: SUB, lineHeight: 1.75, marginTop: 4 }}>{children}</div>}
+            </div>
+        </div>
+    );
+}
+
+function Shot({ src, label }: { src: string; label: string }) {
+    return (
+        <div style={{ textAlign: 'center' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt={label} style={{ width: 150, height: 'auto', borderRadius: 18, border: `1px solid ${LINE}`, display: 'block', boxShadow: '0 4px 14px rgba(15,23,42,0.08)' }} />
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: FAINT, marginTop: 8 }}>{label}</div>
+        </div>
+    );
+}
+
+export default function PastorInvitePage() {
+    return (
+        <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg,#f6f4ee,#faf8f3 45%,#f2f6f1)', padding: '40px 18px 70px' }}>
+            <div style={{ maxWidth: 740, margin: '0 auto' }}>
+
+                {/* ── 초대장 헤더 ── */}
+                <div style={{ textAlign: 'center', background: '#fff', border: `1px solid ${LINE}`, borderRadius: 26, padding: '40px 24px 34px', boxShadow: '0 4px 20px rgba(15,23,42,0.05)' }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 900, color: GOLD, letterSpacing: 4 }}>INVITATION</div>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/app-icon.png" alt="soluma" width={76} height={76} style={{ borderRadius: 18, margin: '18px 0 14px' }} />
+                    <h1 style={{ fontSize: 28, fontWeight: 900, color: NAVY, margin: 0, lineHeight: 1.4 }}>
+                        목사님을 솔루마 정식 런칭에<br />초대합니다
+                    </h1>
+                    <div style={{ margin: '18px auto 0', display: 'inline-block', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 999, padding: '9px 22px' }}>
+                        <span style={{ fontSize: 16, fontWeight: 900, color: GREEN_DEEP, letterSpacing: 0.5 }}>2026년 8월 15일 (토) 정식 런칭</span>
+                    </div>
+                    <p style={{ fontSize: 14.5, color: FAINT, lineHeight: 1.8, margin: '18px 0 0' }}>
+                        말씀으로 하루를 시작하고, 공동체와 함께 자라나는<br />크리스천 신앙 성장 앱 — <b style={{ color: NAVY }}>soluma(솔루마)</b>
+                    </p>
+                </div>
+
+                {/* ── 인사말 ── */}
+                <Section tag="인사말" title="목사님, 그동안의 기도와 조언에 감사드립니다" accent={GOLD}>
+                    <P>
+                        지난 목회자 자문회에서 부족한 저희를 따뜻하게 격려해 주시고, 귀한 조언을 아끼지 않으신 목사님들께 진심으로 감사드립니다.
+                        주신 말씀 하나하나를 마음에 새기며 다듬어 온 솔루마가, 이제 <b style={{ color: NAVY }}>애플 앱스토어와 구글 플레이 정식 심사를 모두 통과</b>하여
+                        <b style={{ color: GREEN_DEEP }}> 2026년 8월 15일 정식 런칭</b>을 맞이하게 되었습니다.
+                    </P>
+                    <P>
+                        솔루마는 성도들이 매일 말씀과 가까워지고, 교회 공동체와 더 단단히 연결되도록 돕는 도구입니다.
+                        목사님의 목회 현장에 작은 보탬이 되기를 소망하며, 이 초대장을 드립니다.
+                    </P>
+                    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '13px 15px', fontSize: 13.5, color: '#92400e', lineHeight: 1.7 }}>
+                        📌 지난 자문회 때 <b>설치 파일(APK)로 받으셨던 테스트 버전</b>은 이제 옛 버전입니다.
+                        번거로우시겠지만 <b>삭제하신 뒤 아래 스토어에서 정식 버전</b>을 새로 설치해 주세요. 기존 계정으로 로그인하시면 기록은 그대로 이어집니다.
+                    </div>
+                </Section>
+
+                {/* ── 다운로드 ── */}
+                <Section tag="다운로드" title="지금 바로 설치하실 수 있습니다">
+                    <P>
+                        아이폰과 안드로이드 <b style={{ color: NAVY }}>모두 정식 출시</b>되어 있습니다. 스토어에서 <b style={{ color: NAVY }}>“솔루마”</b> 또는 <b style={{ color: NAVY }}>“soluma”</b>를
+                        검색하시거나, 아래 버튼·QR을 이용해 주세요. 설치와 핵심 기능 사용은 무료입니다.
+                    </P>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 16 }}>
+                        {[
+                            { name: 'App Store', sub: '아이폰 · 아이패드', url: IOS_URL },
+                            { name: 'Google Play', sub: '안드로이드 · 갤럭시', url: AOS_URL },
+                        ].map((s) => (
+                            <div key={s.name} style={{ flex: '1 1 250px', minWidth: 240, background: '#fbfaf7', border: `1px solid ${LINE}`, borderRadius: 18, padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                                <div style={{ fontSize: 13, fontWeight: 900, color: GREEN_DEEP, letterSpacing: 0.5, marginBottom: 12 }}>{s.name}</div>
+                                <div style={{ background: '#fff', padding: 10, borderRadius: 14, border: `1px solid ${LINE}` }}>
+                                    <StoreQr url={s.url} />
+                                </div>
+                                <div style={{ fontSize: 13.5, fontWeight: 700, color: FAINT, margin: '12px 0 10px' }}>{s.sub}</div>
+                                <a href={s.url} target="_blank" rel="noopener noreferrer"
+                                    style={{ display: 'block', width: '100%', boxSizing: 'border-box', background: NAVY, color: '#fff', fontSize: 14.5, fontWeight: 800, textDecoration: 'none', borderRadius: 12, padding: '13px 0' }}>
+                                    {s.name}에서 설치 →
+                                </a>
+                            </div>
+                        ))}
+                    </div>
+                    <p style={{ fontSize: 13, color: FAINT, lineHeight: 1.7, margin: '14px 0 0', textAlign: 'center' }}>
+                        휴대폰으로 이 페이지를 보고 계시다면 버튼을, 컴퓨터로 보고 계시다면 휴대폰 카메라로 QR을 비춰 주세요.
+                    </p>
+                </Section>
+
+                {/* ── 앱 소개 ── */}
+                <Section tag="앱 소개" title="크라이스트 테스트에서 시작해, 매일의 말씀 생활로">
+                    <P>
+                        솔루마의 입구는 <b style={{ color: NAVY }}>크라이스트 테스트</b>입니다. 30개 문항으로 나의 신앙 유형을 성경 인물에 비추어 돌아보는 테스트로,
+                        결과지를 통해 자연스럽게 말씀 묵상과 통독으로 이어지도록 설계했습니다. 테스트는 진단이 목적이 아니라
+                        <b style={{ color: NAVY }}> 말씀 생활로 들어가는 문</b>입니다.
+                    </P>
+                    <P>
+                        그 문을 지나면 — 365일 큐티, 성경 통독 플랜, 필사, 함께 암송, 말씀 노트, 기도제목과 간증을 나누는 공동체,
+                        그리고 교회를 위한 사역 도구까지. 신앙 생활의 하루 리듬 전체를 한 앱에 담았습니다.
+                    </P>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center', marginTop: 18 }}>
+                        <Shot src="/tutorial/test/intro.png" label="크라이스트 테스트" />
+                        <Shot src="/tutorial/qt/word.png" label="오늘의 큐티" />
+                        <Shot src="/tutorial/scripture/writing.png" label="성경 필사" />
+                        <Shot src="/tutorial/church/directory.png" label="우리 교회" />
+                    </div>
+                </Section>
+
+                {/* ── 주요 기능 ── */}
+                <Section tag="주요 기능" title="성도의 하루를 채우는 기능들">
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                        <Feature emoji="✝️" title="크라이스트 테스트" desc="30문항으로 만나는 나의 신앙 유형과 성경 인물. 결과지에서 위로의 말씀과 기도문까지 이어집니다." />
+                        <Feature emoji="🌅" title="큐티 365" desc="1년 365일, 하루도 빠짐없이 준비된 묵상. 본문 · 묵상 · 적용 · 기도로 이어지는 하루 10분." />
+                        <Feature emoji="📖" title="성경 통독 · 읽기 플랜" desc="통독 플랜을 따라 읽고 진도가 자동 기록됩니다. 대한성서공회 정식 라이선스 성경 수록." />
+                        <Feature emoji="✍️" title="성경 필사" desc="손으로 쓰거나 목소리로 읽어 필사합니다. 음성 인식이 본문과 대조해 진도를 확인해 줍니다." />
+                        <Feature emoji="🎙️" title="함께 암송" desc="소그룹이 한 방에 모여 월~금 하루 한 절씩 암송하고, 서로의 녹음을 들으며 격려합니다. 토요일은 복습, 주일은 쉼." />
+                        <Feature emoji="📝" title="말씀 노트" desc="주일 설교를 기록하고 한 주간 실천 미션으로 이어갑니다. 토요일 아침, 미션 점검 알림이 갑니다." />
+                        <Feature emoji="🙏" title="공동체" desc="기도제목과 간증을 나누고 서로 중보합니다. 소그룹 채팅과 1:1 대화도 준비되어 있습니다." />
+                        <Feature emoji="⛪" title="우리 교회" desc="교인 명부 · 교회 소식 · 출석 체크. 성도들이 교회를 중심으로 연결됩니다." />
+                        <Feature emoji="💼" title="잡박스" desc="교계 구인 · 재능 나눔 게시판. 반주, 디자인, 번역 등 성도의 은사가 교회들과 만납니다." />
+                        <Feature emoji="🌏" title="한국어 · 영어 · 일본어" desc="3개 언어를 지원해 이민 교회와 선교 현장에서도 함께 사용할 수 있습니다." />
+                    </div>
+                </Section>
+
+                {/* ── 교회를 위한 기능 ── */}
+                <Section tag="교회를 위한 기능" title="목회 현장을 돕는 사역자 전용 도구" accent="#7c3aed">
+                    <P>
+                        사역자로 인증되시면 아래 기능이 열립니다. 성도들에게는 보이지 않는 <b style={{ color: NAVY }}>사역자 전용</b> 영역입니다.
+                    </P>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+                        {[
+                            ['🔔 새신자 등록 알림', '성도나 방문자가 앱에서 새신자 등록을 하면, 그 교회의 인증 사역자 휴대폰으로 즉시 알림이 갑니다. 심방과 환영이 빨라집니다.'],
+                            ['💌 기도 편지', '사역자만 쓸 수 있는 목양 편지입니다. 교회 성도들에게 기도 제목과 위로의 말씀을 보내실 수 있습니다.'],
+                            ['📋 교인 명부 · 임명', '우리 교회에 등록한 성도 명단을 보고, 부교역자·리더를 임명해 함께 섬길 수 있습니다.'],
+                            ['💻 교회 웹 대시보드', 'christcare.us/church 에서 컴퓨터 큰 화면으로 교인 명부를 관리합니다. 휴대폰 카메라로 QR을 찍으면 비밀번호 없이 앱 계정으로 바로 로그인됩니다.'],
+                        ].map(([h, b], i) => (
+                            <div key={i} style={{ display: 'flex', gap: 11 }}>
+                                <span style={{ flexShrink: 0, marginTop: 7, width: 7, height: 7, borderRadius: 7, background: '#7c3aed' }} />
+                                <div>
+                                    <span style={{ fontSize: 15.5, fontWeight: 800, color: NAVY }}>{h}</span>
+                                    <span style={{ fontSize: 14.5, color: SUB, lineHeight: 1.75 }}> — {b}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div style={{ marginTop: 16, background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 12, padding: '13px 15px', fontSize: 13.5, color: '#6d28d9', lineHeight: 1.7 }}>
+                        🔑 <b>사역자 인증 방법</b> — 앱 설치 후 홈의 「사역자 등록」에서 재직을 확인할 수 있는 서류(임명장·재직증명 등)를 사진으로 올려 주시면,
+                        확인 후 인증해 드립니다. 어려우시면 아래 문의처로 연락 주세요. 저희가 도와드리겠습니다.
+                    </div>
+                </Section>
+
+                {/* ── 시작 가이드 ── */}
+                <Section tag="시작 가이드" title="5분이면 시작하실 수 있습니다">
+                    <Step n="1" title="앱 설치">위 다운로드 버튼 또는 스토어에서 “솔루마” 검색 → 설치.</Step>
+                    <Step n="2" title="간편 로그인">카카오 · 구글 · 애플 계정으로 3초 만에 가입됩니다. 별도 비밀번호가 없습니다.</Step>
+                    <Step n="3" title="크라이스트 테스트 (3분)">나의 신앙 유형을 확인해 보세요. 성도들에게 권하시기 전에 직접 경험해 보시면 좋습니다.</Step>
+                    <Step n="4" title="우리 교회 등록">마이 탭에서 섬기시는 교회를 검색해 등록합니다. 교회가 없으면 새로 등록하실 수 있습니다.</Step>
+                    <Step n="5" title="사역자 인증 신청">홈 「사역자 등록」에서 서류를 올리시면, 인증 후 교회 기능이 모두 열립니다.</Step>
+                    <p style={{ fontSize: 13.5, color: FAINT, lineHeight: 1.7, margin: '6px 0 0' }}>
+                        📖 자세한 화면별 사용법은 <a href="https://christcare.us/tutorial" style={{ color: GREEN_DEEP, fontWeight: 800 }}>christcare.us/tutorial</a> 에서 계속 채워지고 있습니다.
+                    </p>
+                </Section>
+
+                {/* ── 안심하고 권하실 수 있습니다 ── */}
+                <Section tag="신뢰" title="안심하고 성도들에게 권하실 수 있습니다" accent={GOLD}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+                        {[
+                            ['📜 정식 라이선스 성경', '개역개정을 비롯한 성경 본문은 대한성서공회와 정식 사용 계약을 맺고 수록했습니다.'],
+                            ['🚫 AI 상담 없음', '신앙 상담을 인공지능에 맡기지 않습니다. 양육 콘텐츠는 성경 본문과 사람이 준비한 큐레이션으로만 구성해, 교리적 오류의 여지를 원천적으로 차단했습니다.'],
+                            ['👨‍💼 목회자 자문 반영', '기능과 문구 하나하나를 목회자 자문회의 피드백으로 다듬었습니다. 앞으로도 목사님들의 조언 위에 세워 가겠습니다.'],
+                        ].map(([h, b], i) => (
+                            <div key={i} style={{ display: 'flex', gap: 11 }}>
+                                <span style={{ flexShrink: 0, marginTop: 7, width: 7, height: 7, borderRadius: 7, background: GOLD }} />
+                                <div>
+                                    <span style={{ fontSize: 15.5, fontWeight: 800, color: NAVY }}>{h}</span>
+                                    <span style={{ fontSize: 14.5, color: SUB, lineHeight: 1.75 }}> — {b}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+
+                {/* ── 비전 ── */}
+                <Section tag="ROOT의 비전" title="솔루마는 목적이 아니라 시작입니다" accent={GREEN_DEEP}>
+                    <P>
+                        주식회사 루트(ROOT)가 솔루마를 만드는 궁극적인 목적은 플랫폼 운영이나 수익 창출이 아닙니다.
+                        우리가 꿈꾸는 가장 큰 비전은 <b style={{ color: NAVY }}>기독교 비영리 재단의 설립</b>입니다.
+                        솔루마를 통해 만들어지는 가치와 수익이 다시 하나님 나라를 위해 사용되기를 소망합니다.
+                    </P>
+                    <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 14, padding: '16px 18px', margin: '4px 0 12px' }}>
+                        <div style={{ fontSize: 13, fontWeight: 900, color: GREEN_DEEP, marginBottom: 8 }}>재단을 통해 감당하고자 하는 사역</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
+                            {['비자립 교회 지원', '국내외 선교 사역 지원', '선교사·목회자 가정 지원', '다음 세대 장학 사업', '긴급 구호와 사랑 나눔', '복음 전파 프로젝트 후원'].map((v, i) => (
+                                <span key={i} style={{ fontSize: 13.5, fontWeight: 700, color: '#166534' }}>✓ {v}</span>
+                            ))}
+                        </div>
+                    </div>
+                    <P>
+                        재정을 흘려보내는 것에 머무르지 않고, 직접 현장을 찾아가 섬기고 함께 기도하며 몸으로 순종하는 공동체가 되고자 합니다.
+                    </P>
+                    <div style={{ textAlign: 'center', background: NAVY, borderRadius: 16, padding: '20px 18px', marginTop: 6 }}>
+                        <div style={{ fontSize: 12, fontWeight: 900, color: '#86efac', letterSpacing: 2, marginBottom: 8 }}>비전 선언문</div>
+                        <div style={{ fontSize: 15.5, fontWeight: 800, color: '#fff', lineHeight: 1.7 }}>
+                            “모든 것은 뿌리 되신 하나님으로부터,<br />그리고 하나님께로.”
+                        </div>
+                    </div>
+                </Section>
+
+                {/* ── 맺음말 ── */}
+                <div style={{ marginTop: 20, textAlign: 'center', background: '#fff', border: `1px solid ${LINE}`, borderRadius: 22, padding: '30px 22px' }}>
+                    <div style={{ fontSize: 20, lineHeight: 1 }}>🌱</div>
+                    <p style={{ fontSize: 15.5, fontWeight: 800, color: NAVY, lineHeight: 1.8, margin: '12px 0 6px' }}>
+                        8월 15일, 솔루마의 첫걸음에<br />목사님의 기도로 함께해 주세요.
+                    </p>
+                    <p style={{ fontSize: 14, color: SUB, lineHeight: 1.8, margin: '0 0 18px' }}>
+                        교회 도입 안내, 사역자 인증, 사용 중 궁금하신 점 —<br />언제든 편하게 연락 주십시오.
+                    </p>
+                    <a href="mailto:master@root2christ.com" style={{ display: 'inline-block', background: GREEN, color: '#fff', fontSize: 14.5, fontWeight: 800, textDecoration: 'none', borderRadius: 12, padding: '13px 26px' }}>
+                        ✉️ master@root2christ.com
+                    </a>
+                </div>
+
+                <p style={{ textAlign: 'center', marginTop: 26, fontSize: 12.5, color: '#a8a29e', fontWeight: 800, letterSpacing: 1, lineHeight: 1.8 }}>
+                    주식회사 루트 · ROOT Inc.<br />soluma — Find your light in Scripture
+                </p>
+            </div>
+        </div>
+    );
+}
