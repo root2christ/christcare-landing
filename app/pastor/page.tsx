@@ -87,7 +87,7 @@ function Ornament({ margin = '16px auto 6px' }: { margin?: string }) {
 function Wave() {
     return (
         <svg viewBox="0 0 740 150" preserveAspectRatio="none" aria-hidden
-            style={{ display: 'block', width: '100%', height: 104, marginTop: 30 }}>
+            style={{ display: 'block', width: '100%', height: 96 }}>
             <defs>
                 <linearGradient id="wvA" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0" stopColor="#eaf1f8" />
@@ -189,6 +189,11 @@ export default function PastorInvitePage() {
                             말씀으로 하루를 시작하고, 공동체와 함께 자라나는<br />크리스천 신앙 성장 앱 — <b style={{ color: '#182742' }}>SOLUMA · 솔루마</b>
                         </p>
                     </div>
+                </div>
+
+                {/* 헤더 마감 물결 — 시안처럼 첫 파트 하단에 (프레임 가장자리까지 확장) */}
+                <div aria-hidden style={{ margin: '18px -16px 0' }}>
+                    <Wave />
                 </div>
 
                 {/* ── 비전 ── */}
@@ -360,10 +365,9 @@ export default function PastorInvitePage() {
                     </a>
                 </div>
 
-                <p style={{ textAlign: 'center', marginTop: 26, marginBottom: 0, fontSize: 12.5, color: '#a8a29e', fontWeight: 800, letterSpacing: 1, lineHeight: 1.8 }}>
+                <p style={{ textAlign: 'center', marginTop: 30, marginBottom: 0, paddingBottom: 36, fontSize: 12.5, color: '#a8a29e', fontWeight: 800, letterSpacing: 1, lineHeight: 1.8 }}>
                     주식회사 루트 · ROOT Inc.<br />soluma — Find your light in Scripture
                 </p>
-                <Wave />
             </div>
             </div>
         </div>
