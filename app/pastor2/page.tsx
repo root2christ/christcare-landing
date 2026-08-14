@@ -108,8 +108,6 @@ export default function PastorInviteV2Page() {
             {/* 카드 — 크림 종이 + 브릭 이중 프레임 (외곽 실선 + 안쪽 점선) */}
             <div style={{ maxWidth: 720, margin: '0 auto', background: PAPER, border: `1.5px solid ${BRICK}`, padding: 9, boxShadow: '0 14px 40px rgba(56,38,25,0.18)' }}>
                 <div style={{ position: 'relative', overflow: 'hidden', border: `1px dotted ${BRICK}`, padding: '46px 22px 42px' }}>
-                    {/* 은빛 별가루 — 수백 개가 눈처럼 내린다 */}
-                    <Stardust />
 
                     {/* 앱 아이콘 글레어(부드러운 빛 스침) + 별가루 반짝임 */}
                     <style dangerouslySetInnerHTML={{ __html: `
@@ -129,6 +127,9 @@ export default function PastorInviteV2Page() {
                             <span aria-hidden style={{ width: 40, height: 1, background: `linear-gradient(270deg,transparent,${BRICK})` }} />
                         </div>
                         <span className="icon-stage" style={{ margin: '26px 0 22px' }}>
+                            <span aria-hidden style={{ position: 'absolute', top: -100, left: -110, right: -110, bottom: -24 }}>
+                                <Stardust />
+                            </span>
                             <span className="icon-glare" style={{ borderRadius: 17, boxShadow: '0 6px 16px rgba(38,32,25,0.22), 0 0 22px rgba(203,141,66,0.3)' }}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src="/app-icon.png" alt="soluma" width={74} height={74} style={{ display: 'block', borderRadius: 17 }} />

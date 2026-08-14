@@ -9,7 +9,7 @@
  */
 import { useEffect, useRef } from 'react';
 
-export default function Stardust({ density = 9000 }: { density?: number }) {
+export default function Stardust({ density = 700 }: { density?: number }) {
     const ref = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -32,17 +32,14 @@ export default function Stardust({ density = 9000 }: { density?: number }) {
         ro.observe(parent);
 
         const rand = (a: number, b: number) => a + Math.random() * (b - a);
-        // 은빛 2톤 — 짙은 실버(바탕이 밝아도 보이게) + 밝은 글린트
-        const TONES = ['158,170,186', '203,213,225', '226,232,240'];
-        // 카드가 길든 짧든 화면 어디서나 같은 밀도로 내리게 — 면적 비례 개수
-        const count = Math.max(180, Math.min(900, Math.round((W * H) / density)));
+        // 면적 비례 개수 (좁은 영역용)
+        const count = Math.max(50, Math.min(400, Math.round((W * H) / density)));
         const ps = Array.from({ length: count }, () => ({
             x: Math.random(), y: Math.random(),
-            r: rand(0.5, 1.8),            // 아주 작은 알갱이
-            v: rand(7, 26),               // 낙하 속도(px/s)
-            sway: rand(4, 18), ph: rand(0, Math.PI * 2), tw: rand(0.4, 1.4),
-            o: rand(0.25, 0.85),
-            tone: TONES[Math.floor(Math.random() * TONES.length)],
+            r: rand(0.8, 2.1),            // 알갱이 코어 크기
+            v: rand(9, 30),               // 낙하 속도(px/s)
+            sway: rand(3, 14), ph: rand(0, Math.PI * 2), tw: rand(0.5, 1.6),
+            o: rand(0.4, 1),
         }));
 
         let last = performance.now();
@@ -56,10 +53,25 @@ export default function Stardust({ density = 9000 }: { density?: number }) {
                 const x = p.x * W + Math.sin(t * p.tw + p.ph) * p.sway * 0.4;
                 const y = p.y * H;
                 const alpha = Math.max(0, p.o * (0.55 + 0.45 * Math.sin(t * p.tw * 2 + p.ph)));
+                // 밝은 바탕에서도 보이도록 두 겹으로:
+                // ① 짙은 실버 헤일로(대비 확보) ② 밝은 흰 코어(반짝임)
+                ctx.beginPath();
+                ctx.arc(x, y, p.r * 2.1, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(100,116,139,${(alpha * 0.45).toFixed(3)})`;
+                ctx.fill();
                 ctx.beginPath();
                 ctx.arc(x, y, p.r, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${p.tone},${alpha.toFixed(3)})`;
+                ctx.fillStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
                 ctx.fill();
+                // 큰 알갱이는 십자 광채
+                if (p.r > 1.6) {
+                    ctx.strokeStyle = `rgba(255,255,255,${(alpha * 0.7).toFixed(3)})`;
+                    ctx.lineWidth = 0.8;
+                    ctx.beginPath();
+                    ctx.moveTo(x - p.r * 3, y); ctx.lineTo(x + p.r * 3, y);
+                    ctx.moveTo(x, y - p.r * 3); ctx.lineTo(x, y + p.r * 3);
+                    ctx.stroke();
+                }
             }
             raf = requestAnimationFrame(tick);
         };

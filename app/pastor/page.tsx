@@ -105,8 +105,6 @@ export default function PastorInvitePage() {
             <div style={{ maxWidth: 760, margin: '0 auto', border: `1.5px solid ${GOLD_LINE}`, borderRadius: 26, padding: 7, background: 'linear-gradient(180deg,#fdfaf3,#f7f1e3)', boxShadow: '0 10px 34px rgba(90,74,40,0.10)' }}>
             <div style={{ position: 'relative', border: '1px solid rgba(201,162,94,0.4)', borderRadius: 20, overflow: 'hidden', padding: '36px 16px 0',
                 background: 'radial-gradient(520px 240px at 12% -4%, rgba(250,241,216,0.9), transparent 70%), radial-gradient(520px 240px at 88% -4%, rgba(250,241,216,0.9), transparent 70%), linear-gradient(180deg,#fffdf8,#faf5e9)' }}>
-                {/* 은빛 별가루 — 수백 개가 눈처럼 내린다 */}
-                <Stardust />
 
                 {/* ── 초대장 헤더 (월계수 장식) ── */}
                 <div style={{ position: 'relative', textAlign: 'center', padding: '10px 8px 8px' }}>
@@ -126,6 +124,9 @@ export default function PastorInvitePage() {
                         @keyframes iconShine { 0% { left:-90%; } 32% { left:150%; } 100% { left:150%; } }
                         ` }} />
                         <span className="icon-stage" style={{ margin: '26px 0 18px' }}>
+                            <span aria-hidden style={{ position: 'absolute', top: -120, left: -130, right: -130, bottom: -30 }}>
+                                <Stardust />
+                            </span>
                             <span className="icon-glare" style={{ borderRadius: 24, boxShadow: '0 10px 26px rgba(15,23,42,0.2), 0 0 26px rgba(201,162,94,0.35)' }}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src="/app-icon.png" alt="soluma" width={96} height={96} style={{ display: 'block', borderRadius: 24 }} />
