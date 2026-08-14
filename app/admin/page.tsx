@@ -71,7 +71,22 @@ const SKU_SECTIONS: Array<{ title: string; keys: string[] }> = [
     { title: '성경 평생소장', keys: ['bible_korean_all'] },
 ];
 
-type TabKey = 'send' | 'history' | 'gift';
+type TabKey = 'send' | 'history' | 'gift' | 'pastors';
+
+type PastorRow = {
+    id: string; user_id: string; name: string | null; church_name: string | null;
+    church_id: number | null; denomination: string | null; position: string | null;
+    phone: string | null; verification_status: string | null; auto_verified: boolean | null;
+    submitted_at: string | null; created_at: string | null; email: string | null;
+    ordination_certificate_url: string | null; denomination_registration_url: string | null;
+    church_bulletin_url: string | null;
+};
+type UserChurch = {
+    id: number; name: string; denomination: string | null; region: string | null;
+    address: string | null; member_count: number | null; created_at: string | null;
+    applicant_name: string | null; applicant_contact: string | null; pastor_name: string | null;
+    creator_email: string | null; lat: number | null; lon: number | null;
+};
 
 export default function AdminPage() {
     const [authed, setAuthed] = useState(false);
@@ -102,6 +117,35 @@ export default function AdminPage() {
     const [granting, setGranting] = useState(false);
     const [grantResult, setGrantResult] = useState('');
     const [grantHistory, setGrantHistory] = useState<GiftGrant[]>([]);
+
+    // ── 사역자·교회 (2026-08-14) ──
+    const [pastorRows, setPastorRows] = useState<PastorRow[]>([]);
+    const [userChurches, setUserChurches] = useState<UserChurch[]>([]);
+    const [pastorsLoading, setPastorsLoading] = useState(false);
+    const [pastorFilter, setPastorFilter] = useState<'all' | 'verified' | 'rejected'>('all');
+    const [lightbox, setLightbox] = useState<{ url: string; label: string } | null>(null);
+
+    const loadPastors = useCallback(async () => {
+        setPastorsLoading(true);
+        try {
+            const res = await fetch('/api/admin/pastors');
+            const data = await res.json();
+            if (res.ok) {
+                setPastorRows(data.pastors || []);
+                setUserChurches(data.churches || []);
+            }
+        } catch { /* noop */ }
+        setPastorsLoading(false);
+    }, []);
+
+    const setPastorStatusWeb = async (id: string, status: 'verified' | 'rejected') => {
+        const res = await fetch('/api/admin/pastors', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, status }),
+        });
+        if (res.ok) loadPastors();
+        else alert('처리 실패');
+    };
 
     // ── 크레딧 보내기 ──
     const [creditAmount, setCreditAmount] = useState('');
@@ -173,8 +217,9 @@ export default function AdminPage() {
     useEffect(() => {
         if (!authed) return;
         if (tab === 'history') loadHistory();
+        if (tab === 'pastors') loadPastors();
         if (tab === 'gift') loadGrantHistory();
-    }, [authed, tab, loadHistory, loadGrantHistory]);
+    }, [authed, tab, loadHistory, loadGrantHistory, loadPastors]);
 
     // ── 로그인 ──
     // 비밀번호는 서버로만 보낸다. 맞으면 서버가 httpOnly 쿠키를 심어준다(여기서는 못 읽는다).
@@ -423,6 +468,7 @@ export default function AdminPage() {
                     <button style={tab === 'send' ? styles.tabActive : styles.tab} onClick={() => setTab('send')}>푸시 알림 보내기</button>
                     <button style={tab === 'history' ? styles.tabActive : styles.tab} onClick={() => setTab('history')}>발송 이력</button>
                     <button style={tab === 'gift' ? styles.tabActive : styles.tab} onClick={() => setTab('gift')}>이용권 보내기</button>
+                    <button style={tab === 'pastors' ? styles.tabActive : styles.tab} onClick={() => setTab('pastors')}>사역자·교회</button>
                 </div>
 
                 {tab === 'send' && (
@@ -687,12 +733,130 @@ export default function AdminPage() {
                         </div>
                     </>
                 )}
+
+                {tab === 'pastors' && (
+                    <>
+                        <div style={styles.card}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                <h2 style={{ ...styles.cardTitle, marginBottom: 0 }}>사역자 등록 신청</h2>
+                                <button style={styles.refreshBtn} onClick={loadPastors}>새로고침</button>
+                            </div>
+                            <p style={styles.cardDesc}>
+                                당분간 등록은 <b>자동 활성</b>입니다. 여기서 언제 누가 신청했는지 확인하고,
+                                서류를 클릭해 크게 본 뒤 필요하면 거절(비활성)할 수 있습니다.
+                            </p>
+                            <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+                                {([['all', '전체'], ['verified', '활성'], ['rejected', '거절됨']] as const).map(([k, label]) => (
+                                    <button key={k}
+                                        style={pastorFilter === k ? { ...styles.chipActive } : { ...styles.chip }}
+                                        onClick={() => setPastorFilter(k)}>{label}</button>
+                                ))}
+                            </div>
+                            {pastorsLoading ? (
+                                <p style={styles.empty}>불러오는 중…</p>
+                            ) : (
+                                (() => {
+                                    const rows = pastorRows.filter(r =>
+                                        pastorFilter === 'all' ? true :
+                                        pastorFilter === 'verified' ? r.verification_status === 'verified' :
+                                        r.verification_status === 'rejected');
+                                    if (rows.length === 0) return <p style={styles.empty}>신청이 없습니다.</p>;
+                                    return rows.map(r => {
+                                        const docs = [
+                                            ['임명장', r.ordination_certificate_url],
+                                            ['교단 등록증', r.denomination_registration_url],
+                                            ['주보', r.church_bulletin_url],
+                                        ].filter(d => !!d[1]) as [string, string][];
+                                        const isVerified = r.verification_status === 'verified';
+                                        const isRejected = r.verification_status === 'rejected';
+                                        return (
+                                            <div key={r.id} style={styles.pastorItem}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                                    <span style={{ fontSize: 15, fontWeight: 800, color: '#1e293b' }}>{r.name || '이름 미입력'}</span>
+                                                    {isVerified && <span style={{ ...styles.statusBadge, backgroundColor: '#dcfce7', color: '#16a34a' }}>활성{r.auto_verified ? ' (자동)' : ''}</span>}
+                                                    {isRejected && <span style={{ ...styles.statusBadge, backgroundColor: '#fee2e2', color: '#dc2626' }}>거절됨</span>}
+                                                    {!isVerified && !isRejected && <span style={{ ...styles.statusBadge, backgroundColor: '#fef3c7', color: '#d97706' }}>대기</span>}
+                                                    <span style={{ marginLeft: 'auto', fontSize: 12, color: '#94a3b8' }}>{r.created_at ? new Date(r.created_at).toLocaleString('ko-KR') : ''}</span>
+                                                </div>
+                                                <div style={{ fontSize: 13, color: '#475569', marginTop: 4 }}>
+                                                    {[r.church_name, r.position, r.denomination].filter(Boolean).join(' · ') || '-'}
+                                                </div>
+                                                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+                                                    {[r.phone, r.email].filter(Boolean).join(' · ')}
+                                                </div>
+                                                {docs.length > 0 && (
+                                                    <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                                                        {docs.map(([label, url]) => (
+                                                            /* eslint-disable-next-line @next/next/no-img-element */
+                                                            <img key={label} src={url} alt={label} title={`${label} — 클릭하면 크게`}
+                                                                onClick={() => setLightbox({ url, label })}
+                                                                style={{ width: 84, height: 84, objectFit: 'cover', borderRadius: 10, border: '1px solid #e2e8f0', cursor: 'zoom-in' }} />
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {docs.length === 0 && <div style={{ fontSize: 12, color: '#cbd5e1', marginTop: 8 }}>첨부 서류 없음</div>}
+                                                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                                                    {!isRejected && (
+                                                        <button style={styles.dangerSmallBtn} onClick={() => { if (confirm(`${r.name || '이 신청'} 을(를) 거절(비활성) 처리할까요?`)) setPastorStatusWeb(r.id, 'rejected'); }}>거절</button>
+                                                    )}
+                                                    {!isVerified && (
+                                                        <button style={styles.approveSmallBtn} onClick={() => setPastorStatusWeb(r.id, 'verified')}>승인(활성)</button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    });
+                                })()
+                            )}
+                        </div>
+
+                        <div style={{ ...styles.card, marginTop: 16 }}>
+                            <h2 style={styles.cardTitle}>사용자 등록 교회</h2>
+                            <p style={styles.cardDesc}>사용자가 앱에서 직접 등록한 교회 목록입니다. 나중에 정비할 때 여기서 추리면 됩니다.</p>
+                            {userChurches.length === 0 ? (
+                                <p style={styles.empty}>등록된 교회가 없습니다.</p>
+                            ) : userChurches.map(c => (
+                                <div key={c.id} style={styles.pastorItem}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                        <span style={{ fontSize: 15, fontWeight: 800, color: '#1e293b' }}>{c.name}</span>
+                                        {(c.lat == null || c.lon == null) && <span style={{ ...styles.statusBadge, backgroundColor: '#fef3c7', color: '#d97706' }}>지도 좌표 없음</span>}
+                                        <span style={{ marginLeft: 'auto', fontSize: 12, color: '#94a3b8' }}>{c.created_at ? new Date(c.created_at).toLocaleString('ko-KR') : ''}</span>
+                                    </div>
+                                    <div style={{ fontSize: 13, color: '#475569', marginTop: 4 }}>
+                                        {[c.denomination, c.region, c.address].filter(Boolean).join(' · ') || '-'}
+                                    </div>
+                                    <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+                                        등록자: {[c.applicant_name, c.applicant_contact, c.creator_email].filter(Boolean).join(' · ') || '-'}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
+
+                {/* 서류 라이트박스 — 클릭하면 원본 크기로 */}
+                {lightbox && (
+                    <div onClick={() => setLightbox(null)}
+                        style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out', padding: 24 }}>
+                        <div style={{ color: '#fff', fontSize: 15, fontWeight: 800, marginBottom: 12 }}>{lightbox.label} <span style={{ color: '#94a3b8', fontWeight: 500, fontSize: 12 }}>(클릭하면 닫힘)</span></div>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={lightbox.url} alt={lightbox.label}
+                            style={{ maxWidth: '95vw', maxHeight: '85vh', objectFit: 'contain', borderRadius: 8 }} />
+                        <a href={lightbox.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                            style={{ marginTop: 14, color: '#a5b4fc', fontSize: 13, fontWeight: 700 }}>원본 새 탭에서 열기 ↗</a>
+                    </div>
+                )}
             </div>
         </div>
     );
 }
 
 const styles: Record<string, React.CSSProperties> = {
+    pastorItem: { border: '1px solid #e2e8f0', borderRadius: 14, padding: '14px 16px', marginBottom: 10 },
+    chip: { padding: '7px 14px', borderRadius: 999, border: '1px solid #e2e8f0', backgroundColor: '#fff', fontSize: 13, fontWeight: 700, color: '#94a3b8', cursor: 'pointer' },
+    chipActive: { padding: '7px 14px', borderRadius: 999, border: '1px solid #6366f1', backgroundColor: '#eef2ff', fontSize: 13, fontWeight: 700, color: '#6366f1', cursor: 'pointer' },
+    approveSmallBtn: { padding: '9px 18px', borderRadius: 10, backgroundColor: '#16a34a', color: '#fff', fontSize: 13, fontWeight: 800, border: 'none', cursor: 'pointer' },
+    dangerSmallBtn: { padding: '9px 18px', borderRadius: 10, backgroundColor: '#fff', color: '#dc2626', fontSize: 13, fontWeight: 800, border: '1.5px solid #fecaca', cursor: 'pointer' },
     container: { minHeight: '100vh', backgroundColor: '#f8fafc', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: 20 },
     loginCard: { backgroundColor: '#fff', borderRadius: 20, padding: 40, maxWidth: 400, width: '100%', margin: 'auto', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', textAlign: 'center' as const },
     loginTitle: { fontSize: 24, fontWeight: 900, color: '#1e293b', marginBottom: 8 },
