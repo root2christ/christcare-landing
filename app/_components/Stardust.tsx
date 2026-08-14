@@ -9,7 +9,7 @@
  */
 import { useEffect, useRef } from 'react';
 
-export default function Stardust({ density = 700 }: { density?: number }) {
+export default function Stardust({ density = 110 }: { density?: number }) {
     const ref = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -32,14 +32,15 @@ export default function Stardust({ density = 700 }: { density?: number }) {
         ro.observe(parent);
 
         const rand = (a: number, b: number) => a + Math.random() * (b - a);
-        // 면적 비례 개수 (좁은 영역용)
-        const count = Math.max(50, Math.min(400, Math.round((W * H) / density)));
+        // 면적 비례 개수 — 미세 입자를 촘촘하게
+        const count = Math.max(120, Math.min(600, Math.round((W * H) / density)));
         const ps = Array.from({ length: count }, () => ({
             x: Math.random(), y: Math.random(),
-            r: rand(0.8, 2.1),            // 알갱이 코어 크기
-            v: rand(9, 30),               // 낙하 속도(px/s)
-            sway: rand(3, 14), ph: rand(0, Math.PI * 2), tw: rand(0.5, 1.6),
-            o: rand(0.4, 1),
+            r: rand(0.35, 1.1),           // 아주 미세한 입자
+            v: rand(6, 20),               // 천천히 흩날리듯
+            sway: rand(2, 10), ph: rand(0, Math.PI * 2), tw: rand(1.0, 2.6),
+            o: rand(0.5, 1),
+            glint: Math.random() < 0.22,  // 일부만 강하게 터지는 반짝임
         }));
 
         let last = performance.now();
@@ -52,24 +53,28 @@ export default function Stardust({ density = 700 }: { density?: number }) {
                 if (p.y > 1.02) { p.y = -0.02; p.x = Math.random(); }
                 const x = p.x * W + Math.sin(t * p.tw + p.ph) * p.sway * 0.4;
                 const y = p.y * H;
-                const alpha = Math.max(0, p.o * (0.55 + 0.45 * Math.sin(t * p.tw * 2 + p.ph)));
-                // 밝은 바탕에서도 보이도록 두 겹으로:
-                // ① 짙은 실버 헤일로(대비 확보) ② 밝은 흰 코어(반짝임)
+                // 깜빡임을 날카롭게(사인 3제곱) — '반짝' 하고 터지는 느낌
+                const s0 = Math.sin(t * p.tw * 2 + p.ph);
+                const pulse = Math.max(0, s0) ** 3;
+                const alpha = Math.max(0, p.o * (0.18 + 0.82 * pulse));
+                // 밝은 바탕 대비용 실버 헤일로 + 흰 코어
                 ctx.beginPath();
-                ctx.arc(x, y, p.r * 2.1, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(100,116,139,${(alpha * 0.45).toFixed(3)})`;
+                ctx.arc(x, y, p.r * 2.2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(100,116,139,${(alpha * 0.5).toFixed(3)})`;
                 ctx.fill();
                 ctx.beginPath();
                 ctx.arc(x, y, p.r, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
                 ctx.fill();
-                // 큰 알갱이는 십자 광채
-                if (p.r > 1.6) {
-                    ctx.strokeStyle = `rgba(255,255,255,${(alpha * 0.7).toFixed(3)})`;
-                    ctx.lineWidth = 0.8;
+                // glint 입자는 피크에서 십자 광채가 확 터진다
+                if (p.glint && pulse > 0.55) {
+                    const g = (pulse - 0.55) / 0.45;
+                    const len = 2.5 + g * 5;
+                    ctx.strokeStyle = `rgba(255,255,255,${(0.85 * g).toFixed(3)})`;
+                    ctx.lineWidth = 0.7;
                     ctx.beginPath();
-                    ctx.moveTo(x - p.r * 3, y); ctx.lineTo(x + p.r * 3, y);
-                    ctx.moveTo(x, y - p.r * 3); ctx.lineTo(x, y + p.r * 3);
+                    ctx.moveTo(x - len, y); ctx.lineTo(x + len, y);
+                    ctx.moveTo(x, y - len); ctx.lineTo(x, y + len);
                     ctx.stroke();
                 }
             }

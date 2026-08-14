@@ -127,7 +127,7 @@ export default function PastorInviteV2Page() {
                             <span aria-hidden style={{ width: 40, height: 1, background: `linear-gradient(270deg,transparent,${BRICK})` }} />
                         </div>
                         <span className="icon-stage" style={{ margin: '26px 0 22px' }}>
-                            <span aria-hidden style={{ position: 'absolute', top: -100, left: -110, right: -110, bottom: -24 }}>
+                            <span aria-hidden style={{ position: 'absolute', top: -90, left: -37, right: -37, bottom: -18 }}>
                                 <Stardust />
                             </span>
                             <span className="icon-glare" style={{ borderRadius: 17, boxShadow: '0 6px 16px rgba(38,32,25,0.22), 0 0 22px rgba(203,141,66,0.3)' }}>

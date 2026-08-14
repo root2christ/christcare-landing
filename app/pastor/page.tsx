@@ -124,7 +124,7 @@ export default function PastorInvitePage() {
                         @keyframes iconShine { 0% { left:-90%; } 32% { left:150%; } 100% { left:150%; } }
                         ` }} />
                         <span className="icon-stage" style={{ margin: '26px 0 18px' }}>
-                            <span aria-hidden style={{ position: 'absolute', top: -120, left: -130, right: -130, bottom: -30 }}>
+                            <span aria-hidden style={{ position: 'absolute', top: -100, left: -48, right: -48, bottom: -20 }}>
                                 <Stardust />
                             </span>
                             <span className="icon-glare" style={{ borderRadius: 24, boxShadow: '0 10px 26px rgba(15,23,42,0.2), 0 0 26px rgba(201,162,94,0.35)' }}>
