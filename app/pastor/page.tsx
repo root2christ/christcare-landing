@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Stardust from '../_components/Stardust';
 
 export const metadata: Metadata = {
     title: 'soluma Launch Invitation',
@@ -124,9 +123,6 @@ export default function PastorInvitePage() {
                         @keyframes iconShine { 0% { left:-90%; } 32% { left:150%; } 100% { left:150%; } }
                         ` }} />
                         <span className="icon-stage" style={{ margin: '26px 0 18px' }}>
-                            <span aria-hidden style={{ position: 'absolute', top: -100, left: -48, right: -48, bottom: -20 }}>
-                                <Stardust />
-                            </span>
                             <span className="icon-glare" style={{ borderRadius: 24, boxShadow: '0 10px 26px rgba(15,23,42,0.2), 0 0 26px rgba(201,162,94,0.35)' }}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src="/app-icon.png" alt="soluma" width={96} height={96} style={{ display: 'block', borderRadius: 24 }} />
