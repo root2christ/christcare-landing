@@ -80,9 +80,9 @@ export default function PastorInvitePage() {
 
                 {/* ── 초대장 헤더 ── */}
                 <div style={{ textAlign: 'center', background: '#fff', border: `1px solid ${LINE}`, borderRadius: 26, padding: '40px 24px 34px', boxShadow: '0 4px 20px rgba(15,23,42,0.05)' }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 900, color: GOLD, letterSpacing: 3 }}>SOLUMA LAUNCH INVITATION</div>
+                    <div style={{ fontSize: 16, fontWeight: 900, color: GOLD, letterSpacing: 3.5 }}>SOLUMA LAUNCH INVITATION</div>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/app-icon.png" alt="soluma" width={76} height={76} style={{ borderRadius: 18, margin: '18px 0 14px' }} />
+                    <img src="/app-icon.png" alt="soluma" width={91} height={91} style={{ borderRadius: 22, margin: '18px 0 14px' }} />
                     <h1 style={{ fontSize: 28, fontWeight: 900, color: NAVY, margin: 0, lineHeight: 1.4 }}>
                         신앙 성장 솔루션<br />솔루마에 초대합니다
                     </h1>
