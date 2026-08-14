@@ -30,45 +30,6 @@ const AOS_URL = 'https://play.google.com/store/apps/details?id=com.root2christ.c
 // ── 장식 (2026-08-14 사장님 시안 기반, v2 — 수채 월계수·증서 금테·물결) ──
 const GOLD_LINE = '#d6c194';
 
-/** 월계수 가지 — 베지어 줄기를 따라 잎을 프로그램으로 배치 (수채 톤 그라데이션) */
-function Laurel({ flip }: { flip?: boolean }) {
-    const P = (t: number) => {
-        const p0 = { x: 78, y: 296 }, p1 = { x: 10, y: 214 }, p2 = { x: 64, y: 112 }, p3 = { x: 42, y: 16 };
-        const u = 1 - t;
-        return {
-            x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
-            y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
-        };
-    };
-    const leaves: { x: number; y: number; rot: number; len: number; op: number }[] = [];
-    const N = 10;
-    for (let i = 0; i < N; i++) {
-        const t = 0.08 + (i / (N - 1)) * 0.88;
-        const p = P(t);
-        const q = P(Math.min(1, t + 0.02));
-        const ang = (Math.atan2(q.y - p.y, q.x - p.x) * 180) / Math.PI;
-        const len = 36 - i * 2.1;               // 위로 갈수록 잎이 작아진다
-        const op = 0.95 - i * 0.03;
-        leaves.push({ x: p.x, y: p.y, rot: ang + 54, len, op });
-        leaves.push({ x: p.x, y: p.y, rot: ang - 54, len: len * 0.9, op: op * 0.92 });
-    }
-    const leafPath = (len: number) =>
-        `M0,0 C ${len * 0.28},-${len * 0.24} ${len * 0.74},-${len * 0.2} ${len},-${len * 0.04} ` +
-        `C ${len * 0.74},${len * 0.18} ${len * 0.28},${len * 0.22} 0,0 Z`;
-    return (
-        <svg viewBox="0 0 120 310" fill="none" aria-hidden className="pastor-laurel"
-            style={{ position: 'absolute', top: 34, ...(flip ? { right: 2 } : { left: 2 }), transform: flip ? 'scaleX(-1)' : undefined, pointerEvents: 'none' }}>
-            <path d="M78,296 C 10,214 64,112 42,16" stroke="#cdb488" strokeWidth="2.4" strokeLinecap="round" opacity="0.85" />
-            {leaves.map((l, i) => (
-                <g key={i} transform={`translate(${l.x} ${l.y}) rotate(${l.rot})`} opacity={l.op}>
-                    <path d={leafPath(l.len)} fill={i % 2 === 0 ? '#e7d5a6' : '#dfc890'} />
-                    <path d={`M2,0 L ${l.len * 0.82},-${l.len * 0.03}`} stroke="#c9ae7c" strokeWidth="0.8" opacity="0.7" />
-                </g>
-            ))}
-        </svg>
-    );
-}
-
 /** 장식 구분선 — 양끝이 가늘어지는 금선 + 다이아 */
 function Ornament({ margin = '16px auto 6px' }: { margin?: string }) {
     return (
@@ -139,11 +100,6 @@ function Shot({ src, label }: { src: string; label: string }) {
 export default function PastorInvitePage() {
     return (
         <div style={{ minHeight: '100dvh', background: 'linear-gradient(178deg,#efe9dc,#f5f1e7 40%,#e9eef0)', padding: '26px 12px 56px' }}>
-            {/* 반응형 장식 크기 — 작은 화면에선 월계수를 줄이고 흐리게 */}
-            <style dangerouslySetInnerHTML={{ __html: `
-                .pastor-laurel { width: 118px; height: 305px; }
-                @media (max-width: 640px) { .pastor-laurel { width: 78px; height: 202px; opacity: .55; } }
-            ` }} />
             {/* 증서 스타일 이중 금테 프레임 */}
             <div style={{ maxWidth: 760, margin: '0 auto', border: `1.5px solid ${GOLD_LINE}`, borderRadius: 26, padding: 7, background: 'linear-gradient(180deg,#fdfaf3,#f7f1e3)', boxShadow: '0 10px 34px rgba(90,74,40,0.10)' }}>
             <div style={{ position: 'relative', border: '1px solid rgba(201,162,94,0.4)', borderRadius: 20, overflow: 'hidden', padding: '36px 16px 0',
@@ -151,8 +107,6 @@ export default function PastorInvitePage() {
 
                 {/* ── 초대장 헤더 (월계수 장식) ── */}
                 <div style={{ position: 'relative', textAlign: 'center', padding: '10px 8px 8px' }}>
-                    <Laurel />
-                    <Laurel flip />
                     <div style={{ position: 'relative', zIndex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
                             <span aria-hidden style={{ width: 44, height: 1.5, background: 'linear-gradient(90deg,transparent,#b98a3e)', borderRadius: 2 }} />
