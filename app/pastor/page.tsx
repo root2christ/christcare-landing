@@ -54,7 +54,7 @@ function Section({ tag, title, children }: { tag: string; title: string; accent?
                     <span style={{ fontSize: 12.5, fontWeight: 900, color: '#a8752c', letterSpacing: 3 }}>{tag}</span>
                     <span aria-hidden style={{ width: 26, height: 1.2, background: 'linear-gradient(270deg,transparent,#b98a3e)' }} />
                 </div>
-                <h2 style={{ fontSize: 21.5, fontWeight: 900, color: '#182742', margin: '10px 0 0', lineHeight: 1.4 }}>{title}</h2>
+                {title ? <h2 style={{ fontSize: 21.5, fontWeight: 900, color: '#182742', margin: '10px 0 0', lineHeight: 1.4 }}>{title}</h2> : null}
             </div>
             {children}
         </section>
@@ -178,7 +178,7 @@ export default function PastorInvitePage() {
                 </div>
 
                 {/* ── 비전 ── */}
-                <Section tag="ROOT의 비전" title="솔루마는 목적이 아니라 시작입니다" accent={GREEN_DEEP}>
+                <Section tag="ROOT의 비전" title="" accent={GREEN_DEEP}>
                     <P>
                         주식회사 루트(ROOT)가 솔루마를 만드는 궁극적인 목적은 플랫폼 운영이나 수익 창출이 아닙니다.
                         우리가 꿈꾸는 가장 큰 비전은 <b style={{ color: NAVY }}>기독교 비영리 재단의 설립</b>입니다.
@@ -195,16 +195,10 @@ export default function PastorInvitePage() {
                     <P>
                         재정을 흘려보내는 것에 머무르지 않고, 직접 현장을 찾아가 섬기고 함께 기도하며 몸으로 순종하는 공동체가 되고자 합니다.
                     </P>
-                    <div style={{ textAlign: 'center', background: NAVY, borderRadius: 16, padding: '20px 18px', marginTop: 6 }}>
-                        <div style={{ fontSize: 12, fontWeight: 900, color: '#86efac', letterSpacing: 2, marginBottom: 8 }}>비전 선언문</div>
-                        <div style={{ fontSize: 15.5, fontWeight: 800, color: '#fff', lineHeight: 1.7 }}>
-                            “모든 것은 뿌리 되신 하나님으로부터,<br />그리고 하나님께로.”
-                        </div>
-                    </div>
                 </Section>
 
                 {/* ── 인사말 ── */}
-                <Section tag="인사말" title="함께해 주신 모든 분들께 감사드립니다" accent={GOLD}>
+                <Section tag="인사말" title="" accent={GOLD}>
                     <P>
                         솔루마가 이 자리까지 올 수 있도록 기도와 조언으로 함께해 주신
                         <b style={{ color: NAVY }}> 라이트하우스 무브먼트의 목사님들과 성도님들</b>께 진심으로 감사드립니다.

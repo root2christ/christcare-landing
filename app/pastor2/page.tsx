@@ -58,7 +58,7 @@ function Head({ label, title }: { label: string; title: string }) {
     return (
         <div style={{ textAlign: 'center', margin: '52px 0 22px' }}>
             <Caps color={FAINT}>{label}</Caps>
-            <h2 style={{ fontSize: 23, fontWeight: 700, color: BRICK_DEEP, margin: '8px 0 0', lineHeight: 1.45, letterSpacing: 0.5 }}>{title}</h2>
+            {title ? <h2 style={{ fontSize: 23, fontWeight: 700, color: BRICK_DEEP, margin: '8px 0 0', lineHeight: 1.45, letterSpacing: 0.5 }}>{title}</h2> : null}
         </div>
     );
 }
@@ -186,7 +186,7 @@ export default function PastorInviteV2Page() {
                     </div>
 
                     {/* ── 비전 ── */}
-                    <Head label="Root의 비전" title="솔루마는 목적이 아니라 시작입니다" />
+                    <Head label="Root의 비전" title="" />
                     <P>
                         주식회사 루트(ROOT)가 솔루마를 만드는 궁극적인 목적은 플랫폼 운영이나 수익 창출이 아닙니다.
                         우리가 꿈꾸는 가장 큰 비전은 <b style={{ color: INK }}>기독교 비영리 재단의 설립</b>입니다.
@@ -203,15 +203,9 @@ export default function PastorInviteV2Page() {
                     <P>
                         재정을 흘려보내는 것에 머무르지 않고, 직접 현장을 찾아가 섬기고 함께 기도하며 몸으로 순종하는 공동체가 되고자 합니다.
                     </P>
-                    <div style={{ textAlign: 'center', background: INK, padding: '22px 18px', margin: '20px 0 0' }}>
-                        <Caps color="#cfa48f" size={11}>비전 선언문</Caps>
-                        <div style={{ fontSize: 16, fontWeight: 600, color: PAPER, lineHeight: 1.85, marginTop: 8 }}>
-                            “모든 것은 뿌리 되신 하나님으로부터,<br />그리고 하나님께로.”
-                        </div>
-                    </div>
 
                     {/* ── 인사말 ── */}
-                    <Head label="인사말" title="함께해 주신 모든 분들께 감사드립니다" />
+                    <Head label="인사말" title="" />
                     <P>
                         솔루마가 이 자리까지 올 수 있도록 기도와 조언으로 함께해 주신
                         <b style={{ color: INK }}> 라이트하우스 무브먼트의 목사님들과 성도님들</b>께 진심으로 감사드립니다.
