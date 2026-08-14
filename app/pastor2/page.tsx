@@ -108,11 +108,25 @@ export default function PastorInviteV2Page() {
             <div style={{ maxWidth: 720, margin: '0 auto', background: PAPER, border: `1.5px solid ${BRICK}`, padding: 9, boxShadow: '0 14px 40px rgba(56,38,25,0.18)' }}>
                 <div style={{ border: `1px dotted ${BRICK}`, padding: '46px 22px 42px' }}>
 
+                    {/* 앱 아이콘 글레어(빛 스침) 효과 */}
+                    <style dangerouslySetInnerHTML={{ __html: `
+                        .icon-glare { position: relative; display: inline-block; overflow: hidden; }
+                        .icon-glare::after { content:''; position:absolute; top:-60%; left:-80%; width:45%; height:220%;
+                            background: linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0) 100%);
+                            transform: rotate(8deg); animation: iconShine 3.4s ease-in-out infinite; }
+                        @keyframes iconShine { 0% { left:-90%; } 45% { left:140%; } 100% { left:140%; } }
+                    ` }} />
                     {/* ── 헤더 ── */}
                     <div style={{ textAlign: 'center' }}>
-                        <Caps>당신을 초대합니다</Caps>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/app-icon.png" alt="soluma" width={74} height={74} style={{ borderRadius: 17, margin: '26px 0 22px', boxShadow: '0 6px 16px rgba(38,32,25,0.18)' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+                            <span aria-hidden style={{ width: 40, height: 1, background: `linear-gradient(90deg,transparent,${BRICK})` }} />
+                            <span style={{ fontSize: 13.5, fontWeight: 700, color: BRICK_DEEP, letterSpacing: 4 }}>SOLUMA LAUNCH INVITATION</span>
+                            <span aria-hidden style={{ width: 40, height: 1, background: `linear-gradient(270deg,transparent,${BRICK})` }} />
+                        </div>
+                        <span className="icon-glare" style={{ borderRadius: 17, margin: '26px 0 22px', boxShadow: '0 6px 16px rgba(38,32,25,0.22), 0 0 26px rgba(203,141,66,0.35)' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src="/app-icon.png" alt="soluma" width={74} height={74} style={{ display: 'block', borderRadius: 17 }} />
+                        </span>
                         <h1 style={{ fontSize: 40, fontWeight: 900, color: BRICK_DEEP, margin: 0, lineHeight: 1.1, letterSpacing: 6 }}>
                             SOLUMA
                         </h1>

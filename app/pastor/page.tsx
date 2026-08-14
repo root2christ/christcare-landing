@@ -113,8 +113,17 @@ export default function PastorInvitePage() {
                             <span style={{ fontSize: 16.5, fontWeight: 900, color: '#a8752c', letterSpacing: 4 }}>SOLUMA LAUNCH INVITATION</span>
                             <span aria-hidden style={{ width: 44, height: 1.5, background: 'linear-gradient(270deg,transparent,#b98a3e)', borderRadius: 2 }} />
                         </div>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/app-icon.png" alt="soluma" width={96} height={96} style={{ borderRadius: 24, margin: '26px 0 18px', boxShadow: '0 10px 26px rgba(15,23,42,0.18)' }} />
+                        <style dangerouslySetInnerHTML={{ __html: `
+                            .icon-glare { position: relative; display: inline-block; overflow: hidden; }
+                            .icon-glare::after { content:''; position:absolute; top:-60%; left:-80%; width:45%; height:220%;
+                                background: linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0) 100%);
+                                transform: rotate(8deg); animation: iconShine 3.4s ease-in-out infinite; }
+                            @keyframes iconShine { 0% { left:-90%; } 45% { left:140%; } 100% { left:140%; } }
+                        ` }} />
+                        <span className="icon-glare" style={{ borderRadius: 24, margin: '26px 0 18px', boxShadow: '0 10px 26px rgba(15,23,42,0.2), 0 0 30px rgba(201,162,94,0.45)' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src="/app-icon.png" alt="soluma" width={96} height={96} style={{ display: 'block', borderRadius: 24 }} />
+                        </span>
                         <h1 style={{ fontSize: 31, fontWeight: 900, color: '#182742', margin: 0, lineHeight: 1.4, letterSpacing: -0.3 }}>
                             신앙 성장 솔루션<br />솔루마에 초대합니다
                         </h1>
