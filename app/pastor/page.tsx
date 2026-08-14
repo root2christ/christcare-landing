@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'soluma 정식 런칭 초대장 — 2026. 8. 15',
-    description: 'soluma 정식 런칭에 초대합니다. 앱 소개 · 교회를 위한 기능 · 사용법 · ROOT의 비전 · 다운로드',
+    title: 'soluma Launch Invitation',
+    description: '신앙 성장 솔루션 soluma에 초대합니다. 앱 소개 · 교회를 위한 기능 · 사용법 · ROOT의 비전 · 다운로드',
     openGraph: {
-        title: '📜 soluma 정식 런칭 초대장',
-        description: '2026년 8월 15일, 솔루마가 정식 출시됩니다. 목사님을 초대합니다.',
+        title: '📜 soluma Launch Invitation',
+        description: '신앙 성장 솔루션 soluma에 초대합니다.',
         url: 'https://christcare.us/pastor',
         siteName: 'soluma',
         images: ['/app-icon.png'],
@@ -80,15 +80,12 @@ export default function PastorInvitePage() {
 
                 {/* ── 초대장 헤더 ── */}
                 <div style={{ textAlign: 'center', background: '#fff', border: `1px solid ${LINE}`, borderRadius: 26, padding: '40px 24px 34px', boxShadow: '0 4px 20px rgba(15,23,42,0.05)' }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 900, color: GOLD, letterSpacing: 4 }}>INVITATION</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 900, color: GOLD, letterSpacing: 3 }}>SOLUMA LAUNCH INVITATION</div>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/app-icon.png" alt="soluma" width={76} height={76} style={{ borderRadius: 18, margin: '18px 0 14px' }} />
                     <h1 style={{ fontSize: 28, fontWeight: 900, color: NAVY, margin: 0, lineHeight: 1.4 }}>
-                        목사님을 솔루마 정식 런칭에<br />초대합니다
+                        신앙 성장 솔루션<br />솔루마에 초대합니다
                     </h1>
-                    <div style={{ margin: '18px auto 0', display: 'inline-block', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 999, padding: '9px 22px' }}>
-                        <span style={{ fontSize: 16, fontWeight: 900, color: GREEN_DEEP, letterSpacing: 0.5 }}>2026년 8월 15일 (토) 정식 런칭</span>
-                    </div>
                     <p style={{ fontSize: 14.5, color: FAINT, lineHeight: 1.8, margin: '18px 0 0' }}>
                         말씀으로 하루를 시작하고, 공동체와 함께 자라나는<br />크리스천 신앙 성장 앱 — <b style={{ color: NAVY }}>soluma(솔루마)</b>
                     </p>
@@ -126,7 +123,7 @@ export default function PastorInvitePage() {
                         솔루마가 이 자리까지 올 수 있도록 기도와 조언으로 함께해 주신
                         <b style={{ color: NAVY }}> 라이트하우스 무브먼트의 목사님들과 성도님들</b>께 진심으로 감사드립니다.
                         주신 말씀 하나하나를 마음에 새기며 다듬어 온 솔루마가, 이제 <b style={{ color: NAVY }}>애플 앱스토어와 구글 플레이 정식 심사를 모두 통과</b>하여
-                        <b style={{ color: GREEN_DEEP }}> 2026년 8월 15일 정식 런칭</b>을 맞이하게 되었습니다.
+                        <b style={{ color: GREEN_DEEP }}> 정식 런칭</b>을 맞이하게 되었습니다.
                     </P>
                     <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '13px 15px', fontSize: 13.5, color: '#92400e', lineHeight: 1.7 }}>
                         📌 지난 자문회 때 <b>설치 파일(APK)로 받으셨던 테스트 버전</b>은 이제 옛 버전입니다.
