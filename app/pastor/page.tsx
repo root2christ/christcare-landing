@@ -114,15 +114,58 @@ export default function PastorInvitePage() {
                             <span aria-hidden style={{ width: 44, height: 1.5, background: 'linear-gradient(270deg,transparent,#b98a3e)', borderRadius: 2 }} />
                         </div>
                         <style dangerouslySetInnerHTML={{ __html: `
-                            .icon-glare { position: relative; display: inline-block; overflow: hidden; }
-                            .icon-glare::after { content:''; position:absolute; top:-60%; left:-80%; width:45%; height:220%;
-                                background: linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0) 100%);
-                                transform: rotate(8deg); animation: iconShine 3.4s ease-in-out infinite; }
-                            @keyframes iconShine { 0% { left:-90%; } 45% { left:140%; } 100% { left:140%; } }
+                        .icon-stage { position: relative; display: inline-block; }
+                        .icon-glare { position: relative; display: inline-block; overflow: hidden; }
+                        .icon-glare::after { content:''; position:absolute; top:-60%; left:-90%; width:34%; height:220%;
+                            background: linear-gradient(115deg, rgba(255,255,255,0) 22%, rgba(255,255,255,0.42) 50%, rgba(255,255,255,0) 78%);
+                            transform: rotate(10deg); filter: blur(3px);
+                            animation: iconShine 6s cubic-bezier(.45,.05,.35,1) infinite; }
+                        @keyframes iconShine { 0% { left:-90%; } 32% { left:150%; } 100% { left:150%; } }
+                        .sparkle { position: absolute; pointer-events: none; opacity: 0;
+                            animation: twinkle 3s ease-in-out infinite; }
+                        @keyframes twinkle {
+                            0%, 100% { opacity: 0; transform: scale(0.25) rotate(-12deg); }
+                            45%      { opacity: 1; transform: scale(1) rotate(14deg); }
+                            65%      { opacity: 0.35; transform: scale(0.7) rotate(20deg); }
+                        }
                         ` }} />
-                        <span className="icon-glare" style={{ borderRadius: 24, margin: '26px 0 18px', boxShadow: '0 10px 26px rgba(15,23,42,0.2), 0 0 30px rgba(201,162,94,0.45)' }}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="/app-icon.png" alt="soluma" width={96} height={96} style={{ display: 'block', borderRadius: 24 }} />
+                        <span className="icon-stage" style={{ margin: '26px 0 18px' }}>
+                            <svg key={0} className="sparkle" width="13" height="13" viewBox="0 0 10 10" aria-hidden
+                                style={{ top: -16, left: -14, animationDuration: '2.8s', animationDelay: '0.0s' }}>
+                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#e7c987" />
+                            </svg>
+                            <svg key={1} className="sparkle" width="9" height="9" viewBox="0 0 10 10" aria-hidden
+                                style={{ top: -24, left: 38, animationDuration: '3.4s', animationDelay: '1.1s' }}>
+                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#ffffff" />
+                            </svg>
+                            <svg key={2} className="sparkle" width="15" height="15" viewBox="0 0 10 10" aria-hidden
+                                style={{ top: -10, left: 92, animationDuration: '3.0s', animationDelay: '0.5s' }}>
+                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#e7c987" />
+                            </svg>
+                            <svg key={3} className="sparkle" width="10" height="10" viewBox="0 0 10 10" aria-hidden
+                                style={{ top: 18, left: -26, animationDuration: '3.6s', animationDelay: '1.8s' }}>
+                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#ffffff" />
+                            </svg>
+                            <svg key={4} className="sparkle" width="11" height="11" viewBox="0 0 10 10" aria-hidden
+                                style={{ top: 34, left: 104, animationDuration: '2.9s', animationDelay: '2.3s' }}>
+                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#e7c987" />
+                            </svg>
+                            <svg key={5} className="sparkle" width="14" height="14" viewBox="0 0 10 10" aria-hidden
+                                style={{ top: 68, left: -18, animationDuration: '3.2s', animationDelay: '0.9s' }}>
+                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#ffffff" />
+                            </svg>
+                            <svg key={6} className="sparkle" width="9" height="9" viewBox="0 0 10 10" aria-hidden
+                                style={{ top: 86, left: 30, animationDuration: '3.5s', animationDelay: '2.8s' }}>
+                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#e7c987" />
+                            </svg>
+                            <svg key={7} className="sparkle" width="12" height="12" viewBox="0 0 10 10" aria-hidden
+                                style={{ top: 74, left: 96, animationDuration: '3.1s', animationDelay: '1.5s' }}>
+                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#ffffff" />
+                            </svg>
+                            <span className="icon-glare" style={{ borderRadius: 24, boxShadow: '0 10px 26px rgba(15,23,42,0.2), 0 0 26px rgba(201,162,94,0.35)' }}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src="/app-icon.png" alt="soluma" width={96} height={96} style={{ display: 'block', borderRadius: 24 }} />
+                            </span>
                         </span>
                         <h1 style={{ fontSize: 31, fontWeight: 900, color: '#182742', margin: 0, lineHeight: 1.4, letterSpacing: -0.3 }}>
                             신앙 성장 솔루션<br />솔루마에 초대합니다
