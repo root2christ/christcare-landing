@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
-import StoreQr from './_components/StoreQr';
 
 export const metadata: Metadata = {
     title: 'soluma 정식 런칭 초대장 — 2026. 8. 15',
-    description: '목사님을 soluma 정식 런칭에 초대합니다. 다운로드 방법 · 앱 소개 · 교회를 위한 기능 · 사용법 · ROOT의 비전',
+    description: 'soluma 정식 런칭에 초대합니다. 앱 소개 · 교회를 위한 기능 · 사용법 · ROOT의 비전 · 다운로드',
     openGraph: {
         title: '📜 soluma 정식 런칭 초대장',
         description: '2026년 8월 15일, 솔루마가 정식 출시됩니다. 목사님을 초대합니다.',
@@ -122,49 +121,17 @@ export default function PastorInvitePage() {
                 </Section>
 
                 {/* ── 인사말 ── */}
-                <Section tag="인사말" title="목사님, 그동안의 기도와 조언에 감사드립니다" accent={GOLD}>
+                <Section tag="인사말" title="함께해 주신 모든 분들께 감사드립니다" accent={GOLD}>
                     <P>
-                        지난 목회자 자문회에서 부족한 저희를 따뜻하게 격려해 주시고, 귀한 조언을 아끼지 않으신 목사님들께 진심으로 감사드립니다.
+                        솔루마가 이 자리까지 올 수 있도록 기도와 조언으로 함께해 주신
+                        <b style={{ color: NAVY }}> 라이트하우스 무브먼트의 목사님들과 성도님들</b>께 진심으로 감사드립니다.
                         주신 말씀 하나하나를 마음에 새기며 다듬어 온 솔루마가, 이제 <b style={{ color: NAVY }}>애플 앱스토어와 구글 플레이 정식 심사를 모두 통과</b>하여
                         <b style={{ color: GREEN_DEEP }}> 2026년 8월 15일 정식 런칭</b>을 맞이하게 되었습니다.
                     </P>
-                    <P>
-                        솔루마는 성도들이 매일 말씀과 가까워지고, 교회 공동체와 더 단단히 연결되도록 돕는 도구입니다.
-                        목사님의 목회 현장에 작은 보탬이 되기를 소망하며, 이 초대장을 드립니다.
-                    </P>
                     <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '13px 15px', fontSize: 13.5, color: '#92400e', lineHeight: 1.7 }}>
                         📌 지난 자문회 때 <b>설치 파일(APK)로 받으셨던 테스트 버전</b>은 이제 옛 버전입니다.
-                        번거로우시겠지만 <b>삭제하신 뒤 아래 스토어에서 정식 버전</b>을 새로 설치해 주세요. 기존 계정으로 로그인하시면 기록은 그대로 이어집니다.
+                        번거로우시겠지만 <b>삭제하신 뒤 정식 버전</b>을 새로 설치해 주세요(설치 주소는 맨 아래에 있습니다). 기존 계정으로 로그인하시면 기록은 그대로 이어집니다.
                     </div>
-                </Section>
-
-                {/* ── 다운로드 ── */}
-                <Section tag="다운로드" title="지금 바로 설치하실 수 있습니다">
-                    <P>
-                        아이폰과 안드로이드 <b style={{ color: NAVY }}>모두 정식 출시</b>되어 있습니다. 스토어에서 <b style={{ color: NAVY }}>“솔루마”</b> 또는 <b style={{ color: NAVY }}>“soluma”</b>를
-                        검색하시거나, 아래 버튼·QR을 이용해 주세요. 설치와 핵심 기능 사용은 무료입니다.
-                    </P>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 16 }}>
-                        {[
-                            { name: 'App Store', sub: '아이폰 · 아이패드', url: IOS_URL },
-                            { name: 'Google Play', sub: '안드로이드 · 갤럭시', url: AOS_URL },
-                        ].map((s) => (
-                            <div key={s.name} style={{ flex: '1 1 250px', minWidth: 240, background: '#fbfaf7', border: `1px solid ${LINE}`, borderRadius: 18, padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                                <div style={{ fontSize: 13, fontWeight: 900, color: GREEN_DEEP, letterSpacing: 0.5, marginBottom: 12 }}>{s.name}</div>
-                                <div style={{ background: '#fff', padding: 10, borderRadius: 14, border: `1px solid ${LINE}` }}>
-                                    <StoreQr url={s.url} />
-                                </div>
-                                <div style={{ fontSize: 13.5, fontWeight: 700, color: FAINT, margin: '12px 0 10px' }}>{s.sub}</div>
-                                <a href={s.url} target="_blank" rel="noopener noreferrer"
-                                    style={{ display: 'block', width: '100%', boxSizing: 'border-box', background: NAVY, color: '#fff', fontSize: 14.5, fontWeight: 800, textDecoration: 'none', borderRadius: 12, padding: '13px 0' }}>
-                                    {s.name}에서 설치 →
-                                </a>
-                            </div>
-                        ))}
-                    </div>
-                    <p style={{ fontSize: 13, color: FAINT, lineHeight: 1.7, margin: '14px 0 0', textAlign: 'center' }}>
-                        휴대폰으로 이 페이지를 보고 계시다면 버튼을, 컴퓨터로 보고 계시다면 휴대폰 카메라로 QR을 비춰 주세요.
-                    </p>
                 </Section>
 
                 {/* ── 앱 소개 ── */}
@@ -194,11 +161,7 @@ export default function PastorInvitePage() {
                         <Feature emoji="📖" title="성경 통독 · 읽기 플랜" desc="통독 플랜을 따라 읽고 진도가 자동 기록됩니다. 대한성서공회 정식 라이선스 성경 수록." />
                         <Feature emoji="✍️" title="성경 필사" desc="손으로 쓰거나 목소리로 읽어 필사합니다. 음성 인식이 본문과 대조해 진도를 확인해 줍니다." />
                         <Feature emoji="🎙️" title="함께 암송" desc="소그룹이 한 방에 모여 월~금 하루 한 절씩 암송하고, 서로의 녹음을 들으며 격려합니다. 토요일은 복습, 주일은 쉼." />
-                        <Feature emoji="📝" title="말씀 노트" desc="주일 설교를 기록하고 한 주간 실천 미션으로 이어갑니다. 토요일 아침, 미션 점검 알림이 갑니다." />
-                        <Feature emoji="🙏" title="공동체" desc="기도제목과 간증을 나누고 서로 중보합니다. 소그룹 채팅과 1:1 대화도 준비되어 있습니다." />
-                        <Feature emoji="⛪" title="우리 교회" desc="교인 명부 · 교회 소식 · 출석 체크. 성도들이 교회를 중심으로 연결됩니다." />
-                        <Feature emoji="💼" title="잡박스" desc="교계 구인 · 재능 나눔 게시판. 반주, 디자인, 번역 등 성도의 은사가 교회들과 만납니다." />
-                        <Feature emoji="🌏" title="한국어 · 영어 · 일본어" desc="3개 언어를 지원해 이민 교회와 선교 현장에서도 함께 사용할 수 있습니다." />
+                        <Feature emoji="💼" title="잡박스(JobBox)" desc="교계 구인 · 재능 나눔 게시판. 반주, 디자인, 번역 등 성도의 은사가 교회들과 만납니다." />
                     </div>
                 </Section>
 
@@ -231,18 +194,20 @@ export default function PastorInvitePage() {
 
                 {/* ── 시작 가이드 ── */}
                 <Section tag="시작 가이드" title="5분이면 시작하실 수 있습니다">
-                    <Step n="1" title="앱 설치">위 다운로드 버튼 또는 스토어에서 “솔루마” 검색 → 설치.</Step>
+                    <Step n="1" title="앱 설치">스토어에서 “솔루마” 검색 → 설치. (설치 주소는 이 초대장 맨 아래에 있습니다.)</Step>
                     <Step n="2" title="간편 로그인">카카오 · 구글 · 애플 계정으로 3초 만에 가입됩니다. 별도 비밀번호가 없습니다.</Step>
-                    <Step n="3" title="크라이스트 테스트 (3분)">나의 신앙 유형을 확인해 보세요. 성도들에게 권하시기 전에 직접 경험해 보시면 좋습니다.</Step>
+                    <Step n="3" title="크라이스트 테스트 (3분)">나의 신앙 유형을 확인해 보세요. 주변에 권하시기 전에 직접 경험해 보시면 좋습니다.</Step>
                     <Step n="4" title="우리 교회 등록">마이 탭에서 섬기시는 교회를 검색해 등록합니다. 교회가 없으면 새로 등록하실 수 있습니다.</Step>
-                    <Step n="5" title="사역자 인증 신청">홈 「사역자 등록」에서 서류를 올리시면, 인증 후 교회 기능이 모두 열립니다.</Step>
+                    <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 12, padding: '13px 15px', fontSize: 13.5, color: '#6d28d9', lineHeight: 1.7, margin: '2px 0 12px' }}>
+                        <b>*</b> 목회자의 경우, 홈 「사역자 등록」에서 <b>사역자 인증 신청</b>을 하시면 교회 기능이 열립니다.
+                    </div>
                     <p style={{ fontSize: 13.5, color: FAINT, lineHeight: 1.7, margin: '6px 0 0' }}>
                         📖 자세한 화면별 사용법은 <a href="https://christcare.us/tutorial" style={{ color: GREEN_DEEP, fontWeight: 800 }}>christcare.us/tutorial</a> 에서 계속 채워지고 있습니다.
                     </p>
                 </Section>
 
                 {/* ── 안심하고 권하실 수 있습니다 ── */}
-                <Section tag="신뢰" title="안심하고 성도들에게 권하실 수 있습니다" accent={GOLD}>
+                <Section tag="신뢰" title="더 많은 크리스천들이 함께할 수 있도록, 주변에 솔루마를 추천해 주세요!" accent={GOLD}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
                         {[
                             ['📜 정식 라이선스 성경', '개역개정을 비롯한 성경 본문은 대한성서공회와 정식 사용 계약을 맺고 수록했습니다.'],
@@ -264,9 +229,28 @@ export default function PastorInvitePage() {
                 <div style={{ marginTop: 20, textAlign: 'center', background: '#fff', border: `1px solid ${LINE}`, borderRadius: 22, padding: '30px 22px' }}>
                     <div style={{ fontSize: 20, lineHeight: 1 }}>🌱</div>
                     <p style={{ fontSize: 15.5, fontWeight: 800, color: NAVY, lineHeight: 1.8, margin: '12px 0 6px' }}>
-                        8월 15일, 솔루마의 첫걸음에<br />목사님의 기도로 함께해 주세요.
+                        솔루마의 첫걸음에<br />많은 성원과 격려 부탁드립니다.
                     </p>
-                    <p style={{ fontSize: 14, color: SUB, lineHeight: 1.8, margin: '0 0 18px' }}>
+
+                    {/* 앱 다운로드 — 초대장 맨 마지막에 배치 (중간 DOWNLOAD·QR 섹션은 제거) */}
+                    <div style={{ borderTop: `1px solid ${LINE}`, margin: '22px 0 0', paddingTop: 22 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 900, color: GOLD, letterSpacing: 2, marginBottom: 10 }}>앱 다운로드</div>
+                        <p style={{ fontSize: 14, color: SUB, lineHeight: 1.8, margin: '0 0 14px' }}>
+                            스토어에서 <b style={{ color: NAVY }}>“솔루마”</b> 또는 <b style={{ color: NAVY }}>“soluma”</b>를 검색하시거나,<br />아래 주소로 바로 설치하실 수 있습니다.
+                        </p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
+                            <a href={IOS_URL} target="_blank" rel="noopener noreferrer"
+                                style={{ flex: '1 1 220px', maxWidth: 300, background: NAVY, color: '#fff', fontSize: 14.5, fontWeight: 800, textDecoration: 'none', borderRadius: 12, padding: '13px 0' }}>
+                                 App Store (아이폰) →
+                            </a>
+                            <a href={AOS_URL} target="_blank" rel="noopener noreferrer"
+                                style={{ flex: '1 1 220px', maxWidth: 300, background: GREEN_DEEP, color: '#fff', fontSize: 14.5, fontWeight: 800, textDecoration: 'none', borderRadius: 12, padding: '13px 0' }}>
+                                ▶ Google Play (안드로이드) →
+                            </a>
+                        </div>
+                    </div>
+
+                    <p style={{ fontSize: 14, color: SUB, lineHeight: 1.8, margin: '24px 0 18px' }}>
                         교회 도입 안내, 사역자 인증, 사용 중 궁금하신 점 —<br />언제든 편하게 연락 주십시오.
                     </p>
                     <a href="mailto:master@root2christ.com" style={{ display: 'inline-block', background: GREEN, color: '#fff', fontSize: 14.5, fontWeight: 800, textDecoration: 'none', borderRadius: 12, padding: '13px 26px' }}>
