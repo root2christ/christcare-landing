@@ -152,9 +152,8 @@ export default function PastorInvitePage() {
                         <Shot src="/tutorial/scripture/keyboard.png" label="음성 필사" />
                         <Shot src="/tutorial/memorization/room.png" label="함께 암송" />
                         <Shot src="/tutorial/jobbox/main.png" label="잡박스" />
-                        <Shot src="/tutorial/newcomer/entry.png" label="새신자 등록" />
+                        <Shot src="/tutorial/newcomer/form.png" label="새신자 등록" />
                         <Shot src="/tutorial/minister/roster.png" label="성도 관리" />
-                        <Shot src="/tutorial/church/directory.png" label="우리 교회" />
                     </div>
                 </Section>
 
