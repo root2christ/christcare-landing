@@ -27,47 +27,78 @@ const LINE = '#e7e3da';
 const IOS_URL = 'https://apps.apple.com/app/id6779090825';
 const AOS_URL = 'https://play.google.com/store/apps/details?id=com.root2christ.christapp';
 
-// ── 장식 (2026-08-14 사장님 요청: 초대장 전체 데코) ──
-const GOLD_LINE = '#d9c197';
+// ── 장식 (2026-08-14 사장님 시안 기반, v2 — 수채 월계수·증서 금테·물결) ──
+const GOLD_LINE = '#d6c194';
 
-/** 월계수 가지 — 헤더 좌우. 은은하게(opacity) 뒤에 깔린다 */
+/** 월계수 가지 — 베지어 줄기를 따라 잎을 프로그램으로 배치 (수채 톤 그라데이션) */
 function Laurel({ flip }: { flip?: boolean }) {
-    const leaves = [
-        [30, 238, -30], [50, 210, -18], [63, 180, -8], [71, 148, 2],
-        [74, 116, 10], [72, 84, 18], [67, 52, 26],
-    ];
+    const P = (t: number) => {
+        const p0 = { x: 78, y: 296 }, p1 = { x: 10, y: 214 }, p2 = { x: 64, y: 112 }, p3 = { x: 42, y: 16 };
+        const u = 1 - t;
+        return {
+            x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
+            y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
+        };
+    };
+    const leaves: { x: number; y: number; rot: number; len: number; op: number }[] = [];
+    const N = 10;
+    for (let i = 0; i < N; i++) {
+        const t = 0.08 + (i / (N - 1)) * 0.88;
+        const p = P(t);
+        const q = P(Math.min(1, t + 0.02));
+        const ang = (Math.atan2(q.y - p.y, q.x - p.x) * 180) / Math.PI;
+        const len = 36 - i * 2.1;               // 위로 갈수록 잎이 작아진다
+        const op = 0.95 - i * 0.03;
+        leaves.push({ x: p.x, y: p.y, rot: ang + 54, len, op });
+        leaves.push({ x: p.x, y: p.y, rot: ang - 54, len: len * 0.9, op: op * 0.92 });
+    }
+    const leafPath = (len: number) =>
+        `M0,0 C ${len * 0.28},-${len * 0.24} ${len * 0.74},-${len * 0.2} ${len},-${len * 0.04} ` +
+        `C ${len * 0.74},${len * 0.18} ${len * 0.28},${len * 0.22} 0,0 Z`;
     return (
-        <svg width="96" height="260" viewBox="0 0 110 260" fill="none" aria-hidden
-            style={{ position: 'absolute', top: 46, ...(flip ? { right: -4 } : { left: -4 }), opacity: 0.5, transform: flip ? 'scaleX(-1)' : undefined, pointerEvents: 'none' }}>
-            <path d="M18 252 C 58 205, 80 150, 66 18" stroke={GOLD_LINE} strokeWidth="2.2" fill="none" strokeLinecap="round" />
-            {leaves.map(([x, y, r], i) => (
-                <g key={i} transform={`translate(${x} ${y}) rotate(${r})`}>
-                    <path d="M0 0 Q -16 3 -24 17 Q -6 16 0 0 Z" fill="#e4d2a6" />
-                    <path d="M0 0 Q 14 -6 24 -16 Q 6 -14 0 0 Z" fill="#eadbb4" />
+        <svg viewBox="0 0 120 310" fill="none" aria-hidden className="pastor-laurel"
+            style={{ position: 'absolute', top: 34, ...(flip ? { right: 2 } : { left: 2 }), transform: flip ? 'scaleX(-1)' : undefined, pointerEvents: 'none' }}>
+            <path d="M78,296 C 10,214 64,112 42,16" stroke="#cdb488" strokeWidth="2.4" strokeLinecap="round" opacity="0.85" />
+            {leaves.map((l, i) => (
+                <g key={i} transform={`translate(${l.x} ${l.y}) rotate(${l.rot})`} opacity={l.op}>
+                    <path d={leafPath(l.len)} fill={i % 2 === 0 ? '#e7d5a6' : '#dfc890'} />
+                    <path d={`M2,0 L ${l.len * 0.82},-${l.len * 0.03}`} stroke="#c9ae7c" strokeWidth="0.8" opacity="0.7" />
                 </g>
             ))}
         </svg>
     );
 }
 
-/** 금색 잔가지 + ✦ 구분 장식 */
-function Ornament({ margin = '14px 0 4px' }: { margin?: string }) {
+/** 장식 구분선 — 양끝이 가늘어지는 금선 + 다이아 */
+function Ornament({ margin = '16px auto 6px' }: { margin?: string }) {
     return (
-        <div aria-hidden style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, margin }}>
-            <span style={{ width: 34, height: 1.5, background: GOLD_LINE, borderRadius: 2 }} />
-            <span style={{ color: '#c9a25e', fontSize: 13, lineHeight: 1 }}>✦</span>
-            <span style={{ width: 34, height: 1.5, background: GOLD_LINE, borderRadius: 2 }} />
-        </div>
+        <svg width="170" height="16" viewBox="0 0 170 16" aria-hidden style={{ display: 'block', margin }}>
+            <polygon points="10,8 68,6.9 68,9.1" fill="#c9a25e" opacity="0.85" />
+            <polygon points="160,8 102,6.9 102,9.1" fill="#c9a25e" opacity="0.85" />
+            <path d="M85,2.4 L90.6,8 L85,13.6 L79.4,8 Z" fill="#c9a25e" />
+            <path d="M85,4.8 L88.2,8 L85,11.2 L81.8,8 Z" fill="#fdfaf2" />
+            <circle cx="73.5" cy="8" r="1.4" fill="#c9a25e" opacity="0.8" />
+            <circle cx="96.5" cy="8" r="1.4" fill="#c9a25e" opacity="0.8" />
+        </svg>
     );
 }
 
-/** 하단 물결 — 초대장 프레임 바닥 마감 */
+/** 하단 수채 물결 — 겹층 + 은은한 하이라이트 */
 function Wave() {
     return (
-        <svg viewBox="0 0 740 110" preserveAspectRatio="none" aria-hidden
-            style={{ display: 'block', width: '100%', height: 84, marginTop: 26 }}>
-            <path d="M0 55 C 120 18, 250 86, 390 56 C 530 28, 630 76, 740 46 L 740 110 L 0 110 Z" fill="#e3ecf5" />
-            <path d="M0 76 C 150 44, 310 96, 470 68 C 600 48, 670 86, 740 66 L 740 110 L 0 110 Z" fill="#d2e0ee" opacity="0.85" />
+        <svg viewBox="0 0 740 150" preserveAspectRatio="none" aria-hidden
+            style={{ display: 'block', width: '100%', height: 104, marginTop: 30 }}>
+            <defs>
+                <linearGradient id="wvA" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="#eaf1f8" />
+                    <stop offset="1" stopColor="#d3e0ee" />
+                </linearGradient>
+            </defs>
+            <path d="M0,86 C 90,58 200,104 320,88 C 440,72 520,108 620,92 C 668,84 706,70 740,60 L740,150 L0,150 Z"
+                fill="#dde8f3" opacity="0.65" />
+            <path d="M0,64 C 110,36 230,92 370,72 C 500,54 590,96 740,44 L740,150 L0,150 Z" fill="url(#wvA)" />
+            <path d="M0,104 C 140,78 300,122 460,98 C 580,80 660,112 740,92 L740,150 L0,150 Z" fill="#c2d4e7" opacity="0.8" />
+            <path d="M0,66 C 110,38 230,94 370,74 C 500,56 590,98 740,46" stroke="#ffffff" strokeWidth="2.5" fill="none" opacity="0.55" />
         </svg>
     );
 }
@@ -120,27 +151,35 @@ function Shot({ src, label }: { src: string; label: string }) {
 
 export default function PastorInvitePage() {
     return (
-        <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg,#f3f0e7,#f7f4ec 45%,#eef2ee)', padding: '28px 12px 60px' }}>
-            <div style={{ maxWidth: 740, margin: '0 auto', position: 'relative', border: `1.5px solid ${GOLD_LINE}`, borderRadius: 30, background: 'linear-gradient(180deg,#fffdf9,#faf6ec)', padding: '34px 16px 0', overflow: 'hidden', boxShadow: '0 6px 28px rgba(15,23,42,0.06)' }}>
+        <div style={{ minHeight: '100dvh', background: 'linear-gradient(178deg,#efe9dc,#f5f1e7 40%,#e9eef0)', padding: '26px 12px 56px' }}>
+            {/* 반응형 장식 크기 — 작은 화면에선 월계수를 줄이고 흐리게 */}
+            <style dangerouslySetInnerHTML={{ __html: `
+                .pastor-laurel { width: 118px; height: 305px; }
+                @media (max-width: 640px) { .pastor-laurel { width: 78px; height: 202px; opacity: .55; } }
+            ` }} />
+            {/* 증서 스타일 이중 금테 프레임 */}
+            <div style={{ maxWidth: 760, margin: '0 auto', border: `1.5px solid ${GOLD_LINE}`, borderRadius: 26, padding: 7, background: 'linear-gradient(180deg,#fdfaf3,#f7f1e3)', boxShadow: '0 10px 34px rgba(90,74,40,0.10)' }}>
+            <div style={{ position: 'relative', border: '1px solid rgba(201,162,94,0.4)', borderRadius: 20, overflow: 'hidden', padding: '36px 16px 0',
+                background: 'radial-gradient(520px 240px at 12% -4%, rgba(250,241,216,0.9), transparent 70%), radial-gradient(520px 240px at 88% -4%, rgba(250,241,216,0.9), transparent 70%), linear-gradient(180deg,#fffdf8,#faf5e9)' }}>
 
                 {/* ── 초대장 헤더 (월계수 장식) ── */}
-                <div style={{ position: 'relative', textAlign: 'center', padding: '14px 8px 6px' }}>
+                <div style={{ position: 'relative', textAlign: 'center', padding: '10px 8px 8px' }}>
                     <Laurel />
                     <Laurel flip />
                     <div style={{ position: 'relative', zIndex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-                            <span aria-hidden style={{ width: 30, height: 1.5, background: '#c9a25e', borderRadius: 2 }} />
-                            <span style={{ fontSize: 15.5, fontWeight: 900, color: GOLD, letterSpacing: 3 }}>SOLUMA LAUNCH INVITATION</span>
-                            <span aria-hidden style={{ width: 30, height: 1.5, background: '#c9a25e', borderRadius: 2 }} />
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+                            <span aria-hidden style={{ width: 44, height: 1.5, background: 'linear-gradient(90deg,transparent,#b98a3e)', borderRadius: 2 }} />
+                            <span style={{ fontSize: 16.5, fontWeight: 900, color: '#a8752c', letterSpacing: 4 }}>SOLUMA LAUNCH INVITATION</span>
+                            <span aria-hidden style={{ width: 44, height: 1.5, background: 'linear-gradient(270deg,transparent,#b98a3e)', borderRadius: 2 }} />
                         </div>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/app-icon.png" alt="soluma" width={91} height={91} style={{ borderRadius: 22, margin: '22px 0 16px', boxShadow: '0 6px 18px rgba(15,23,42,0.16)' }} />
-                        <h1 style={{ fontSize: 29, fontWeight: 900, color: NAVY, margin: 0, lineHeight: 1.42 }}>
+                        <img src="/app-icon.png" alt="soluma" width={96} height={96} style={{ borderRadius: 24, margin: '26px 0 18px', boxShadow: '0 10px 26px rgba(15,23,42,0.18)' }} />
+                        <h1 style={{ fontSize: 31, fontWeight: 900, color: '#182742', margin: 0, lineHeight: 1.4, letterSpacing: -0.3 }}>
                             신앙 성장 솔루션<br />솔루마에 초대합니다
                         </h1>
                         <Ornament />
-                        <p style={{ fontSize: 14.5, color: FAINT, lineHeight: 1.8, margin: '10px 0 0' }}>
-                            말씀으로 하루를 시작하고, 공동체와 함께 자라나는<br />크리스천 신앙 성장 앱 — <b style={{ color: NAVY }}>soluma(솔루마)</b>
+                        <p style={{ fontSize: 15, color: '#5d6b80', lineHeight: 1.85, margin: '8px 0 0' }}>
+                            말씀으로 하루를 시작하고, 공동체와 함께 자라나는<br />크리스천 신앙 성장 앱 — <b style={{ color: '#182742' }}>SOLUMA · 솔루마</b>
                         </p>
                     </div>
                 </div>
@@ -317,6 +356,7 @@ export default function PastorInvitePage() {
                     주식회사 루트 · ROOT Inc.<br />soluma — Find your light in Scripture
                 </p>
                 <Wave />
+            </div>
             </div>
         </div>
     );
