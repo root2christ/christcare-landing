@@ -27,10 +27,55 @@ const LINE = '#e7e3da';
 const IOS_URL = 'https://apps.apple.com/app/id6779090825';
 const AOS_URL = 'https://play.google.com/store/apps/details?id=com.root2christ.christapp';
 
+// ── 장식 (2026-08-14 사장님 요청: 초대장 전체 데코) ──
+const GOLD_LINE = '#d9c197';
+
+/** 월계수 가지 — 헤더 좌우. 은은하게(opacity) 뒤에 깔린다 */
+function Laurel({ flip }: { flip?: boolean }) {
+    const leaves = [
+        [30, 238, -30], [50, 210, -18], [63, 180, -8], [71, 148, 2],
+        [74, 116, 10], [72, 84, 18], [67, 52, 26],
+    ];
+    return (
+        <svg width="96" height="260" viewBox="0 0 110 260" fill="none" aria-hidden
+            style={{ position: 'absolute', top: 46, ...(flip ? { right: -4 } : { left: -4 }), opacity: 0.5, transform: flip ? 'scaleX(-1)' : undefined, pointerEvents: 'none' }}>
+            <path d="M18 252 C 58 205, 80 150, 66 18" stroke={GOLD_LINE} strokeWidth="2.2" fill="none" strokeLinecap="round" />
+            {leaves.map(([x, y, r], i) => (
+                <g key={i} transform={`translate(${x} ${y}) rotate(${r})`}>
+                    <path d="M0 0 Q -16 3 -24 17 Q -6 16 0 0 Z" fill="#e4d2a6" />
+                    <path d="M0 0 Q 14 -6 24 -16 Q 6 -14 0 0 Z" fill="#eadbb4" />
+                </g>
+            ))}
+        </svg>
+    );
+}
+
+/** 금색 잔가지 + ✦ 구분 장식 */
+function Ornament({ margin = '14px 0 4px' }: { margin?: string }) {
+    return (
+        <div aria-hidden style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, margin }}>
+            <span style={{ width: 34, height: 1.5, background: GOLD_LINE, borderRadius: 2 }} />
+            <span style={{ color: '#c9a25e', fontSize: 13, lineHeight: 1 }}>✦</span>
+            <span style={{ width: 34, height: 1.5, background: GOLD_LINE, borderRadius: 2 }} />
+        </div>
+    );
+}
+
+/** 하단 물결 — 초대장 프레임 바닥 마감 */
+function Wave() {
+    return (
+        <svg viewBox="0 0 740 110" preserveAspectRatio="none" aria-hidden
+            style={{ display: 'block', width: '100%', height: 84, marginTop: 26 }}>
+            <path d="M0 55 C 120 18, 250 86, 390 56 C 530 28, 630 76, 740 46 L 740 110 L 0 110 Z" fill="#e3ecf5" />
+            <path d="M0 76 C 150 44, 310 96, 470 68 C 600 48, 670 86, 740 66 L 740 110 L 0 110 Z" fill="#d2e0ee" opacity="0.85" />
+        </svg>
+    );
+}
+
 function Section({ tag, title, accent = GREEN, children }: { tag: string; title: string; accent?: string; children: React.ReactNode }) {
     return (
-        <div style={{ marginTop: 20, background: '#fff', border: `1px solid ${LINE}`, borderRadius: 22, padding: '26px 22px', boxShadow: '0 2px 12px rgba(15,23,42,0.04)' }}>
-            <div style={{ fontSize: 12.5, fontWeight: 900, color: accent, letterSpacing: 1.5, marginBottom: 5 }}>{tag}</div>
+        <div style={{ marginTop: 20, background: '#fffdf8', border: `1px solid #e3d5b8`, borderRadius: 22, padding: '26px 22px', boxShadow: '0 2px 12px rgba(15,23,42,0.04)' }}>
+            <div style={{ fontSize: 12.5, fontWeight: 900, color: accent, letterSpacing: 1.5, marginBottom: 5 }}>✦ {tag}</div>
             <h2 style={{ fontSize: 21, fontWeight: 900, color: NAVY, margin: '0 0 14px', lineHeight: 1.35 }}>{title}</h2>
             {children}
         </div>
@@ -75,20 +120,29 @@ function Shot({ src, label }: { src: string; label: string }) {
 
 export default function PastorInvitePage() {
     return (
-        <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg,#f6f4ee,#faf8f3 45%,#f2f6f1)', padding: '40px 18px 70px' }}>
-            <div style={{ maxWidth: 740, margin: '0 auto' }}>
+        <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg,#f3f0e7,#f7f4ec 45%,#eef2ee)', padding: '28px 12px 60px' }}>
+            <div style={{ maxWidth: 740, margin: '0 auto', position: 'relative', border: `1.5px solid ${GOLD_LINE}`, borderRadius: 30, background: 'linear-gradient(180deg,#fffdf9,#faf6ec)', padding: '34px 16px 0', overflow: 'hidden', boxShadow: '0 6px 28px rgba(15,23,42,0.06)' }}>
 
-                {/* ── 초대장 헤더 ── */}
-                <div style={{ textAlign: 'center', background: '#fff', border: `1px solid ${LINE}`, borderRadius: 26, padding: '40px 24px 34px', boxShadow: '0 4px 20px rgba(15,23,42,0.05)' }}>
-                    <div style={{ fontSize: 16, fontWeight: 900, color: GOLD, letterSpacing: 3.5 }}>SOLUMA LAUNCH INVITATION</div>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/app-icon.png" alt="soluma" width={91} height={91} style={{ borderRadius: 22, margin: '18px 0 14px' }} />
-                    <h1 style={{ fontSize: 28, fontWeight: 900, color: NAVY, margin: 0, lineHeight: 1.4 }}>
-                        신앙 성장 솔루션<br />솔루마에 초대합니다
-                    </h1>
-                    <p style={{ fontSize: 14.5, color: FAINT, lineHeight: 1.8, margin: '18px 0 0' }}>
-                        말씀으로 하루를 시작하고, 공동체와 함께 자라나는<br />크리스천 신앙 성장 앱 — <b style={{ color: NAVY }}>soluma(솔루마)</b>
-                    </p>
+                {/* ── 초대장 헤더 (월계수 장식) ── */}
+                <div style={{ position: 'relative', textAlign: 'center', padding: '14px 8px 6px' }}>
+                    <Laurel />
+                    <Laurel flip />
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+                            <span aria-hidden style={{ width: 30, height: 1.5, background: '#c9a25e', borderRadius: 2 }} />
+                            <span style={{ fontSize: 15.5, fontWeight: 900, color: GOLD, letterSpacing: 3 }}>SOLUMA LAUNCH INVITATION</span>
+                            <span aria-hidden style={{ width: 30, height: 1.5, background: '#c9a25e', borderRadius: 2 }} />
+                        </div>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/app-icon.png" alt="soluma" width={91} height={91} style={{ borderRadius: 22, margin: '22px 0 16px', boxShadow: '0 6px 18px rgba(15,23,42,0.16)' }} />
+                        <h1 style={{ fontSize: 29, fontWeight: 900, color: NAVY, margin: 0, lineHeight: 1.42 }}>
+                            신앙 성장 솔루션<br />솔루마에 초대합니다
+                        </h1>
+                        <Ornament />
+                        <p style={{ fontSize: 14.5, color: FAINT, lineHeight: 1.8, margin: '10px 0 0' }}>
+                            말씀으로 하루를 시작하고, 공동체와 함께 자라나는<br />크리스천 신앙 성장 앱 — <b style={{ color: NAVY }}>soluma(솔루마)</b>
+                        </p>
+                    </div>
                 </div>
 
                 {/* ── 비전 ── */}
@@ -227,7 +281,7 @@ export default function PastorInvitePage() {
                 </Section>
 
                 {/* ── 맺음말 ── */}
-                <div style={{ marginTop: 20, textAlign: 'center', background: '#fff', border: `1px solid ${LINE}`, borderRadius: 22, padding: '30px 22px' }}>
+                <div style={{ marginTop: 20, textAlign: 'center', background: '#fffdf8', border: `1px solid #e3d5b8`, borderRadius: 22, padding: '30px 22px' }}>
                     <div style={{ fontSize: 20, lineHeight: 1 }}>🌱</div>
                     <p style={{ fontSize: 15.5, fontWeight: 800, color: NAVY, lineHeight: 1.8, margin: '12px 0 6px' }}>
                         솔루마의 첫걸음에<br />많은 성원과 격려 부탁드립니다.
@@ -259,9 +313,10 @@ export default function PastorInvitePage() {
                     </a>
                 </div>
 
-                <p style={{ textAlign: 'center', marginTop: 26, fontSize: 12.5, color: '#a8a29e', fontWeight: 800, letterSpacing: 1, lineHeight: 1.8 }}>
+                <p style={{ textAlign: 'center', marginTop: 26, marginBottom: 0, fontSize: 12.5, color: '#a8a29e', fontWeight: 800, letterSpacing: 1, lineHeight: 1.8 }}>
                     주식회사 루트 · ROOT Inc.<br />soluma — Find your light in Scripture
                 </p>
+                <Wave />
             </div>
         </div>
     );
