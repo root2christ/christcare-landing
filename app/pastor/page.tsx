@@ -22,7 +22,7 @@ const GREEN_DEEP = '#15803d';
 const GOLD = '#b45309';
 const SUB = '#475569';
 const FAINT = '#64748b';
-const LINE = '#e7e3da';
+const LINE = '#e4d7ba';
 
 const IOS_URL = 'https://apps.apple.com/app/id6779090825';
 const AOS_URL = 'https://play.google.com/store/apps/details?id=com.root2christ.christapp';
@@ -103,13 +103,20 @@ function Wave() {
     );
 }
 
-function Section({ tag, title, accent = GREEN, children }: { tag: string; title: string; accent?: string; children: React.ReactNode }) {
+function Section({ tag, title, children }: { tag: string; title: string; accent?: string; children: React.ReactNode }) {
+    // 개별 카드 대신 한 장의 초대장 안에서 이어지는 섹션 — 헤더와 같은 문법(대시 라벨 + 가운데 제목)
     return (
-        <div style={{ marginTop: 20, background: '#fffdf8', border: `1px solid #e3d5b8`, borderRadius: 22, padding: '26px 22px', boxShadow: '0 2px 12px rgba(15,23,42,0.04)' }}>
-            <div style={{ fontSize: 12.5, fontWeight: 900, color: accent, letterSpacing: 1.5, marginBottom: 5 }}>✦ {tag}</div>
-            <h2 style={{ fontSize: 21, fontWeight: 900, color: NAVY, margin: '0 0 14px', lineHeight: 1.35 }}>{title}</h2>
+        <section style={{ marginTop: 44, padding: '0 6px' }}>
+            <div style={{ textAlign: 'center', marginBottom: 18 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                    <span aria-hidden style={{ width: 26, height: 1.2, background: 'linear-gradient(90deg,transparent,#b98a3e)' }} />
+                    <span style={{ fontSize: 12.5, fontWeight: 900, color: '#a8752c', letterSpacing: 3 }}>{tag}</span>
+                    <span aria-hidden style={{ width: 26, height: 1.2, background: 'linear-gradient(270deg,transparent,#b98a3e)' }} />
+                </div>
+                <h2 style={{ fontSize: 21.5, fontWeight: 900, color: '#182742', margin: '10px 0 0', lineHeight: 1.4 }}>{title}</h2>
+            </div>
             {children}
-        </div>
+        </section>
     );
 }
 
@@ -119,7 +126,7 @@ function P({ children }: { children: React.ReactNode }) {
 
 function Feature({ emoji, title, desc }: { emoji: string; title: string; desc: string }) {
     return (
-        <div style={{ flex: '1 1 240px', minWidth: 220, background: '#fbfaf7', border: `1px solid ${LINE}`, borderRadius: 16, padding: '16px 15px' }}>
+        <div style={{ flex: '1 1 240px', minWidth: 220, background: 'rgba(255,255,255,0.55)', border: `1px solid ${LINE}`, borderRadius: 16, padding: '16px 15px' }}>
             <div style={{ fontSize: 24, lineHeight: 1, marginBottom: 8 }}>{emoji}</div>
             <div style={{ fontSize: 15.5, fontWeight: 800, color: NAVY, marginBottom: 5 }}>{title}</div>
             <div style={{ fontSize: 13.5, color: SUB, lineHeight: 1.7 }}>{desc}</div>
@@ -130,7 +137,7 @@ function Feature({ emoji, title, desc }: { emoji: string; title: string; desc: s
 function Step({ n, title, children }: { n: string; title: string; children?: React.ReactNode }) {
     return (
         <div style={{ display: 'flex', gap: 14, marginBottom: 15 }}>
-            <div style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 999, background: GREEN, color: '#fff', fontSize: 14.5, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{n}</div>
+            <div style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 999, background: 'linear-gradient(135deg,#c9a25e,#a8752c)', color: '#fff', fontSize: 14.5, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(168,117,44,0.3)' }}>{n}</div>
             <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 16, fontWeight: 800, color: NAVY, lineHeight: 1.45 }}>{title}</div>
                 {children && <div style={{ fontSize: 14.5, color: SUB, lineHeight: 1.75, marginTop: 4 }}>{children}</div>}
@@ -191,7 +198,7 @@ export default function PastorInvitePage() {
                         우리가 꿈꾸는 가장 큰 비전은 <b style={{ color: NAVY }}>기독교 비영리 재단의 설립</b>입니다.
                         솔루마를 통해 만들어지는 가치와 수익이 다시 하나님 나라를 위해 사용되기를 소망합니다.
                     </P>
-                    <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 14, padding: '16px 18px', margin: '4px 0 12px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.55)', border: `1px solid ${LINE}`, borderRadius: 14, padding: '16px 18px', margin: '4px 0 12px' }}>
                         <div style={{ fontSize: 13, fontWeight: 900, color: GREEN_DEEP, marginBottom: 8 }}>재단을 통해 감당하고자 하는 사역</div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
                             {['비자립 교회 지원', '국내외 선교 사역 지원', '선교사·목회자 가정 지원', '다음 세대 장학 사업', '긴급 구호와 사랑 나눔', '복음 전파 프로젝트 후원'].map((v, i) => (
@@ -272,7 +279,7 @@ export default function PastorInvitePage() {
                             ['💻 교회 웹 대시보드', 'christcare.us/church 에서 컴퓨터 큰 화면으로 교인 명부를 관리합니다. 휴대폰 카메라로 QR을 찍으면 비밀번호 없이 앱 계정으로 바로 로그인됩니다.'],
                         ].map(([h, b], i) => (
                             <div key={i} style={{ display: 'flex', gap: 11 }}>
-                                <span style={{ flexShrink: 0, marginTop: 7, width: 7, height: 7, borderRadius: 7, background: '#7c3aed' }} />
+                                <span style={{ flexShrink: 0, marginTop: 7, width: 7, height: 7, borderRadius: 7, background: '#a8752c' }} />
                                 <div>
                                     <span style={{ fontSize: 15.5, fontWeight: 800, color: NAVY }}>{h}</span>
                                     <span style={{ fontSize: 14.5, color: SUB, lineHeight: 1.75 }}> — {b}</span>
@@ -280,7 +287,7 @@ export default function PastorInvitePage() {
                             </div>
                         ))}
                     </div>
-                    <div style={{ marginTop: 16, background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 12, padding: '13px 15px', fontSize: 13.5, color: '#6d28d9', lineHeight: 1.7 }}>
+                    <div style={{ marginTop: 16, background: 'rgba(255,255,255,0.55)', border: `1px solid ${LINE}`, borderRadius: 12, padding: '13px 15px', fontSize: 13.5, color: '#7a5a1e', lineHeight: 1.7 }}>
                         🔑 <b>사역자 인증 방법</b> — 앱 설치 후 홈의 「사역자 등록」에서 재직을 확인할 수 있는 서류(임명장·재직증명 등)를 사진으로 올려 주시면,
                         확인 후 인증해 드립니다. 어려우시면 아래 문의처로 연락 주세요. 저희가 도와드리겠습니다.
                     </div>
@@ -292,7 +299,7 @@ export default function PastorInvitePage() {
                     <Step n="2" title="간편 로그인">카카오 · 구글 · 애플 계정으로 3초 만에 가입됩니다. 별도 비밀번호가 없습니다.</Step>
                     <Step n="3" title="크라이스트 테스트 (3분)">나의 신앙 유형을 확인해 보세요. 주변에 권하시기 전에 직접 경험해 보시면 좋습니다.</Step>
                     <Step n="4" title="우리 교회 등록">마이 탭에서 섬기시는 교회를 검색해 등록합니다. 교회가 없으면 새로 등록하실 수 있습니다.</Step>
-                    <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 12, padding: '13px 15px', fontSize: 13.5, color: '#6d28d9', lineHeight: 1.7, margin: '2px 0 12px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.55)', border: `1px solid ${LINE}`, borderRadius: 12, padding: '13px 15px', fontSize: 13.5, color: '#7a5a1e', lineHeight: 1.7, margin: '2px 0 12px' }}>
                         <b>*</b> 목회자의 경우, 홈 「사역자 등록」에서 <b>사역자 인증 신청</b>을 하시면 교회 기능이 열립니다.
                     </div>
                     <p style={{ fontSize: 13.5, color: FAINT, lineHeight: 1.7, margin: '6px 0 0' }}>
@@ -320,7 +327,8 @@ export default function PastorInvitePage() {
                 </Section>
 
                 {/* ── 맺음말 ── */}
-                <div style={{ marginTop: 20, textAlign: 'center', background: '#fffdf8', border: `1px solid #e3d5b8`, borderRadius: 22, padding: '30px 22px' }}>
+                <div style={{ marginTop: 44, textAlign: 'center', padding: '0 12px' }}>
+                    <Ornament margin="0 auto 14px" />
                     <div style={{ fontSize: 20, lineHeight: 1 }}>🌱</div>
                     <p style={{ fontSize: 15.5, fontWeight: 800, color: NAVY, lineHeight: 1.8, margin: '12px 0 6px' }}>
                         솔루마의 첫걸음에<br />많은 성원과 격려 부탁드립니다.
