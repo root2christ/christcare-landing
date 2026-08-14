@@ -4,7 +4,7 @@ export const metadata: Metadata = {
     title: 'soluma Launch Invitation',
     description: '신앙 성장 솔루션 soluma에 초대합니다. 앱 소개 · 교회를 위한 기능 · 사용법 · ROOT의 비전 · 다운로드',
     openGraph: {
-        title: '📜 soluma Launch Invitation',
+        title: 'soluma Launch Invitation',
         description: '신앙 성장 솔루션 soluma에 초대합니다.',
         url: 'https://christcare.us/pastor',
         siteName: 'soluma',
