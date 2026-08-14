@@ -83,26 +83,6 @@ function Ornament({ margin = '16px auto 6px' }: { margin?: string }) {
     );
 }
 
-/** 하단 수채 물결 — 겹층 + 은은한 하이라이트 */
-function Wave() {
-    return (
-        <svg viewBox="0 0 740 150" preserveAspectRatio="none" aria-hidden
-            style={{ display: 'block', width: '100%', height: 96 }}>
-            <defs>
-                <linearGradient id="wvA" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stopColor="#eaf1f8" />
-                    <stop offset="1" stopColor="#d3e0ee" />
-                </linearGradient>
-            </defs>
-            <path d="M0,86 C 90,58 200,104 320,88 C 440,72 520,108 620,92 C 668,84 706,70 740,60 L740,150 L0,150 Z"
-                fill="#dde8f3" opacity="0.65" />
-            <path d="M0,64 C 110,36 230,92 370,72 C 500,54 590,96 740,44 L740,150 L0,150 Z" fill="url(#wvA)" />
-            <path d="M0,104 C 140,78 300,122 460,98 C 580,80 660,112 740,92 L740,150 L0,150 Z" fill="#c2d4e7" opacity="0.8" />
-            <path d="M0,66 C 110,38 230,94 370,74 C 500,56 590,98 740,46" stroke="#ffffff" strokeWidth="2.5" fill="none" opacity="0.55" />
-        </svg>
-    );
-}
-
 function Section({ tag, title, children }: { tag: string; title: string; accent?: string; children: React.ReactNode }) {
     // 개별 카드 대신 한 장의 초대장 안에서 이어지는 섹션 — 헤더와 같은 문법(대시 라벨 + 가운데 제목)
     return (
@@ -189,11 +169,6 @@ export default function PastorInvitePage() {
                             말씀으로 하루를 시작하고, 공동체와 함께 자라나는<br />크리스천 신앙 성장 앱 — <b style={{ color: '#182742' }}>SOLUMA · 솔루마</b>
                         </p>
                     </div>
-                </div>
-
-                {/* 헤더 마감 물결 — 시안처럼 첫 파트 하단에 (프레임 가장자리까지 확장) */}
-                <div aria-hidden style={{ margin: '18px -16px 0' }}>
-                    <Wave />
                 </div>
 
                 {/* ── 비전 ── */}
