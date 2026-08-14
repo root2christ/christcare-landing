@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Noto_Serif_KR, Great_Vibes } from 'next/font/google';
+import Stardust from '../_components/Stardust';
 
 export const metadata: Metadata = {
     title: 'soluma Launch Invitation',
@@ -106,7 +107,9 @@ export default function PastorInviteV2Page() {
         <div className={serif.className} style={{ minHeight: '100dvh', background: '#e8dfcd', padding: '30px 12px 64px' }}>
             {/* 카드 — 크림 종이 + 브릭 이중 프레임 (외곽 실선 + 안쪽 점선) */}
             <div style={{ maxWidth: 720, margin: '0 auto', background: PAPER, border: `1.5px solid ${BRICK}`, padding: 9, boxShadow: '0 14px 40px rgba(56,38,25,0.18)' }}>
-                <div style={{ border: `1px dotted ${BRICK}`, padding: '46px 22px 42px' }}>
+                <div style={{ position: 'relative', overflow: 'hidden', border: `1px dotted ${BRICK}`, padding: '46px 22px 42px' }}>
+                    {/* 은빛 별가루 — 수백 개가 눈처럼 내린다 */}
+                    <Stardust />
 
                     {/* 앱 아이콘 글레어(부드러운 빛 스침) + 별가루 반짝임 */}
                     <style dangerouslySetInnerHTML={{ __html: `
@@ -117,13 +120,6 @@ export default function PastorInviteV2Page() {
                             transform: rotate(10deg); filter: blur(3px);
                             animation: iconShine 6s cubic-bezier(.45,.05,.35,1) infinite; }
                         @keyframes iconShine { 0% { left:-90%; } 32% { left:150%; } 100% { left:150%; } }
-                        .sparkle { position: absolute; pointer-events: none; opacity: 0;
-                            animation: twinkle 3s ease-in-out infinite; }
-                        @keyframes twinkle {
-                            0%, 100% { opacity: 0; transform: scale(0.25) rotate(-12deg); }
-                            45%      { opacity: 1; transform: scale(1) rotate(14deg); }
-                            65%      { opacity: 0.35; transform: scale(0.7) rotate(20deg); }
-                        }
                     ` }} />
                     {/* ── 헤더 ── */}
                     <div style={{ textAlign: 'center' }}>
@@ -133,38 +129,6 @@ export default function PastorInviteV2Page() {
                             <span aria-hidden style={{ width: 40, height: 1, background: `linear-gradient(270deg,transparent,${BRICK})` }} />
                         </div>
                         <span className="icon-stage" style={{ margin: '26px 0 22px' }}>
-                            <svg key={0} className="sparkle" width="11" height="11" viewBox="0 0 10 10" aria-hidden
-                                style={{ top: -14, left: -12, animationDuration: '2.8s', animationDelay: '0.0s' }}>
-                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#cfa46a" />
-                            </svg>
-                            <svg key={1} className="sparkle" width="8" height="8" viewBox="0 0 10 10" aria-hidden
-                                style={{ top: -20, left: 30, animationDuration: '3.4s', animationDelay: '1.1s' }}>
-                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#fdf6e3" />
-                            </svg>
-                            <svg key={2} className="sparkle" width="13" height="13" viewBox="0 0 10 10" aria-hidden
-                                style={{ top: -8, left: 72, animationDuration: '3.0s', animationDelay: '0.5s' }}>
-                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#cfa46a" />
-                            </svg>
-                            <svg key={3} className="sparkle" width="9" height="9" viewBox="0 0 10 10" aria-hidden
-                                style={{ top: 14, left: -22, animationDuration: '3.6s', animationDelay: '1.8s' }}>
-                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#fdf6e3" />
-                            </svg>
-                            <svg key={4} className="sparkle" width="10" height="10" viewBox="0 0 10 10" aria-hidden
-                                style={{ top: 26, left: 82, animationDuration: '2.9s', animationDelay: '2.3s' }}>
-                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#cfa46a" />
-                            </svg>
-                            <svg key={5} className="sparkle" width="12" height="12" viewBox="0 0 10 10" aria-hidden
-                                style={{ top: 52, left: -16, animationDuration: '3.2s', animationDelay: '0.9s' }}>
-                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#fdf6e3" />
-                            </svg>
-                            <svg key={6} className="sparkle" width="8" height="8" viewBox="0 0 10 10" aria-hidden
-                                style={{ top: 66, left: 24, animationDuration: '3.5s', animationDelay: '2.8s' }}>
-                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#cfa46a" />
-                            </svg>
-                            <svg key={7} className="sparkle" width="10" height="10" viewBox="0 0 10 10" aria-hidden
-                                style={{ top: 58, left: 74, animationDuration: '3.1s', animationDelay: '1.5s' }}>
-                                <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="#fdf6e3" />
-                            </svg>
                             <span className="icon-glare" style={{ borderRadius: 17, boxShadow: '0 6px 16px rgba(38,32,25,0.22), 0 0 22px rgba(203,141,66,0.3)' }}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src="/app-icon.png" alt="soluma" width={74} height={74} style={{ display: 'block', borderRadius: 17 }} />
