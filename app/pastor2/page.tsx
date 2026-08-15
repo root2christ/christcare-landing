@@ -95,7 +95,7 @@ function Shot({ src, label }: { src: string; label: string }) {
     return (
         <div style={{ textAlign: 'center' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt={label} style={{ width: 138, height: 'auto', borderRadius: 14, border: `1px solid ${HAIR}`, display: 'block', boxShadow: '0 3px 10px rgba(38,32,25,0.08)' }} />
+            <img src={src} alt={label} style={{ width: 138, height: 304, objectFit: 'cover', objectPosition: 'top', borderRadius: 14, border: `1px solid ${HAIR}`, display: 'block', boxShadow: '0 3px 10px rgba(38,32,25,0.08)' }} />
             <div style={{ fontSize: 12, fontWeight: 600, color: FAINT, marginTop: 8, letterSpacing: 1 }}>{label}</div>
         </div>
     );
