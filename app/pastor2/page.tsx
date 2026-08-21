@@ -133,6 +133,16 @@ export default function PastorInviteV2Page() {
                         <div style={{ fontSize: 17, fontWeight: 600, color: INK, letterSpacing: 2, lineHeight: 1.8 }}>
                             신앙 성장 솔루션, 솔루마에<br />여러분을 초대합니다
                         </div>
+                        <div style={{ margin: '18px auto 0', display: 'inline-block', border: `1px solid ${BRICK}`, padding: '8px 22px' }}>
+                            <span style={{ fontSize: 14.5, fontWeight: 700, color: BRICK_DEEP, letterSpacing: 2 }}>2026년 8월 29일 정식 출시</span>
+                        </div>
+                        <div style={{ margin: '14px auto 0', maxWidth: 460, borderTop: `1px solid ${HAIR}`, borderBottom: `1px solid ${HAIR}`, padding: '14px 12px' }}>
+                            <div style={{ fontSize: 12.5, fontWeight: 700, color: BRICK, letterSpacing: 3 }}>오픈 기념 이벤트</div>
+                            <p style={{ fontSize: 13.5, color: SUB, lineHeight: 1.9, margin: '8px 0 0' }}>
+                                <b style={{ color: INK }}>8월 29일 0시 ~ 9월 6일 23시 59분</b>에 가입하시면<br />
+                                <b style={{ color: BRICK_DEEP }}>크라이스트 테스트 무료 이용권 1회</b>를 선물로 드립니다.
+                            </p>
+                        </div>
                         <p style={{ fontSize: 13.5, color: FAINT, lineHeight: 1.9, margin: '16px 0 0', letterSpacing: 0.5 }}>
                             말씀으로 하루를 시작하고, 공동체와 함께 자라나는<br />크리스천 신앙 성장 앱 — SOLUMA · 솔루마
                         </p>
@@ -160,7 +170,7 @@ export default function PastorInviteV2Page() {
                     {/* ── 인사말 ── */}
                     <Head label="인사말" title="" />
                     <P>
-                        솔루마가 이 자리까지 올 수 있도록 기도와 조언으로 함께해 주신
+                        솔루마가 이 자리까지 올 수 있도록 기도와 조언으로
                         <b style={{ color: INK }}> 함께해 주신 목사님들과 성도님들</b>께 진심으로 감사드립니다.
                         주신 말씀 하나하나를 마음에 새기며 다듬어 온 솔루마가, 이제 <b style={{ color: INK }}>애플 앱스토어와 구글 플레이 정식 심사를 모두 통과</b>하여
                         <b style={{ color: BRICK_DEEP }}> 정식 런칭</b>을 맞이하게 되었습니다.

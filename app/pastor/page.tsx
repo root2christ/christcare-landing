@@ -123,6 +123,16 @@ export default function PastorInvitePage() {
                         <h1 style={{ fontSize: 31, fontWeight: 900, color: '#182742', margin: 0, lineHeight: 1.4, letterSpacing: -0.3 }}>
                             신앙 성장 솔루션<br />솔루마에 초대합니다
                         </h1>
+                        <div style={{ margin: '16px auto 0', display: 'inline-block', background: '#fdf6e4', border: '1px solid #e3cf9e', borderRadius: 999, padding: '9px 22px' }}>
+                            <span style={{ fontSize: 15.5, fontWeight: 900, color: '#8a6420', letterSpacing: 0.5 }}>2026년 8월 29일 정식 출시</span>
+                        </div>
+                        <div style={{ margin: '14px auto 0', maxWidth: 480, background: 'rgba(255,255,255,0.6)', border: '1px solid #e3cf9e', borderRadius: 16, padding: '14px 18px' }}>
+                            <div style={{ fontSize: 13, fontWeight: 900, color: '#a8752c', letterSpacing: 2 }}>🎁 오픈 기념 이벤트</div>
+                            <p style={{ fontSize: 13.5, color: '#4a5568', lineHeight: 1.8, margin: '8px 0 0' }}>
+                                <b style={{ color: '#182742' }}>8월 29일 0시 ~ 9월 6일 23시 59분</b>에 가입하시면<br />
+                                <b style={{ color: '#a8752c' }}>크라이스트 테스트 무료 이용권 1회</b>를 선물로 드립니다.
+                            </p>
+                        </div>
                         <Ornament />
                         <p style={{ fontSize: 15, color: '#5d6b80', lineHeight: 1.85, margin: '8px 0 0' }}>
                             말씀으로 하루를 시작하고, 공동체와 함께 자라나는<br />크리스천 신앙 성장 앱 — <b style={{ color: '#182742' }}>SOLUMA · 솔루마</b>
@@ -153,7 +163,7 @@ export default function PastorInvitePage() {
                 {/* ── 인사말 ── */}
                 <Section tag="인사말" title="" accent={GOLD}>
                     <P>
-                        솔루마가 이 자리까지 올 수 있도록 기도와 조언으로 함께해 주신
+                        솔루마가 이 자리까지 올 수 있도록 기도와 조언으로
                         <b style={{ color: NAVY }}> 함께해 주신 목사님들과 성도님들</b>께 진심으로 감사드립니다.
                         주신 말씀 하나하나를 마음에 새기며 다듬어 온 솔루마가, 이제 <b style={{ color: NAVY }}>애플 앱스토어와 구글 플레이 정식 심사를 모두 통과</b>하여
                         <b style={{ color: GREEN_DEEP }}> 정식 런칭</b>을 맞이하게 되었습니다.
