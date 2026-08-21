@@ -161,7 +161,7 @@ export default function PastorInviteV2Page() {
                     <Head label="인사말" title="" />
                     <P>
                         솔루마가 이 자리까지 올 수 있도록 기도와 조언으로 함께해 주신
-                        <b style={{ color: INK }}> 라이트하우스 무브먼트의 목사님들과 성도님들</b>께 진심으로 감사드립니다.
+                        <b style={{ color: INK }}> 함께해 주신 목사님들과 성도님들</b>께 진심으로 감사드립니다.
                         주신 말씀 하나하나를 마음에 새기며 다듬어 온 솔루마가, 이제 <b style={{ color: INK }}>애플 앱스토어와 구글 플레이 정식 심사를 모두 통과</b>하여
                         <b style={{ color: BRICK_DEEP }}> 정식 런칭</b>을 맞이하게 되었습니다.
                     </P>
