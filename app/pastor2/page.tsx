@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Noto_Serif_KR, Great_Vibes } from 'next/font/google';
+import ShotGallery from '../_components/ShotGallery';
 
 export const metadata: Metadata = {
     title: 'soluma Launch Invitation',
@@ -91,15 +92,6 @@ function Step({ n, title, children }: { n: string; title: string; children?: Rea
     );
 }
 
-function Shot({ src, label }: { src: string; label: string }) {
-    return (
-        <div style={{ textAlign: 'center' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt={label} style={{ width: 138, height: 304, objectFit: 'cover', objectPosition: 'top', borderRadius: 14, border: `1px solid ${HAIR}`, display: 'block', boxShadow: '0 3px 10px rgba(38,32,25,0.08)' }} />
-            <div style={{ fontSize: 12, fontWeight: 600, color: FAINT, marginTop: 8, letterSpacing: 1 }}>{label}</div>
-        </div>
-    );
-}
 
 export default function PastorInviteV2Page() {
     return (
@@ -190,15 +182,17 @@ export default function PastorInviteV2Page() {
                         그 문을 지나면 — 365일 큐티, 성경 통독 플랜, 필사, 함께 암송, 말씀 노트, 기도제목과 간증을 나누는 공동체,
                         그리고 교회를 위한 사역 도구까지. 신앙 생활의 하루 리듬 전체를 한 앱에 담았습니다.
                     </P>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center', marginTop: 22 }}>
-                        <Shot src="/tutorial/test/intro.png" label="크라이스트 테스트" />
-                        <Shot src="/tutorial/qt/word.png" label="오늘의 큐티" />
-                        <Shot src="/tutorial/scripture/writing.png" label="성경 필사" />
-                        <Shot src="/tutorial/scripture/keyboard.png" label="음성 필사" />
-                        <Shot src="/tutorial/memorization/room.png" label="함께 암송" />
-                        <Shot src="/tutorial/jobbox/main.png" label="잡박스" />
-                        <Shot src="/tutorial/newcomer/form.png" label="새신자 등록" />
-                        <Shot src="/tutorial/minister/roster.png" label="성도 관리" />
+                    <div style={{ marginTop: 22 }}>
+                        <ShotGallery shots={[
+    { src: '/tutorial/test/intro.png', label: '크라이스트 테스트' },
+    { src: '/tutorial/qt/word.png', label: '오늘의 큐티' },
+    { src: '/tutorial/scripture/writing.png', label: '성경 필사' },
+    { src: '/tutorial/scripture/keyboard.png', label: '음성 필사' },
+    { src: '/tutorial/memorization/room.png', label: '함께 암송' },
+    { src: '/tutorial/jobbox/main.png', label: '잡박스' },
+    { src: '/tutorial/newcomer/form.png', label: '새신자 등록' },
+    { src: '/tutorial/minister/roster.png', label: '성도 관리' },
+]} width={138} height={304} radius={14} border={HAIR} labelColor={FAINT} />
                     </div>
 
                     {/* ── 주요 기능 ── */}
