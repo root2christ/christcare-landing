@@ -60,6 +60,31 @@ export async function GET(req: NextRequest) {
             }
         }
 
+        // 서류 이미지: 버킷(pastor-documents)이 private 이라 저장된 public URL 은 404 난다.
+        // 서비스 롤로 서명 URL(1시간)을 새로 만들어 내려준다.
+        const BUCKET = 'pastor-documents';
+        const DOC_FIELDS = ['ordination_certificate_url', 'denomination_registration_url', 'church_bulletin_url'] as const;
+        const toObjectPath = (url: string): string | null => {
+            if (!url) return null;
+            const m = url.match(/\/pastor-documents\/(.+)$/);
+            if (m) return decodeURIComponent(m[1].split('?')[0]);
+            // 이미 경로만 저장된 경우도 허용
+            return url.includes('://') ? null : url;
+        };
+        {
+            const jobs: Array<{ p: any; field: string; path: string }> = [];
+            for (const p of (pastors || [])) {
+                for (const field of DOC_FIELDS) {
+                    const path = toObjectPath(p[field]);
+                    if (path) jobs.push({ p, field, path });
+                }
+            }
+            await Promise.all(jobs.map(async ({ p, field, path }) => {
+                const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, 3600);
+                if (!error && data?.signedUrl) p[field] = data.signedUrl;
+            }));
+        }
+
         // 등록자 이메일 붙이기 (best-effort)
         const uids = Array.from(new Set([
             ...(pastors || []).map((p: any) => p.user_id),
