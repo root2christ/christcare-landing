@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import ShotGallery from '../_components/ShotGallery';
+import StoreBadge from '../_components/StoreBadge';
 
 export const metadata: Metadata = {
     title: 'soluma Launch Invitation',
@@ -285,15 +286,9 @@ export default function PastorInvitePage() {
                         <p style={{ fontSize: 14, color: SUB, lineHeight: 1.8, margin: '0 0 14px' }}>
                             스토어에서 <b style={{ color: NAVY }}>“솔루마”</b> 또는 <b style={{ color: NAVY }}>“soluma”</b>를 검색하시거나,<br />아래 주소로 바로 설치하실 수 있습니다.
                         </p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
-                            <a href={IOS_URL} target="_blank" rel="noopener noreferrer"
-                                style={{ flex: '1 1 220px', maxWidth: 300, background: NAVY, color: '#fff', fontSize: 14.5, fontWeight: 800, textDecoration: 'none', borderRadius: 12, padding: '13px 0' }}>
-                                 App Store (아이폰) →
-                            </a>
-                            <a href={AOS_URL} target="_blank" rel="noopener noreferrer"
-                                style={{ flex: '1 1 220px', maxWidth: 300, background: GREEN_DEEP, color: '#fff', fontSize: 14.5, fontWeight: 800, textDecoration: 'none', borderRadius: 12, padding: '13px 0' }}>
-                                ▶ Google Play (안드로이드) →
-                            </a>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
+                            <StoreBadge kind="ios" href={IOS_URL} />
+                            <StoreBadge kind="android" href={AOS_URL} />
                         </div>
                     </div>
 

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Noto_Serif_KR, Great_Vibes } from 'next/font/google';
 import ShotGallery from '../_components/ShotGallery';
+import StoreBadge from '../_components/StoreBadge';
 
 export const metadata: Metadata = {
     title: 'soluma Launch Invitation',
@@ -283,15 +284,9 @@ export default function PastorInviteV2Page() {
                             <p style={{ fontSize: 13.5, color: SUB, lineHeight: 1.9, margin: '10px 0 16px' }}>
                                 스토어에서 <b style={{ color: INK }}>“솔루마”</b> 또는 <b style={{ color: INK }}>“soluma”</b>를 검색하시거나,<br />아래 주소로 바로 설치하실 수 있습니다.
                             </p>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
-                                <a href={IOS_URL} target="_blank" rel="noopener noreferrer"
-                                    style={{ flex: '1 1 200px', maxWidth: 280, background: INK, color: PAPER, fontSize: 13.5, fontWeight: 700, letterSpacing: 1, textDecoration: 'none', padding: '14px 0' }}>
-                                    APP STORE →
-                                </a>
-                                <a href={AOS_URL} target="_blank" rel="noopener noreferrer"
-                                    style={{ flex: '1 1 200px', maxWidth: 280, background: BRICK, color: PAPER, fontSize: 13.5, fontWeight: 700, letterSpacing: 1, textDecoration: 'none', padding: '14px 0' }}>
-                                    GOOGLE PLAY →
-                                </a>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
+                                <StoreBadge kind="ios" href={IOS_URL} />
+                                <StoreBadge kind="android" href={AOS_URL} />
                             </div>
                         </div>
 
