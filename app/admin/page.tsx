@@ -71,7 +71,16 @@ const SKU_SECTIONS: Array<{ title: string; keys: string[] }> = [
     { title: '성경 평생소장', keys: ['bible_korean_all'] },
 ];
 
-type TabKey = 'send' | 'history' | 'gift' | 'pastors';
+type TabKey = 'send' | 'history' | 'gift' | 'pastors' | 'recent';
+
+type RecentUser = {
+    id: string;
+    email: string | null;
+    full_name: string | null;
+    avatar_url: string | null;
+    church_name: string | null;
+    created_at: string;
+};
 
 type PastorRow = {
     id: string; user_id: string; name: string | null; church_name: string | null;
@@ -124,6 +133,13 @@ export default function AdminPage() {
     const [pastorsLoading, setPastorsLoading] = useState(false);
     const [pastorFilter, setPastorFilter] = useState<'all' | 'verified' | 'rejected'>('all');
     const [lightbox, setLightbox] = useState<{ url: string; label: string } | null>(null);
+
+    // ── 최근 가입자 (2026-08-24) ──
+    const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
+    const [recentPage, setRecentPage] = useState(0);
+    const [recentLoading, setRecentLoading] = useState(false);
+    const [recentHasMore, setRecentHasMore] = useState(false);
+    const [recentError, setRecentError] = useState('');
 
     const loadPastors = useCallback(async () => {
         setPastorsLoading(true);
@@ -214,12 +230,39 @@ export default function AdminPage() {
         } catch { }
     }, [authedFetch, authed]);
 
+    const loadRecent = useCallback(async (page: number) => {
+        if (!authed) return;
+        setRecentLoading(true);
+        setRecentError('');
+        try {
+            const res = await authedFetch('/api/admin/recent-users', {
+                method: 'POST',
+                body: JSON.stringify({ page }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setRecentError(data.error || '불러오지 못했습니다.');
+                setRecentUsers([]);
+                setRecentHasMore(false);
+            } else {
+                setRecentUsers(data.users || []);
+                setRecentHasMore(!!data.hasMore);
+                setRecentPage(page);
+            }
+        } catch (e: any) {
+            setRecentError(e?.message || '불러오지 못했습니다.');
+        } finally {
+            setRecentLoading(false);
+        }
+    }, [authedFetch, authed]);
+
     useEffect(() => {
         if (!authed) return;
         if (tab === 'history') loadHistory();
         if (tab === 'pastors') loadPastors();
         if (tab === 'gift') loadGrantHistory();
-    }, [authed, tab, loadHistory, loadGrantHistory, loadPastors]);
+        if (tab === 'recent') loadRecent(0);
+    }, [authed, tab, loadHistory, loadGrantHistory, loadPastors, loadRecent]);
 
     // ── 로그인 ──
     // 비밀번호는 서버로만 보낸다. 맞으면 서버가 httpOnly 쿠키를 심어준다(여기서는 못 읽는다).
@@ -469,6 +512,7 @@ export default function AdminPage() {
                     <button style={tab === 'history' ? styles.tabActive : styles.tab} onClick={() => setTab('history')}>발송 이력</button>
                     <button style={tab === 'gift' ? styles.tabActive : styles.tab} onClick={() => setTab('gift')}>이용권 보내기</button>
                     <button style={tab === 'pastors' ? styles.tabActive : styles.tab} onClick={() => setTab('pastors')}>사역자·교회</button>
+                    <button style={tab === 'recent' ? styles.tabActive : styles.tab} onClick={() => setTab('recent')}>최근 가입자</button>
                 </div>
 
                 {tab === 'send' && (
@@ -523,6 +567,62 @@ export default function AdminPage() {
                                     </div>
                                 ))}
                             </div>
+                        )}
+                    </div>
+                )}
+
+                {tab === 'recent' && (
+                    <div style={styles.card}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                            <h2 style={styles.cardTitle}>최근 가입자 {recentUsers.length > 0 && <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>({recentPage * 100 + 1}–{recentPage * 100 + recentUsers.length}번째)</span>}</h2>
+                            <button onClick={() => loadRecent(recentPage)} style={styles.refreshBtn}>새로고침</button>
+                        </div>
+                        {recentError ? (
+                            <div style={{ ...styles.resultBox, backgroundColor: '#fef2f2', color: '#ef4444' }}>{recentError}</div>
+                        ) : recentLoading ? (
+                            <p style={styles.empty}>불러오는 중…</p>
+                        ) : recentUsers.length === 0 ? (
+                            <p style={styles.empty}>가입자가 없습니다.</p>
+                        ) : (
+                            <>
+                                <div style={styles.historyList}>
+                                    {recentUsers.map((u, i) => (
+                                        <div key={u.id} style={{ ...styles.historyItem, display: 'flex', alignItems: 'center', gap: 12 }}>
+                                            <span style={{ fontSize: 12, color: '#cbd5e1', fontWeight: 700, minWidth: 34, textAlign: 'right' as any }}>
+                                                {recentPage * 100 + i + 1}
+                                            </span>
+                                            {u.avatar_url
+                                                ? <img src={u.avatar_url} alt="" style={{ width: 36, height: 36, borderRadius: 18, objectFit: 'cover', flexShrink: 0 }} />
+                                                : <span style={{ width: 36, height: 36, borderRadius: 18, background: '#f1f5f9', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#94a3b8' }}>👤</span>}
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontSize: 14.5, fontWeight: 700, color: '#0f172a' }}>
+                                                    {u.full_name || '(이름 없음)'}
+                                                    {u.church_name && <span style={{ fontSize: 12, fontWeight: 500, color: '#64748b', marginLeft: 8 }}>· {u.church_name}</span>}
+                                                </div>
+                                                <div style={{ fontSize: 12.5, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as any }}>
+                                                    {u.email || u.id.slice(0, 8)}
+                                                </div>
+                                            </div>
+                                            <span style={{ fontSize: 12, color: '#64748b', flexShrink: 0, textAlign: 'right' as any }}>
+                                                {new Date(u.created_at).toLocaleString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginTop: 16 }}>
+                                    <button
+                                        onClick={() => loadRecent(recentPage - 1)}
+                                        disabled={recentPage === 0 || recentLoading}
+                                        style={{ ...styles.secondaryBtn, flex: 'none', padding: '10px 18px', opacity: recentPage === 0 ? 0.4 : 1 }}
+                                    >← 이전 100명</button>
+                                    <span style={{ fontSize: 13, color: '#64748b' }}>{recentPage + 1} 페이지</span>
+                                    <button
+                                        onClick={() => loadRecent(recentPage + 1)}
+                                        disabled={!recentHasMore || recentLoading}
+                                        style={{ ...styles.secondaryBtn, flex: 'none', padding: '10px 18px', opacity: !recentHasMore ? 0.4 : 1 }}
+                                    >다음 100명 →</button>
+                                </div>
+                            </>
                         )}
                     </div>
                 )}
