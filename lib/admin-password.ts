@@ -18,10 +18,9 @@ import crypto from 'crypto';
  * 설정돼 있지 않으면 아래 내장 해시로 검증한다.
  */
 
-/** salt:hash (scrypt, 32바이트) — 평문은 여기에 없다 */
+/** salt:hash (scrypt, 32바이트) — 평문은 여기에 없다 (2026-08-24 재설정) */
 const BUILTIN_HASHES = [
-    '15657e4412e73b7a1f3b07375a1a8326:9b53d9c97e5702bf6f14d66844a8180889b5e0271a46f7ec956021c9a60eafb2',
-    '9ae56372559401a6c8f9fc20693dff9d:824a42d799d65375107cb928a294b46a1a29c66ca16de50d141dfb2a7951f50d',
+    'fa03c9068f066c9ad7fd0666200ad844:ad1e52e704bc030eb44a70891e2d917bef048663a8d090c3f0e9ef57ff4aa0fa',
 ];
 
 /** 타이밍 차이로 정답을 더듬지 못하게 — 길이가 달라도 예외 없이 false */
