@@ -158,7 +158,7 @@ export default function PastorInviteV2Page() {
                     <div style={{ border: `1px solid ${HAIR}`, padding: '16px 18px', margin: '18px 0' }}>
                         <Caps color={BRICK} size={11.5}>재단을 통해 감당하고자 하는 사역</Caps>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px', marginTop: 10 }}>
-                            {['비자립 교회 지원', '국내외 선교 사역 지원', '선교사·목회자 가정 지원', '다음 세대 장학 사업', '긴급 구호와 사랑 나눔', '복음 전파 프로젝트 후원'].map((v, i) => (
+                            {['미자립 교회 지원', '국내외 선교 사역 지원', '선교사·목회자 가정 지원', '다음 세대 장학 사업', '긴급 구호와 사랑 나눔', '복음 전파 프로젝트 후원'].map((v, i) => (
                                 <span key={i} style={{ fontSize: 13.5, fontWeight: 600, color: SUB }}>· {v}</span>
                             ))}
                         </div>
