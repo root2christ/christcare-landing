@@ -53,8 +53,7 @@ type GiftableSku = {
 
 const GIFTABLE_SKUS: GiftableSku[] = [
     // 단품
-    { key: 'test_faith_checkup', productId: 'test_faith_checkup', label: '신앙심 테스트', price: 1 },
-    { key: 'test_christ_basic',  productId: 'test_christ_basic',  label: '크라이스트 테스트', price: 1.49 },
+    { key: 'test_christ_basic',  productId: 'test_christ_basic_v2',  label: '크라이스트 테스트', price: 1.49 },
     { key: 'analysis_deep',      productId: 'analysis_deep',      label: '심층 분석', price: 3 },
     // 구독
     { key: 'sub_monthly',        productId: 'sub_monthly',        label: '월 구독', price: 2 },
@@ -66,7 +65,7 @@ const GIFTABLE_SKUS: GiftableSku[] = [
 
 // SKU 그룹 (UI 섹션 구분용)
 const SKU_SECTIONS: Array<{ title: string; keys: string[] }> = [
-    { title: '단품 테스트', keys: ['test_faith_checkup', 'test_christ_basic', 'analysis_deep'] },
+    { title: '단품 테스트', keys: ['test_christ_basic', 'analysis_deep'] },
     { title: '구독', keys: ['sub_monthly', 'sub_yearly'] },
     { title: '성경 평생소장', keys: ['bible_korean_all'] },
 ];

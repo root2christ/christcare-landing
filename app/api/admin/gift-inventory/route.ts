@@ -5,7 +5,6 @@ import { PRODUCT_IDS, bibleProductId, getProductLabel, BibleTranslation } from '
 import { sendPushToUser } from '../../../../lib/push';
 
 const VALID_PRODUCT_IDS = new Set<string>([
-    PRODUCT_IDS.TEST_FAITH,
     PRODUCT_IDS.TEST_CHRIST_BASIC,
     PRODUCT_IDS.ANALYSIS_DEEP,
     PRODUCT_IDS.SUBSCRIPTION_MONTHLY,
