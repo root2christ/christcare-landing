@@ -624,10 +624,11 @@ export default function AdminPage() {
 
                                     <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>매출 · 구독</div>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
-                                        <Box label="누적 매출" value={usd(S.revenue?.totalUsd)} sub={`${S.revenue?.count ?? 0}건`} />
+                                        <Box label="누적 매출" value={usd(S.revenue?.totalUsd)} sub={`실결제 ${S.revenue?.count ?? 0}건`} />
                                         <Box label="30일 매출" value={usd(S.revenue?.days30Usd)} />
                                         <Box label="오늘 매출" value={usd(S.revenue?.today)} />
                                         <Box label="활성 구독" value={String(S.subscriptions?.active ?? 0)} sub={`월 ${S.subscriptions?.monthly ?? 0} · 연 ${S.subscriptions?.yearly ?? 0}`} />
+                                        <Box label="선물 지급분 (매출 아님)" value={usd(S.gifts?.valueUsd)} sub={`${S.gifts?.count ?? 0}건 · 선물·이벤트`} />
                                     </div>
 
                                     <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>교회 · 오픈 이벤트</div>
@@ -662,7 +663,7 @@ export default function AdminPage() {
 
                                     <p style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 14 }}>
                                         기준 시각: {S.generatedAt ? new Date(S.generatedAt).toLocaleString('ko-KR') : '-'} ·
-                                        매출은 앱 DB에 기록된 금액이며 스토어 정산액(수수료 차감 전)과 다를 수 있습니다.
+                                        매출은 실결제(스토어)만 집계하며, 선물·이벤트로 지급한 이용권은 제외했습니다. 스토어 정산액(수수료 차감 후)과는 다를 수 있습니다.
                                     </p>
                                 </>
                             );
