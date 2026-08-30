@@ -135,6 +135,8 @@ export default function AdminPage() {
 
     // ── 통계 (2026-08-30) ──
     const [stats, setStats] = useState<any>(null);
+    const [funnel, setFunnel] = useState<any>(null);
+    const [funnelDays, setFunnelDays] = useState(7);
     const [statsLoading, setStatsLoading] = useState(false);
     const [statsError, setStatsError] = useState('');
 
@@ -268,10 +270,17 @@ export default function AdminPage() {
             const data = await res.json();
             if (!res.ok) { setStatsError(data.error || '불러오지 못했습니다.'); setStats(null); }
             else setStats(data.stats);
+
+            // 퍼널은 별도 RPC — 아직 SQL 을 안 돌렸어도 통계는 보이게 실패를 삼킨다
+            try {
+                const fr = await authedFetch(`/api/admin/funnel?days=${funnelDays}`);
+                const fd = await fr.json();
+                setFunnel(fr.ok ? fd.funnel : { _error: fd.error || '불러오지 못했습니다.' });
+            } catch { setFunnel(null); }
         } catch (e: any) {
             setStatsError(e?.message || '불러오지 못했습니다.');
         } finally { setStatsLoading(false); }
-    }, [authedFetch, authed]);
+    }, [authedFetch, authed, funnelDays]);
 
     useEffect(() => {
         if (!authed) return;
@@ -650,6 +659,73 @@ export default function AdminPage() {
                                             </div>
                                         ))}
                                     </div>
+
+                                    {/* ── 구독 퍼널 ─────────────────────────────
+                                        요금제까지 오는 사람이 없는 건지(진입), 와서 안 사는 건지(설득)를 가른다. */}
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '4px 0 8px' }}>
+                                        <div style={{ fontSize: 13, fontWeight: 800, color: '#334155' }}>구독 퍼널</div>
+                                        <div style={{ display: 'flex', gap: 6 }}>
+                                            {[7, 30].map(d => (
+                                                <button key={d} onClick={() => setFunnelDays(d)}
+                                                    style={{
+                                                        fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 8, cursor: 'pointer',
+                                                        border: '1px solid ' + (funnelDays === d ? '#38BDF8' : '#e2e8f0'),
+                                                        background: funnelDays === d ? '#E0F2FE' : '#fff',
+                                                        color: funnelDays === d ? '#0369A1' : '#64748b',
+                                                    }}>{d}일</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    {funnel?._error ? (
+                                        <div style={{ ...styles.resultBox, backgroundColor: '#fffbeb', color: '#b45309', marginBottom: 18 }}>{funnel._error}</div>
+                                    ) : !funnel ? (
+                                        <p style={{ ...styles.empty, marginBottom: 18 }}>아직 기록이 없습니다.</p>
+                                    ) : (() => {
+                                        const st = funnel.steps || {};
+                                        const n = (k: string, f: 'users' | 'events') => Number(st?.[k]?.[f] ?? 0);
+                                        const paywall = n('paywall_view', 'users');
+                                        const tapped = n('subscribe_tap', 'users');
+                                        const bought = n('purchase_success', 'users');
+                                        const pct = (a: number, b: number) => (b > 0 ? `${Math.round((a / b) * 100)}%` : '-');
+                                        const gates = (funnel.gateByFeature || []) as Array<{ feature: string; users: number; events: number }>;
+                                        const maxGate = Math.max(1, ...gates.map(g => g.events));
+                                        const FEATURE_KO: Record<string, string> = {
+                                            qt: '매일 큐티', quiz: '성경 퀴즈', readingPlan: '통독 플랜', transcribe: '성경 필사',
+                                            sermon: '말씀 노트', community: '기도·간증', letter: '기도 편지', ai: 'AI 상담',
+                                            memorize: '암송', relay: '릴레이 기도', group: '소그룹·챌린지',
+                                        };
+                                        return (
+                                            <>
+                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+                                                    <Box label="잠긴 기능 안내를 봄" value={String(n('gate_view', 'users'))} sub={`${n('gate_view', 'events')}회`} />
+                                                    <Box label="요금제 화면 진입" value={String(paywall)} sub={`${n('paywall_view', 'events')}회`} />
+                                                    <Box label="결제 시도" value={String(tapped)} sub={`진입 대비 ${pct(tapped, paywall)}`} />
+                                                    <Box label="결제 완료" value={String(bought)} sub={`시도 대비 ${pct(bought, tapped)}`} />
+                                                </div>
+                                                <p style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 0, marginBottom: 14 }}>
+                                                    숫자는 <b>사람 수</b>(중복 제외), 작은 글씨는 발생 횟수입니다.
+                                                    진입은 많은데 결제 시도가 적으면 <b>설득</b> 문제, 진입 자체가 적으면 <b>유입</b> 문제입니다.
+                                                </p>
+
+                                                <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>어떤 기능에서 막혔나</div>
+                                                <div style={{ ...styles.historyList, marginBottom: 18 }}>
+                                                    {gates.length === 0 ? <p style={styles.empty}>기록이 없습니다.</p> : gates.map(g => (
+                                                        <div key={g.feature} style={{ ...styles.historyItem, display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                            <span style={{ fontSize: 13.5, fontWeight: 700, color: '#0f172a', minWidth: 110 }}>
+                                                                {FEATURE_KO[g.feature] || g.feature}
+                                                            </span>
+                                                            <div style={{ flex: 1, height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+                                                                <div style={{ width: `${(g.events / maxGate) * 100}%`, height: '100%', background: '#38BDF8' }} />
+                                                            </div>
+                                                            <span style={{ fontSize: 12.5, color: '#475569', minWidth: 88, textAlign: 'right' as any }}>
+                                                                {g.users}명 · {g.events}회
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
 
                                     <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>상품별 판매</div>
                                     <div style={styles.historyList}>
