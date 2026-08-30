@@ -627,7 +627,8 @@ export default function AdminPage() {
                                         <Box label="누적 매출" value={usd(S.revenue?.totalUsd)} sub={`실결제 ${S.revenue?.count ?? 0}건`} />
                                         <Box label="30일 매출" value={usd(S.revenue?.days30Usd)} />
                                         <Box label="오늘 매출" value={usd(S.revenue?.today)} />
-                                        <Box label="활성 구독" value={String(S.subscriptions?.active ?? 0)} sub={`월 ${S.subscriptions?.monthly ?? 0} · 연 ${S.subscriptions?.yearly ?? 0}`} />
+                                        <Box label="활성 구독 · 실결제" value={String(S.subscriptions?.paid ?? 0)} sub={`월 ${S.subscriptions?.monthly ?? 0} · 연 ${S.subscriptions?.yearly ?? 0}`} />
+                                        <Box label="활성 구독 · 선물" value={String(S.subscriptions?.gifted ?? 0)} sub={`전체 ${S.subscriptions?.active ?? 0}명`} />
                                         <Box label="선물 지급분 (매출 아님)" value={usd(S.gifts?.valueUsd)} sub={`${S.gifts?.count ?? 0}건 · 선물·이벤트`} />
                                     </div>
 
