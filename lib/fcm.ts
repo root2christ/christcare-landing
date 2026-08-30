@@ -82,9 +82,12 @@ export async function sendFcm(
                 body: JSON.stringify({
                     message: {
                         token: t,
-                        notification: { title, body },
-                        data: data || {},
-                        android: { priority: 'HIGH', notification: { channel_id: 'soluma_admin_events' } },
+                        // notification 페이로드를 쓰지 않는다.
+                        // 그걸 쓰면 앱이 백그라운드일 때 FCM 이 앱을 거치지 않고 바로 띄워버려서
+                        // 사용자가 끈 종류(가입/결제)까지 표시된다. 데이터 전용으로 보내고
+                        // 앱(PushService)이 설정을 확인한 뒤 직접 띄우게 한다.
+                        data: { ...(data || {}), title, body },
+                        android: { priority: 'HIGH' },
                     },
                 }),
             });
