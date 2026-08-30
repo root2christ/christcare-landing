@@ -70,7 +70,7 @@ const SKU_SECTIONS: Array<{ title: string; keys: string[] }> = [
     { title: '성경 평생소장', keys: ['bible_korean_all'] },
 ];
 
-type TabKey = 'send' | 'history' | 'gift' | 'pastors' | 'recent';
+type TabKey = 'send' | 'history' | 'gift' | 'pastors' | 'recent' | 'stats';
 
 type RecentUser = {
     id: string;
@@ -132,6 +132,11 @@ export default function AdminPage() {
     const [pastorsLoading, setPastorsLoading] = useState(false);
     const [pastorFilter, setPastorFilter] = useState<'all' | 'verified' | 'rejected'>('all');
     const [lightbox, setLightbox] = useState<{ url: string; label: string } | null>(null);
+
+    // ── 통계 (2026-08-30) ──
+    const [stats, setStats] = useState<any>(null);
+    const [statsLoading, setStatsLoading] = useState(false);
+    const [statsError, setStatsError] = useState('');
 
     // ── 최근 가입자 (2026-08-24) ──
     const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
@@ -255,13 +260,27 @@ export default function AdminPage() {
         }
     }, [authedFetch, authed]);
 
+    const loadStats = useCallback(async () => {
+        if (!authed) return;
+        setStatsLoading(true); setStatsError('');
+        try {
+            const res = await authedFetch('/api/admin/stats');
+            const data = await res.json();
+            if (!res.ok) { setStatsError(data.error || '불러오지 못했습니다.'); setStats(null); }
+            else setStats(data.stats);
+        } catch (e: any) {
+            setStatsError(e?.message || '불러오지 못했습니다.');
+        } finally { setStatsLoading(false); }
+    }, [authedFetch, authed]);
+
     useEffect(() => {
         if (!authed) return;
+        if (tab === 'stats') loadStats();
         if (tab === 'history') loadHistory();
         if (tab === 'pastors') loadPastors();
         if (tab === 'gift') loadGrantHistory();
         if (tab === 'recent') loadRecent(0);
-    }, [authed, tab, loadHistory, loadGrantHistory, loadPastors, loadRecent]);
+    }, [authed, tab, loadHistory, loadGrantHistory, loadPastors, loadRecent, loadStats]);
 
     // ── 로그인 ──
     // 비밀번호는 서버로만 보낸다. 맞으면 서버가 httpOnly 쿠키를 심어준다(여기서는 못 읽는다).
@@ -512,6 +531,7 @@ export default function AdminPage() {
                     <button style={tab === 'gift' ? styles.tabActive : styles.tab} onClick={() => setTab('gift')}>이용권 보내기</button>
                     <button style={tab === 'pastors' ? styles.tabActive : styles.tab} onClick={() => setTab('pastors')}>사역자·교회</button>
                     <button style={tab === 'recent' ? styles.tabActive : styles.tab} onClick={() => setTab('recent')}>최근 가입자</button>
+                    <button style={tab === 'stats' ? styles.tabActive : styles.tab} onClick={() => setTab('stats')}>통계</button>
                 </div>
 
                 {tab === 'send' && (
@@ -567,6 +587,86 @@ export default function AdminPage() {
                                 ))}
                             </div>
                         )}
+                    </div>
+                )}
+
+                {tab === 'stats' && (
+                    <div style={styles.card}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                            <h2 style={styles.cardTitle}>통계</h2>
+                            <button onClick={loadStats} style={styles.refreshBtn}>새로고침</button>
+                        </div>
+                        {statsError ? (
+                            <div style={{ ...styles.resultBox, backgroundColor: '#fef2f2', color: '#ef4444' }}>{statsError}</div>
+                        ) : statsLoading || !stats ? (
+                            <p style={styles.empty}>{statsLoading ? '불러오는 중…' : '데이터가 없습니다.'}</p>
+                        ) : (() => {
+                            const S = stats;
+                            const usd = (n: number) => `$${Number(n || 0).toFixed(2)}`;
+                            const Box = ({ label, value, sub }: { label: string; value: string; sub?: string }) => (
+                                <div style={{ flex: '1 1 150px', minWidth: 150, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '14px 16px' }}>
+                                    <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>{label}</div>
+                                    <div style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', marginTop: 4 }}>{value}</div>
+                                    {sub && <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 2 }}>{sub}</div>}
+                                </div>
+                            );
+                            const daily = (S.signupsDaily || []) as Array<{ d: string; n: number }>;
+                            const maxN = Math.max(1, ...daily.map(x => x.n));
+                            return (
+                                <>
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>회원</div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
+                                        <Box label="전체 회원" value={String(S.users?.total ?? 0)} />
+                                        <Box label="오늘 가입" value={String(S.users?.today ?? 0)} />
+                                        <Box label="7일" value={String(S.users?.days7 ?? 0)} />
+                                        <Box label="30일" value={String(S.users?.days30 ?? 0)} />
+                                    </div>
+
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>매출 · 구독</div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
+                                        <Box label="누적 매출" value={usd(S.revenue?.totalUsd)} sub={`${S.revenue?.count ?? 0}건`} />
+                                        <Box label="30일 매출" value={usd(S.revenue?.days30Usd)} />
+                                        <Box label="오늘 매출" value={usd(S.revenue?.today)} />
+                                        <Box label="활성 구독" value={String(S.subscriptions?.active ?? 0)} sub={`월 ${S.subscriptions?.monthly ?? 0} · 연 ${S.subscriptions?.yearly ?? 0}`} />
+                                    </div>
+
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>교회 · 오픈 이벤트</div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
+                                        <Box label="등록 교회" value={String(S.church?.userRegistered ?? 0)} />
+                                        <Box label="사역자" value={String(S.church?.pastors ?? 0)} sub={`인증 ${S.church?.pastorsVerified ?? 0}`} />
+                                        <Box label="새신자 등록" value={String(S.church?.newcomers ?? 0)} sub={`7일 ${S.church?.newcomers7 ?? 0}`} />
+                                        <Box label="이벤트 지급" value={String(S.launchEvent?.granted ?? 0)} sub={`사용 ${S.launchEvent?.used ?? 0}`} />
+                                    </div>
+
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '10px 0 8px' }}>최근 14일 가입 추이</div>
+                                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 120, padding: '8px 4px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, marginBottom: 18 }}>
+                                        {daily.length === 0 ? <span style={{ fontSize: 12, color: '#94a3b8' }}>데이터 없음</span> : daily.map(x => (
+                                            <div key={x.d} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }} title={`${x.d}: ${x.n}명`}>
+                                                <div style={{ fontSize: 10, color: '#64748b' }}>{x.n}</div>
+                                                <div style={{ width: '100%', height: Math.max(3, (x.n / maxN) * 80), background: '#38BDF8', borderRadius: 4 }} />
+                                                <div style={{ fontSize: 9.5, color: '#94a3b8' }}>{String(x.d).slice(5)}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>상품별 판매</div>
+                                    <div style={styles.historyList}>
+                                        {(S.byProduct || []).length === 0 ? <p style={styles.empty}>판매 내역이 없습니다.</p> :
+                                            (S.byProduct as Array<{ productId: string; count: number; usd: number }>).map(p => (
+                                                <div key={p.productId} style={{ ...styles.historyItem, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <span style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>{p.productId}</span>
+                                                    <span style={{ fontSize: 13, color: '#475569' }}>{p.count}건 · <b>{usd(p.usd)}</b></span>
+                                                </div>
+                                            ))}
+                                    </div>
+
+                                    <p style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 14 }}>
+                                        기준 시각: {S.generatedAt ? new Date(S.generatedAt).toLocaleString('ko-KR') : '-'} ·
+                                        매출은 앱 DB에 기록된 금액이며 스토어 정산액(수수료 차감 전)과 다를 수 있습니다.
+                                    </p>
+                                </>
+                            );
+                        })()}
                     </div>
                 )}
 
