@@ -7,7 +7,7 @@ import {
 } from '../../../../lib/appstore';
 import {
     googleReviews, googleInstalls, ratingFromReviews,
-    googleConfigured, googleInstallsConfigured, ANDROID_PACKAGE,
+    googleConfigured, googleInstallsConfigured, ANDROID_PACKAGE, lastGoogle,
 } from '../../../../lib/googleplay';
 
 /**
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
             google: googleConfigured(),
             googleInstalls: googleInstallsConfigured(),
         },
-        diagnostics: req.nextUrl.searchParams.get('debug') ? { apple: lastApple } : undefined,
+        diagnostics: req.nextUrl.searchParams.get('debug') ? { apple: lastApple, google: lastGoogle } : undefined,
         generatedAt: new Date().toISOString(),
     });
 }

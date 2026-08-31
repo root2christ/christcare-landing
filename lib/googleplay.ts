@@ -18,6 +18,9 @@ import type { Review } from './appstore';
 
 export const ANDROID_PACKAGE = process.env.ANDROID_PACKAGE || 'com.root2christ.christapp';
 
+/** 마지막 구글 응답 — 왜 비었는지 관리자 화면에서 확인하기 위한 진단용 */
+export const lastGoogle: { account?: string; reviews?: string; installs?: string } = {};
+
 type SA = { client_email: string; private_key: string; project_id: string };
 
 function sa(): SA | null {
@@ -71,14 +74,23 @@ async function accessToken(scope: string): Promise<string | null> {
 
 // ── 리뷰 ──────────────────────────────────────────────────
 export async function googleReviews(limit = 10): Promise<Review[]> {
+    const acct = sa();
+    lastGoogle.account = acct ? acct.client_email : 'GOOGLE_SERVICE_ACCOUNT_JSON 없음/형식오류';
     const t = await accessToken('https://www.googleapis.com/auth/androidpublisher');
-    if (!t) return [];
+    if (!t) { lastGoogle.reviews = '토큰 발급 실패 — 키가 잘못됐거나 서비스 계정이 비활성입니다'; return []; }
     try {
         const res = await fetch(
             `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${ANDROID_PACKAGE}/reviews?maxResults=${limit}`,
             { headers: { Authorization: `Bearer ${t}` } },
         );
-        if (!res.ok) return [];
+        if (!res.ok) {
+            const body = (await res.text().catch(() => '')).slice(0, 300);
+            lastGoogle.reviews = res.status === 401 || res.status === 403
+                ? `${res.status} — 이 서비스 계정에 Play Console 권한이 없습니다. Play Console → API 액세스에서 이 계정에 앱 권한을 주세요. ${body}`
+                : `${res.status} ${body}`;
+            return [];
+        }
+        lastGoogle.reviews = 'ok';
         const json: any = await res.json();
         return (json.reviews || []).map((r: any) => {
             const c = r.comments?.[0]?.userComment || {};
@@ -106,9 +118,9 @@ export type GoogleInstalls = { month: string; installs: number; uninstalls: numb
  */
 export async function googleInstalls(yyyymm: string): Promise<GoogleInstalls> {
     const bucket = process.env.GOOGLE_PLAY_REPORT_BUCKET;
-    if (!bucket) return null;
+    if (!bucket) { lastGoogle.installs = 'GOOGLE_PLAY_REPORT_BUCKET 미설정'; return null; }
     const t = await accessToken('https://www.googleapis.com/auth/devstorage.read_only');
-    if (!t) return null;
+    if (!t) { lastGoogle.installs = '토큰 발급 실패'; return null; }
 
     const object = `stats/installs/installs_${ANDROID_PACKAGE}_${yyyymm}_overview.csv`;
     try {
@@ -116,7 +128,13 @@ export async function googleInstalls(yyyymm: string): Promise<GoogleInstalls> {
             `https://storage.googleapis.com/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(object)}?alt=media`,
             { headers: { Authorization: `Bearer ${t}` } },
         );
-        if (!res.ok) return null;
+        if (!res.ok) {
+            lastGoogle.installs = res.status === 403
+                ? '403 — 이 서비스 계정에 버킷 읽기 권한이 없습니다 (Storage 객체 뷰어 필요)'
+                : `${res.status} (해당 월 리포트가 아직 없을 수 있습니다)`;
+            return null;
+        }
+        lastGoogle.installs = 'ok';
         let buf = Buffer.from(await res.arrayBuffer());
         if (buf[0] === 0x1f && buf[1] === 0x8b) buf = zlib.gunzipSync(buf);
         // Play 리포트는 UTF-16LE (BOM 포함)
