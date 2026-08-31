@@ -125,6 +125,10 @@ export default function AdminPage() {
     const [searching, setSearching] = useState(false);
     const [searchResults, setSearchResults] = useState<SearchedUser[]>([]);
     const [selectedUser, setSelectedUser] = useState<SearchedUser | null>(null);
+    // 이용권+크레딧 함께 보낼 때 받는 사람에게 갈 푸시 문구
+    const [grantPushMsg, setGrantPushMsg] = useState('');
+    const [grantingAll, setGrantingAll] = useState(false);
+    const [allResult, setAllResult] = useState('');
     // SKU별 수량 (key → 문자열 수량. 빈 문자열 또는 0이면 미선택)
     const [quantities, setQuantities] = useState<Record<string, string>>({});
     const [note, setNote] = useState('');
@@ -546,6 +550,107 @@ export default function AdminPage() {
         } finally {
             setGrantingCredit(false);
         }
+    };
+
+    /**
+     * 이용권 + 크레딧을 한 번에 보내고, 마지막에 안내 푸시까지 보낸다.
+     * 둘 중 하나만 채워도 그것만 나간다. 한 단계가 실패해도 나머지는 계속 진행하고
+     * 결과를 모아서 보여준다 (한 번 눌렀는데 뭐가 됐는지 모르는 상황을 막는다).
+     */
+    const handleGrantAll = async () => {
+        if (!selectedUser) { alert('대상 사용자를 먼저 선택해주세요.'); return; }
+        const amount = creditAmount.trim() ? Number(creditAmount) : 0;
+        const hasItems = totalCount > 0;
+        const hasCredit = amount > 0;
+
+        if (creditAmount.trim() && (!Number.isFinite(amount) || amount <= 0 || amount > 100000)) {
+            alert('크레딧 금액은 0보다 크고 100000 이하인 숫자여야 합니다.'); return;
+        }
+        if (!hasItems && !hasCredit) {
+            alert('이용권 수량 또는 크레딧 금액 중 하나는 입력해주세요.'); return;
+        }
+
+        const lines: string[] = [];
+        if (hasItems) lines.push(...selectedItems.map(x => `  · ${x.sku.label} × ${x.qty}장`));
+        if (hasCredit) lines.push(`  · 크레딧 $${amount.toFixed(2)}`);
+        if (!confirm(
+            `[선물 확인]\n\n대상: ${selectedUser.full_name || '(이름 없음)'} (${selectedUser.email || selectedUser.id.slice(0, 8)})\n\n${lines.join('\n')}\n\n메모: ${note.trim() || '(없음)'}\n푸시: ${grantPushMsg.trim() || '(보내지 않음)'}\n\n보내시겠습니까?`
+        )) return;
+
+        setGrantingAll(true);
+        setAllResult('');
+        const done: string[] = [];
+        const failed: string[] = [];
+
+        // ① 이용권
+        if (hasItems) {
+            try {
+                const res = await authedFetch('/api/admin/gift-inventory', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        targetUserId: selectedUser.id,
+                        targetEmail: selectedUser.email,
+                        items: selectedItems.map(x => ({
+                            productId: x.sku.productId,
+                            bibleTranslation: x.sku.bibleTranslation,
+                            quantity: x.qty,
+                        })),
+                        note: note.trim() || undefined,
+                    }),
+                });
+                const data = await res.json();
+                if (res.ok && data.success) done.push(`이용권 ${data.granted}장`);
+                else failed.push(`이용권: ${data.error || '실패'}`);
+            } catch (e: any) { failed.push(`이용권: ${e.message}`); }
+        }
+
+        // ② 크레딧
+        if (hasCredit) {
+            try {
+                const res = await authedFetch('/api/admin/credit-grant', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        targetUserId: selectedUser.id,
+                        targetEmail: selectedUser.email,
+                        amount,
+                        note: note.trim() || undefined,
+                    }),
+                });
+                const data = await res.json();
+                if (res.ok && data.success) done.push(`크레딧 $${amount.toFixed(2)}`);
+                else failed.push(`크레딧: ${data.error || '실패'}`);
+            } catch (e: any) { failed.push(`크레딧: ${e.message}`); }
+        }
+
+        // ③ 안내 푸시 (문구를 넣은 경우에만)
+        if (grantPushMsg.trim() && done.length > 0) {
+            try {
+                const res = await authedFetch('/api/admin/push-user', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        userId: selectedUser.id,
+                        email: selectedUser.email,
+                        title: '🎁 선물이 도착했어요',
+                        body: grantPushMsg.trim(),
+                    }),
+                });
+                const data = await res.json();
+                if (res.ok) done.push(`푸시 발송(기기 ${data.sent}대)`);
+                else failed.push(`푸시: ${data.error || '실패'}`);
+            } catch (e: any) { failed.push(`푸시: ${e.message}`); }
+        }
+
+        let msg = failed.length === 0 ? '✅ ' : '⚠️ ';
+        msg += `${selectedUser.email || selectedUser.full_name} 님에게\n`;
+        if (done.length) msg += done.map(d => `  ✓ ${d}`).join('\n');
+        if (failed.length) msg += `${done.length ? '\n' : ''}` + failed.map(f => `  ✗ ${f}`).join('\n');
+        setAllResult(msg);
+
+        if (done.length > 0) {
+            setNote(''); setQuantities({}); setCreditAmount(''); setGrantPushMsg('');
+            loadGrantHistory();
+        }
+        setGrantingAll(false);
     };
 
     // ── 렌더 ──
@@ -1218,13 +1323,67 @@ export default function AdminPage() {
                                     disabled={grantingCredit || !selectedUser || !(Number(creditAmount) > 0)}
                                     style={(selectedUser && Number(creditAmount) > 0) ? styles.primaryBtn : styles.disabledBtn}
                                 >
-                                    {grantingCredit ? '지급 중...' : '크레딧 보내기'}
+                                    {grantingCredit ? '지급 중...' : '크레딧만 보내기'}
                                 </button>
                             </div>
 
                             {creditResult && (
                                 <div style={{ ...styles.resultBox, backgroundColor: creditResult.startsWith('❌') ? '#fef2f2' : '#f0fdf4', color: creditResult.startsWith('❌') ? '#ef4444' : '#22c55e' }}>
                                     {creditResult}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 한 번에 보내기 — 이용권 + 크레딧 + 안내 푸시 */}
+                        <div style={{ ...styles.card, marginTop: 16, border: '2px solid #6366f1' }}>
+                            <h2 style={styles.cardTitle}>🎁 한 번에 보내기</h2>
+                            <p style={styles.cardDesc}>
+                                위에서 입력한 <b>이용권 수량</b>과 <b>크레딧 금액</b>을 한 번에 보냅니다.
+                                둘 중 하나만 채워도 됩니다. 아래 문구를 적으면 받는 분께 푸시 알림도 함께 갑니다.
+                            </p>
+
+                            {!selectedUser ? (
+                                <p style={{ fontSize: 13, color: '#94a3b8', margin: '8px 0' }}>먼저 위에서 대상 사용자를 선택해주세요.</p>
+                            ) : (
+                                <div style={{ ...styles.selectedUser, marginBottom: 12 }}>
+                                    <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>받는 사람</div>
+                                    <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>{selectedUser.full_name || '(이름 없음)'}</div>
+                                    <div style={{ fontSize: 12, color: '#64748b' }}>{selectedUser.email}</div>
+                                    <div style={{ fontSize: 12.5, color: '#4338CA', fontWeight: 700, marginTop: 8 }}>
+                                        {totalCount > 0 ? `이용권 ${totalCount}장` : '이용권 없음'}
+                                        {' · '}
+                                        {Number(creditAmount) > 0 ? `크레딧 $${Number(creditAmount).toFixed(2)}` : '크레딧 없음'}
+                                    </div>
+                                </div>
+                            )}
+
+                            <label style={styles.label}>푸시 알림 문구 (선택 — 비우면 알림 안 보냄)</label>
+                            <textarea
+                                placeholder="예: 이용권과 크레딧을 보내드렸어요. 앱의 받은 선물함에서 확인해주세요!"
+                                value={grantPushMsg}
+                                onChange={e => setGrantPushMsg(e.target.value)}
+                                rows={3}
+                                style={{ ...styles.input, resize: 'vertical' as any }}
+                            />
+
+                            <div style={styles.btnRow}>
+                                <button
+                                    onClick={handleGrantAll}
+                                    disabled={grantingAll || !selectedUser || (totalCount === 0 && !(Number(creditAmount) > 0))}
+                                    style={(selectedUser && (totalCount > 0 || Number(creditAmount) > 0)) ? styles.primaryBtn : styles.disabledBtn}
+                                >
+                                    {grantingAll ? '보내는 중...' : '이용권 + 크레딧 함께 보내기'}
+                                </button>
+                            </div>
+
+                            {allResult && (
+                                <div style={{
+                                    ...styles.resultBox,
+                                    whiteSpace: 'pre-wrap' as any,
+                                    backgroundColor: allResult.startsWith('✅') ? '#f0fdf4' : '#fffbeb',
+                                    color: allResult.startsWith('✅') ? '#22c55e' : '#b45309',
+                                }}>
+                                    {allResult}
                                 </div>
                             )}
                         </div>
