@@ -19,7 +19,7 @@ import zlib from 'zlib';
 const ASC = 'https://api.appstoreconnect.apple.com';
 
 /** 마지막 애플 응답 — 왜 비었는지 관리자 화면에서 확인하기 위한 진단용 */
-export const lastApple: { sales?: string; reviews?: string } = {};
+export const lastApple: { sales?: string; reviews?: string; key?: string } = {};
 export const APPLE_APP_ID = process.env.APPLE_APP_ID || '6779090825';
 
 type Creds = { issuerId: string; keyId: string; privateKey: string; vendorNumber?: string };
@@ -50,12 +50,25 @@ function token(c: Creds): string {
         exp: now + 15 * 60,      // 애플 상한 20분
         aud: 'appstoreconnect-v1',
     });
-    const sig = crypto
-        .sign('sha256', Buffer.from(`${header}.${claim}`), {
-            key: c.privateKey,
-            dsaEncoding: 'ieee-p1363',   // ★ JWT ES256 은 raw r||s
-        })
-        .toString('base64url');
+    let sig: string;
+    try {
+        sig = crypto
+            .sign('sha256', Buffer.from(`${header}.${claim}`), {
+                key: c.privateKey,
+                dsaEncoding: 'ieee-p1363',   // ★ JWT ES256 은 raw r||s
+            })
+            .toString('base64url');
+    } catch (e: any) {
+        // 거의 대부분 .p8 내용이 잘못 들어간 경우다. 어떻게 잘못됐는지까지 남긴다.
+        const k = c.privateKey || '';
+        lastApple.key = [
+            `서명 실패: ${e?.message || e}`,
+            `길이 ${k.length}`,
+            `BEGIN 헤더 ${k.includes('-----BEGIN PRIVATE KEY-----') ? '있음' : '없음'}`,
+            `줄바꿈 ${(k.match(/\n/g) || []).length}개`,
+        ].join(' · ');
+        throw e;
+    }
 
     const jwt = `${header}.${claim}.${sig}`;
     cached = { token: jwt, exp: now + 15 * 60 };
@@ -147,7 +160,10 @@ export async function appleDaily(days: number): Promise<DailyRow[]> {
     for (let i = 1; i <= Math.min(days, 35); i++) {
         dates.push(ymd(new Date(Date.now() - i * 86400000)));
     }
-    const rows = await Promise.all(dates.map(d => salesReport(c, d).catch(() => null)));
+    const rows = await Promise.all(dates.map(d => salesReport(c, d).catch((e) => {
+        if (!lastApple.sales) lastApple.sales = `예외: ${e?.message || e}`;
+        return null;
+    })));
     return rows.filter((r): r is DailyRow => !!r).sort((a, b) => a.date.localeCompare(b.date));
 }
 
@@ -185,7 +201,8 @@ export async function appleReviews(limit = 10): Promise<Review[]> {
             territory: d.attributes?.territory || undefined,
             at: d.attributes?.createdDate || '',
         }));
-    } catch {
+    } catch (e: any) {
+        if (!lastApple.reviews) lastApple.reviews = `예외: ${e?.message || e}`;
         return [];
     }
 }
