@@ -17,6 +17,9 @@ import zlib from 'zlib';
  */
 
 const ASC = 'https://api.appstoreconnect.apple.com';
+
+/** 마지막 애플 응답 — 왜 비었는지 관리자 화면에서 확인하기 위한 진단용 */
+export const lastApple: { sales?: string; reviews?: string } = {};
 export const APPLE_APP_ID = process.env.APPLE_APP_ID || '6779090825';
 
 type Creds = { issuerId: string; keyId: string; privateKey: string; vendorNumber?: string };
@@ -88,7 +91,16 @@ async function salesReport(c: Creds, date: string): Promise<DailyRow | null> {
     const res = await fetch(`${ASC}/v1/salesReports?${qs}`, {
         headers: { Authorization: `Bearer ${token(c)}`, Accept: 'application/a-gzip' },
     });
-    if (!res.ok) return null;   // 404 = 그날 리포트 없음(판매 0). 정상 상황이다.
+    if (!res.ok) {
+        // 404 = 그날 리포트 없음(판매 0) — 정상. 그 외(401/403)는 설정 문제라 남긴다.
+        if (res.status !== 404) {
+            lastApple.sales = `${res.status} ${(await res.text().catch(() => '')).slice(0, 300)}`;
+        } else if (!lastApple.sales) {
+            lastApple.sales = '404 (해당 날짜 리포트 없음 — 판매/다운로드 0이면 정상)';
+        }
+        return null;
+    }
+    lastApple.sales = 'ok';
 
     let tsv: string;
     try {
@@ -158,7 +170,11 @@ export async function appleReviews(limit = 10): Promise<Review[]> {
             `${ASC}/v1/apps/${APPLE_APP_ID}/customerReviews?limit=${limit}&sort=-createdDate`,
             { headers: { Authorization: `Bearer ${token(c)}` } },
         );
-        if (!res.ok) return [];
+        if (!res.ok) {
+            lastApple.reviews = `${res.status} ${(await res.text().catch(() => '')).slice(0, 300)}`;
+            return [];
+        }
+        lastApple.reviews = 'ok';
         const json: any = await res.json();
         return (json.data || []).map((d: any) => ({
             store: 'apple' as const,

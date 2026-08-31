@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '../../../../lib/admin-auth';
 import {
     appleDaily, appleReviews, appleRating,
-    appleConfigured, appleSalesConfigured, APPLE_APP_ID,
+    appleConfigured, appleSalesConfigured, APPLE_APP_ID, lastApple,
     type Review,
 } from '../../../../lib/appstore';
 import {
@@ -69,6 +69,7 @@ export async function GET(req: NextRequest) {
             google: googleConfigured(),
             googleInstalls: googleInstallsConfigured(),
         },
+        diagnostics: req.nextUrl.searchParams.get('debug') ? { apple: lastApple } : undefined,
         generatedAt: new Date().toISOString(),
     });
 }
