@@ -103,8 +103,12 @@ export type DailyRow = {
     downloads: number;      // 신규 다운로드(첫 설치)
     updates: number;
     iapUnits: number;       // 인앱 결제 건수
-    proceeds: number;       // 개발자 수익 (수수료 차감 후)
-    currency: string;
+    /**
+     * 개발자 수익(수수료 차감 후) — 통화별로 나눠 담는다.
+     * 리포트에 KRW·USD 가 섞여 오는데 합쳐버리면 완전히 엉뚱한 숫자가 된다
+     * (원화 18,806 을 달러로 더해 $18,806 이 나왔던 사고).
+     */
+    proceeds: Record<string, number>;
 };
 
 /** Product Type Identifier 분류 — 애플 문서 기준 */
@@ -155,20 +159,21 @@ async function salesReport(c: Creds, date: string): Promise<DailyRow | null> {
     const cCur = col('Currency of Proceeds');
     if (cType < 0 || cUnits < 0) return null;
 
-    const row: DailyRow = { date, downloads: 0, updates: 0, iapUnits: 0, proceeds: 0, currency: 'USD' };
+    const row: DailyRow = { date, downloads: 0, updates: 0, iapUnits: 0, proceeds: {} };
     for (const line of lines.slice(1)) {
         const f = line.split('\t');
         const type = (f[cType] || '').trim();
         const units = parseInt(f[cUnits] || '0', 10) || 0;
         const per = parseFloat((f[cProceeds] || '0').trim()) || 0;
-        if (cCur >= 0 && f[cCur]) row.currency = f[cCur].trim();
+        const cur = (cCur >= 0 && f[cCur] ? f[cCur].trim() : 'USD') || 'USD';
 
         if (isDownload(type)) row.downloads += units;
         else if (isUpdate(type)) row.updates += units;
         else if (isIAP(type)) row.iapUnits += units;
-        row.proceeds += per * units;
+
+        const amount = per * units;
+        if (amount) row.proceeds[cur] = Math.round(((row.proceeds[cur] || 0) + amount) * 100) / 100;
     }
-    row.proceeds = Math.round(row.proceeds * 100) / 100;
     return row;
 }
 

@@ -52,8 +52,13 @@ export async function GET(req: NextRequest) {
                 downloads: sum(r => r.downloads),
                 updates: sum(r => r.updates),
                 iapUnits: sum(r => r.iapUnits),
-                proceeds: Math.round(sum(r => r.proceeds) * 100) / 100,
-                currency: daily[0]?.currency || 'USD',
+                // 통화별로 나눠서 준다 (KRW·USD 혼재)
+                proceeds: rows.reduce((acc: Record<string, number>, r: any) => {
+                    for (const [cur, v] of Object.entries(r.proceeds || {})) {
+                        acc[cur] = Math.round(((acc[cur] || 0) + (v as number)) * 100) / 100;
+                    }
+                    return acc;
+                }, {}),
             },
         },
         google: {

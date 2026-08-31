@@ -814,7 +814,15 @@ export default function AdminPage() {
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
                                         <Box label="신규 다운로드" value={String(A.totals?.downloads ?? 0)} sub={`업데이트 ${A.totals?.updates ?? 0}`} />
                                         <Box label="인앱 결제" value={`${A.totals?.iapUnits ?? 0}건`} />
-                                        <Box label="개발자 수익" value={`${(A.totals?.proceeds ?? 0).toFixed(2)} ${A.totals?.currency || ''}`} sub="애플 수수료 차감 후" />
+                                        <Box
+                                            label="개발자 수익"
+                                            value={(() => {
+                                                const p = A.totals?.proceeds || {};
+                                                const ks = Object.keys(p);
+                                                if (ks.length === 0) return '-';
+                                                return ks.map(k => `${Number(p[k]).toLocaleString()} ${k}`).join(' + ');
+                                            })()}
+                                            sub="애플 수수료 차감 후 · 통화별" />
                                         <Box label="별점 (KR)" value={A.rating ? `${A.rating.average.toFixed(1)}` : '-'} sub={A.rating ? `리뷰 ${A.rating.count}개` : '평가 없음'} />
                                     </div>
 
@@ -823,7 +831,7 @@ export default function AdminPage() {
                                             <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>일별 다운로드 (애플)</div>
                                             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 120, padding: '8px 4px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, marginBottom: 18 }}>
                                                 {daily.map((x: any) => (
-                                                    <div key={x.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }} title={`${x.date}: 설치 ${x.downloads} · 수익 ${x.proceeds}`}>
+                                                    <div key={x.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }} title={`${x.date}: 설치 ${x.downloads} · 수익 ${Object.entries(x.proceeds || {}).map(([c, v]) => `${v} ${c}`).join(', ') || '0'}`}>
                                                         <div style={{ fontSize: 10, color: '#64748b' }}>{x.downloads}</div>
                                                         <div style={{ width: '100%', height: Math.max(3, (x.downloads / maxD) * 80), background: '#0f172a', borderRadius: 4 }} />
                                                         <div style={{ fontSize: 9.5, color: '#94a3b8' }}>{String(x.date).slice(5)}</div>
