@@ -111,6 +111,12 @@ export default function AdminPage() {
     const [body, setBody] = useState('');
     const [scheduledAt, setScheduledAt] = useState('');
     const [sending, setSending] = useState(false);
+    // 발송 대상 — 전체 or 특정인
+    const [pushTarget, setPushTarget] = useState<'all' | 'one'>('all');
+    const [pushQuery, setPushQuery] = useState('');
+    const [pushCandidates, setPushCandidates] = useState<any[]>([]);
+    const [pushPicked, setPushPicked] = useState<any>(null);
+    const [pushSearching, setPushSearching] = useState(false);
     const [result, setResult] = useState('');
     const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -341,6 +347,47 @@ export default function AdminPage() {
     };
 
     // ── 알림 보내기 ──
+    /** 특정인 발송용 사용자 검색 */
+    const searchPushUser = useCallback(async () => {
+        const q = pushQuery.trim();
+        if (q.length < 2) { setResult('오류: 검색어는 2자 이상'); return; }
+        setPushSearching(true); setResult('');
+        try {
+            const res = await authedFetch('/api/admin/user-search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: q }),
+            });
+            const data = await res.json();
+            if (!res.ok) { setResult(`오류: ${data.error || '검색 실패'}`); setPushCandidates([]); }
+            else { setPushCandidates(data.users || []); if ((data.users || []).length === 0) setResult('검색 결과가 없습니다.'); }
+        } catch (e: any) {
+            setResult(`오류: ${e?.message || '검색 실패'}`);
+        } finally { setPushSearching(false); }
+    }, [authedFetch, pushQuery]);
+
+    /** 특정인에게만 발송 */
+    const sendToOne = async () => {
+        if (!pushPicked) { setResult('오류: 받을 사람을 먼저 선택해주세요.'); return; }
+        if (!title.trim() || !body.trim()) { setResult('오류: 제목과 내용을 입력해주세요.'); return; }
+        setSending(true); setResult('');
+        try {
+            const res = await authedFetch('/api/admin/push-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: pushPicked.id, email: pushPicked.email, title, body }),
+            });
+            const data = await res.json();
+            if (!res.ok) setResult(`오류: ${data.error || '발송 실패'}`);
+            else {
+                setResult(`${data.target} 님에게 발송했습니다 (기기 ${data.sent}대)`);
+                setTitle(''); setBody('');
+            }
+        } catch (e: any) {
+            setResult(`오류: ${e?.message || '발송 실패'}`);
+        } finally { setSending(false); }
+    };
+
     const handleSend = async (isScheduled: boolean) => {
         if (!title.trim() || !body.trim()) {
             alert('제목과 내용을 입력해주세요.');
@@ -565,20 +612,96 @@ export default function AdminPage() {
                 {tab === 'send' && (
                     <div style={styles.card}>
                         <h2 style={styles.cardTitle}>푸시 알림 보내기</h2>
+
+                        {/* 대상 선택 — 전체 / 특정인 */}
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+                            {([['all', '전체에게'], ['one', '특정인에게']] as const).map(([k, label]) => (
+                                <button key={k} onClick={() => { setPushTarget(k); setResult(''); }}
+                                    style={{
+                                        flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer',
+                                        border: '1px solid ' + (pushTarget === k ? '#6366f1' : '#e2e8f0'),
+                                        background: pushTarget === k ? '#EEF2FF' : '#fff',
+                                        color: pushTarget === k ? '#4338CA' : '#64748b',
+                                    }}>{label}</button>
+                            ))}
+                        </div>
+
+                        {pushTarget === 'one' && (
+                            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14, marginBottom: 14 }}>
+                                <label style={styles.label}>받을 사람 (이름 또는 이메일)</label>
+                                <div style={{ display: 'flex', gap: 8 }}>
+                                    <input placeholder="예: 홍길동 또는 abc@naver.com"
+                                        value={pushQuery}
+                                        onChange={e => setPushQuery(e.target.value)}
+                                        onKeyDown={e => { if (e.key === 'Enter') searchPushUser(); }}
+                                        style={{ ...styles.input, flex: 1, marginBottom: 0 }} />
+                                    <button onClick={searchPushUser} disabled={pushSearching} style={{ ...styles.secondaryBtn, whiteSpace: 'nowrap' }}>
+                                        {pushSearching ? '검색 중…' : '검색'}
+                                    </button>
+                                </div>
+
+                                {pushCandidates.length > 0 && (
+                                    <div style={{ marginTop: 10, maxHeight: 220, overflowY: 'auto' as any }}>
+                                        {pushCandidates.map((u: any) => {
+                                            const on = pushPicked?.id === u.id;
+                                            return (
+                                                <div key={u.id} onClick={() => { setPushPicked(u); setPushCandidates([]); setPushQuery(''); }}
+                                                    style={{
+                                                        display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', cursor: 'pointer',
+                                                        borderRadius: 8, background: on ? '#EEF2FF' : 'transparent',
+                                                    }}>
+                                                    {u.avatar_url
+                                                        ? <img src={u.avatar_url} alt="" style={{ width: 30, height: 30, borderRadius: 15, objectFit: 'cover' }} />
+                                                        : <span style={{ width: 30, height: 30, borderRadius: 15, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13 }}>👤</span>}
+                                                    <div style={{ minWidth: 0 }}>
+                                                        <div style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>{u.full_name || '(이름 없음)'}</div>
+                                                        <div style={{ fontSize: 12, color: '#94a3b8' }}>{u.email}{u.church_name ? ` · ${u.church_name}` : ''}</div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
+                                {pushPicked && (
+                                    <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: '#EEF2FF', borderRadius: 8 }}>
+                                        <span style={{ fontSize: 13.5, fontWeight: 800, color: '#4338CA' }}>
+                                            받는 사람: {pushPicked.full_name || pushPicked.email}
+                                        </span>
+                                        <span style={{ fontSize: 12, color: '#6366f1' }}>{pushPicked.email}</span>
+                                        <button onClick={() => setPushPicked(null)}
+                                            style={{ marginLeft: 'auto', border: 'none', background: 'transparent', color: '#6366f1', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
+                                            변경
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         <label style={styles.label}>제목</label>
                         <input placeholder="알림 제목" value={title} onChange={e => setTitle(e.target.value)} style={styles.input} />
                         <label style={styles.label}>내용</label>
                         <textarea placeholder="알림 내용을 입력하세요" value={body} onChange={e => setBody(e.target.value)} rows={4} style={{ ...styles.input, resize: 'vertical' as any }} />
-                        <label style={styles.label}>예약 발송 (선택)</label>
-                        <input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} style={styles.input} />
-                        <div style={styles.btnRow}>
-                            <button onClick={() => handleSend(false)} disabled={sending} style={styles.primaryBtn}>
-                                {sending ? '발송 중...' : '즉시 발송'}
-                            </button>
-                            <button onClick={() => handleSend(true)} disabled={sending} style={styles.secondaryBtn}>
-                                {sending ? '처리 중...' : '예약 발송'}
-                            </button>
-                        </div>
+                        {pushTarget === 'all' ? (
+                            <>
+                                <label style={styles.label}>예약 발송 (선택)</label>
+                                <input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} style={styles.input} />
+                                <div style={styles.btnRow}>
+                                    <button onClick={() => handleSend(false)} disabled={sending} style={styles.primaryBtn}>
+                                        {sending ? '발송 중...' : '전체에게 즉시 발송'}
+                                    </button>
+                                    <button onClick={() => handleSend(true)} disabled={sending} style={styles.secondaryBtn}>
+                                        {sending ? '처리 중...' : '예약 발송'}
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <div style={styles.btnRow}>
+                                <button onClick={sendToOne} disabled={sending || !pushPicked} style={{ ...styles.primaryBtn, opacity: pushPicked ? 1 : 0.5 }}>
+                                    {sending ? '발송 중...' : pushPicked ? `${pushPicked.full_name || pushPicked.email} 님에게 보내기` : '받을 사람을 선택하세요'}
+                                </button>
+                            </div>
+                        )}
                         {result && (
                             <div style={{ ...styles.resultBox, backgroundColor: result.includes('오류') ? '#fef2f2' : '#f0fdf4', color: result.includes('오류') ? '#ef4444' : '#22c55e' }}>
                                 {result}
