@@ -70,7 +70,7 @@ const SKU_SECTIONS: Array<{ title: string; keys: string[] }> = [
     { title: '성경 평생소장', keys: ['bible_korean_all'] },
 ];
 
-type TabKey = 'send' | 'history' | 'gift' | 'pastors' | 'recent' | 'stats';
+type TabKey = 'send' | 'history' | 'gift' | 'pastors' | 'recent' | 'stats' | 'store';
 
 type RecentUser = {
     id: string;
@@ -136,6 +136,10 @@ export default function AdminPage() {
     // ── 통계 (2026-08-30) ──
     const [stats, setStats] = useState<any>(null);
     const [funnel, setFunnel] = useState<any>(null);
+    const [store, setStore] = useState<any>(null);
+    const [storeLoading, setStoreLoading] = useState(false);
+    const [storeError, setStoreError] = useState('');
+    const [storeDays, setStoreDays] = useState(14);
     const [funnelDays, setFunnelDays] = useState(7);
     const [statsLoading, setStatsLoading] = useState(false);
     const [statsError, setStatsError] = useState('');
@@ -262,6 +266,19 @@ export default function AdminPage() {
         }
     }, [authedFetch, authed]);
 
+    const loadStore = useCallback(async () => {
+        if (!authed) return;
+        setStoreLoading(true); setStoreError('');
+        try {
+            const res = await authedFetch(`/api/admin/store?days=${storeDays}`);
+            const data = await res.json();
+            if (!res.ok) { setStoreError(data.error || '불러오지 못했습니다.'); setStore(null); }
+            else setStore(data);
+        } catch (e: any) {
+            setStoreError(e?.message || '불러오지 못했습니다.');
+        } finally { setStoreLoading(false); }
+    }, [authedFetch, authed, storeDays]);
+
     const loadStats = useCallback(async () => {
         if (!authed) return;
         setStatsLoading(true); setStatsError('');
@@ -285,6 +302,7 @@ export default function AdminPage() {
     useEffect(() => {
         if (!authed) return;
         if (tab === 'stats') loadStats();
+        if (tab === 'store') loadStore();
         if (tab === 'history') loadHistory();
         if (tab === 'pastors') loadPastors();
         if (tab === 'gift') loadGrantHistory();
@@ -541,6 +559,7 @@ export default function AdminPage() {
                     <button style={tab === 'pastors' ? styles.tabActive : styles.tab} onClick={() => setTab('pastors')}>사역자·교회</button>
                     <button style={tab === 'recent' ? styles.tabActive : styles.tab} onClick={() => setTab('recent')}>최근 가입자</button>
                     <button style={tab === 'stats' ? styles.tabActive : styles.tab} onClick={() => setTab('stats')}>통계</button>
+                    <button style={tab === 'store' ? styles.tabActive : styles.tab} onClick={() => setTab('store')}>스토어</button>
                 </div>
 
                 {tab === 'send' && (
@@ -741,6 +760,111 @@ export default function AdminPage() {
                                     <p style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 14 }}>
                                         기준 시각: {S.generatedAt ? new Date(S.generatedAt).toLocaleString('ko-KR') : '-'} ·
                                         매출은 실결제(스토어)만 집계하며, 선물·이벤트로 지급한 이용권은 제외했습니다. 스토어 정산액(수수료 차감 후)과는 다를 수 있습니다.
+                                    </p>
+                                </>
+                            );
+                        })()}
+                    </div>
+                )}
+
+                {tab === 'store' && (
+                    <div style={styles.card}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                            <h2 style={styles.cardTitle}>스토어</h2>
+                            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                {[7, 14, 30].map(d => (
+                                    <button key={d} onClick={() => setStoreDays(d)}
+                                        style={{
+                                            fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 8, cursor: 'pointer',
+                                            border: '1px solid ' + (storeDays === d ? '#38BDF8' : '#e2e8f0'),
+                                            background: storeDays === d ? '#E0F2FE' : '#fff',
+                                            color: storeDays === d ? '#0369A1' : '#64748b',
+                                        }}>{d}일</button>
+                                ))}
+                                <button onClick={loadStore} style={styles.refreshBtn}>새로고침</button>
+                            </div>
+                        </div>
+                        {storeError ? (
+                            <div style={{ ...styles.resultBox, backgroundColor: '#fef2f2', color: '#ef4444' }}>{storeError}</div>
+                        ) : storeLoading || !store ? (
+                            <p style={styles.empty}>{storeLoading ? '불러오는 중…' : '데이터가 없습니다.'}</p>
+                        ) : (() => {
+                            const A = store.apple || {}; const G = store.google || {}; const SU = store.setup || {};
+                            const Box = ({ label, value, sub }: { label: string; value: string; sub?: string }) => (
+                                <div style={{ flex: '1 1 150px', minWidth: 150, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '14px 16px' }}>
+                                    <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>{label}</div>
+                                    <div style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', marginTop: 4 }}>{value}</div>
+                                    {sub && <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 2 }}>{sub}</div>}
+                                </div>
+                            );
+                            const Notice = ({ text }: { text: string }) => (
+                                <div style={{ ...styles.resultBox, backgroundColor: '#fffbeb', color: '#b45309', marginBottom: 14, fontSize: 13 }}>{text}</div>
+                            );
+                            const daily = (A.daily || []) as Array<any>;
+                            const maxD = Math.max(1, ...daily.map(x => x.downloads || 0));
+                            const stars = (n: number) => '★'.repeat(Math.round(n)) + '☆'.repeat(Math.max(0, 5 - Math.round(n)));
+                            return (
+                                <>
+                                    {!SU.apple && <Notice text="애플 미설정 — APPLE_ASC_ISSUER_ID · APPLE_ASC_KEY_ID · APPLE_ASC_PRIVATE_KEY 를 넣어주세요." />}
+                                    {SU.apple && !SU.appleSales && <Notice text="애플 다운로드·매출은 벤더 번호가 있어야 합니다 — APPLE_ASC_VENDOR_NUMBER (App Store Connect → 지급 및 재무 보고서)." />}
+                                    {!SU.google && <Notice text="구글 미설정 — GOOGLE_SERVICE_ACCOUNT_JSON 을 넣어주세요." />}
+                                    {SU.google && !SU.googleInstalls && <Notice text="구글 설치 수는 리포트 버킷이 있어야 합니다 — GOOGLE_PLAY_REPORT_BUCKET (Play Console → 다운로드 → 보고서의 gs:// 이름)." />}
+
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>🍎 App Store · 최근 {store.days}일</div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
+                                        <Box label="신규 다운로드" value={String(A.totals?.downloads ?? 0)} sub={`업데이트 ${A.totals?.updates ?? 0}`} />
+                                        <Box label="인앱 결제" value={`${A.totals?.iapUnits ?? 0}건`} />
+                                        <Box label="개발자 수익" value={`${(A.totals?.proceeds ?? 0).toFixed(2)} ${A.totals?.currency || ''}`} sub="애플 수수료 차감 후" />
+                                        <Box label="별점 (KR)" value={A.rating ? `${A.rating.average.toFixed(1)}` : '-'} sub={A.rating ? `리뷰 ${A.rating.count}개` : '평가 없음'} />
+                                    </div>
+
+                                    {daily.length > 0 && (
+                                        <>
+                                            <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>일별 다운로드 (애플)</div>
+                                            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 120, padding: '8px 4px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, marginBottom: 18 }}>
+                                                {daily.map((x: any) => (
+                                                    <div key={x.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }} title={`${x.date}: 설치 ${x.downloads} · 수익 ${x.proceeds}`}>
+                                                        <div style={{ fontSize: 10, color: '#64748b' }}>{x.downloads}</div>
+                                                        <div style={{ width: '100%', height: Math.max(3, (x.downloads / maxD) * 80), background: '#0f172a', borderRadius: 4 }} />
+                                                        <div style={{ fontSize: 9.5, color: '#94a3b8' }}>{String(x.date).slice(5)}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>🤖 Google Play</div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
+                                        <Box label="이번 달 설치" value={G.installs ? String(G.installs.installs) : '-'} sub={G.installs ? `삭제 ${G.installs.uninstalls}` : '버킷 미설정'} />
+                                        <Box label="지난 달 설치" value={G.installsPrev ? String(G.installsPrev.installs) : '-'} sub={G.installsPrev ? `삭제 ${G.installsPrev.uninstalls}` : ''} />
+                                        <Box label="별점 (최근 리뷰)" value={G.rating ? `${G.rating.average.toFixed(1)}` : '-'} sub={G.rating ? `${G.rating.count}개 평균` : '리뷰 없음'} />
+                                    </div>
+
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', margin: '4px 0 8px' }}>최근 리뷰</div>
+                                    <div style={styles.historyList}>
+                                        {(store.reviews || []).length === 0 ? <p style={styles.empty}>아직 리뷰가 없습니다.</p> :
+                                            (store.reviews as Array<any>).map((r, i) => (
+                                                <div key={i} style={{ ...styles.historyItem }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                                        <span style={{ fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 6, background: r.store === 'apple' ? '#0f172a' : '#DCFCE7', color: r.store === 'apple' ? '#fff' : '#166534' }}>
+                                                            {r.store === 'apple' ? 'App Store' : 'Play'}
+                                                        </span>
+                                                        <span style={{ fontSize: 13, color: '#f59e0b', letterSpacing: 1 }}>{stars(r.rating)}</span>
+                                                        <span style={{ fontSize: 11.5, color: '#94a3b8', marginLeft: 'auto' }}>
+                                                            {r.at ? new Date(r.at).toLocaleDateString('ko-KR') : ''}
+                                                        </span>
+                                                    </div>
+                                                    {r.title && <div style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>{r.title}</div>}
+                                                    <div style={{ fontSize: 13, color: '#475569', whiteSpace: 'pre-wrap' }}>{r.body}</div>
+                                                    {r.author && <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 3 }}>— {r.author}{r.territory ? ` · ${r.territory}` : ''}</div>}
+                                                </div>
+                                            ))}
+                                    </div>
+
+                                    <p style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 14 }}>
+                                        기준 시각: {store.generatedAt ? new Date(store.generatedAt).toLocaleString('ko-KR') : '-'} ·
+                                        애플 판매 리포트는 1~2일 지연됩니다. 구글 리뷰는 최근 1주일치만 제공됩니다(구글 정책).
+                                        앱 내 실매출은 <b>통계</b> 탭이 더 정확하고 즉시 반영됩니다.
                                     </p>
                                 </>
                             );
