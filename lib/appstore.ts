@@ -27,11 +27,33 @@ type Creds = { issuerId: string; keyId: string; privateKey: string; vendorNumber
 function creds(): Creds | null {
     const issuerId = process.env.APPLE_ASC_ISSUER_ID;
     const keyId = process.env.APPLE_ASC_KEY_ID;
-    let privateKey = process.env.APPLE_ASC_PRIVATE_KEY;
-    if (!issuerId || !keyId || !privateKey) return null;
-    // Vercel 환경변수에 줄바꿈이 \n 문자열로 들어간 경우 복원
-    privateKey = privateKey.replace(/\\n/g, '\n');
+    const rawKey = process.env.APPLE_ASC_PRIVATE_KEY;
+    if (!issuerId || !keyId || !rawKey) return null;
+    const privateKey = normalizeP8(rawKey);
+    if (!privateKey) return null;
     return { issuerId, keyId, privateKey, vendorNumber: process.env.APPLE_ASC_VENDOR_NUMBER };
+}
+
+
+/**
+ * .p8 개인키를 어떤 형태로 붙여넣었든 올바른 PEM 으로 되돌린다.
+ *
+ * 환경변수에 키를 넣을 때 흔히 이렇게 망가진다:
+ *  - BEGIN/END 줄을 빼고 가운데 본문만 붙여넣음  ← 실제로 겪음
+ *  - 줄바꿈이 사라져 한 줄이 됨
+ *  - 줄바꿈이 리터럴 \n 문자열로 들어감
+ *  - 앞뒤에 따옴표가 붙음
+ * 어느 쪽이든 base64 본문만 살려서 표준 PEM 으로 다시 조립한다.
+ */
+function normalizeP8(raw: string): string | null {
+    let t = raw.trim().replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+    const body = t
+        .replace(/-----BEGIN [^-]+-----/g, '')
+        .replace(/-----END [^-]+-----/g, '')
+        .replace(/\s+/g, '');
+    if (!body || !/^[A-Za-z0-9+/=]+$/.test(body)) return null;
+    const lines = body.match(/.{1,64}/g) || [];
+    return `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----\n`;
 }
 
 const b64u = (v: string | object) =>
