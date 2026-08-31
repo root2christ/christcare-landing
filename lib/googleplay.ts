@@ -24,7 +24,10 @@ export const lastGoogle: { account?: string; reviews?: string; installs?: string
 type SA = { client_email: string; private_key: string; project_id: string };
 
 function sa(): SA | null {
-    const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+    // GOOGLE_SERVICE_ACCOUNT_JSON 이 정석이지만, 지금은 FCM 과 같은 서비스 계정을 쓰므로
+    // 그게 없으면 FIREBASE_SERVICE_ACCOUNT_JSON 으로 대체한다.
+    // (환경변수를 두 벌 관리하다 이름을 헷갈리는 사고를 막는다)
+    const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON || process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
     if (!raw) return null;
     try {
         const j = JSON.parse(raw);
@@ -75,7 +78,9 @@ async function accessToken(scope: string): Promise<string | null> {
 // ── 리뷰 ──────────────────────────────────────────────────
 export async function googleReviews(limit = 10): Promise<Review[]> {
     const acct = sa();
-    lastGoogle.account = acct ? acct.client_email : 'GOOGLE_SERVICE_ACCOUNT_JSON 없음/형식오류';
+    lastGoogle.account = acct
+        ? `${acct.client_email} (${googleSource()})`
+        : 'GOOGLE_SERVICE_ACCOUNT_JSON / FIREBASE_SERVICE_ACCOUNT_JSON 둘 다 없음 또는 형식오류';
     const t = await accessToken('https://www.googleapis.com/auth/androidpublisher');
     if (!t) { lastGoogle.reviews = '토큰 발급 실패 — 키가 잘못됐거나 서비스 계정이 비활성입니다'; return []; }
     try {
@@ -167,4 +172,9 @@ export function ratingFromReviews(reviews: Review[]): { average: number; count: 
 }
 
 export const googleConfigured = () => !!sa();
+/** 어느 환경변수를 썼는지 — 진단용 */
+export const googleSource = () =>
+    process.env.GOOGLE_SERVICE_ACCOUNT_JSON ? 'GOOGLE_SERVICE_ACCOUNT_JSON'
+    : process.env.FIREBASE_SERVICE_ACCOUNT_JSON ? 'FIREBASE_SERVICE_ACCOUNT_JSON(대체)'
+    : '없음';
 export const googleInstallsConfigured = () => !!sa() && !!process.env.GOOGLE_PLAY_REPORT_BUCKET;
