@@ -70,7 +70,15 @@ const SKU_SECTIONS: Array<{ title: string; keys: string[] }> = [
     { title: '성경 평생소장', keys: ['bible_korean_all'] },
 ];
 
-type TabKey = 'send' | 'history' | 'gift' | 'pastors' | 'recent' | 'stats' | 'store';
+type TabKey = 'send' | 'history' | 'gift' | 'dispenser' | 'pastors' | 'recent' | 'stats' | 'store';
+
+// DM 발송 본문 기본 템플릿 — {선물링크} 자리에 이벤트 선물 링크가 들어간다
+const DM_TEMPLATE_DEFAULT = `안녕하세요, soluma예요 🙌 결과 공유 이벤트에 참여해 주셔서 감사해요!
+약속드린 월 구독권 선물이에요 🎁
+👉 {선물링크}
+링크를 누르면 앱에서 선물 코드가 자동으로 입력되고, [지금 적용]을 누르면 바로 구독이 시작돼요.
+* 앱이 없다면 설치 후 링크를 다시 눌러주세요.
+* 링크는 30일 안에 사용해 주세요.`;
 
 type RecentUser = {
     id: string;
@@ -241,6 +249,82 @@ export default function AdminPage() {
         } catch { }
     }, [authedFetch, authed]);
 
+    // ── DM 선물 코드 디스펜서 (결과 공유 이벤트) ──
+    const [dispStats, setDispStats] = useState<{ total: number; remaining: number; dispensed: number; claimed: number } | null>(null);
+    const [dmTemplate, setDmTemplate] = useState(DM_TEMPLATE_DEFAULT);
+    const [dispensing, setDispensing] = useState(false);
+    const [dispResult, setDispResult] = useState('');
+    const [lastCopiedMsg, setLastCopiedMsg] = useState('');
+    const [lastToken, setLastToken] = useState('');
+
+    const loadDispenser = useCallback(async () => {
+        if (!authed) return;
+        try {
+            const res = await authedFetch('/api/admin/gift-dispenser');
+            const data = await res.json();
+            if (res.ok) setDispStats(data);
+        } catch { }
+    }, [authedFetch, authed]);
+
+    // WebView(관리자 앱) 호환 클립보드 복사 — clipboard API 실패 시 execCommand 폴백
+    const copyToClipboard = async (text: string): Promise<boolean> => {
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+                return true;
+            }
+        } catch { /* 폴백으로 */ }
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return ok;
+        } catch {
+            return false;
+        }
+    };
+
+    const handleDispense = async () => {
+        if (dispensing) return;
+        setDispensing(true);
+        setDispResult('');
+        try {
+            const res = await authedFetch('/api/admin/gift-dispenser', { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || '코드를 가져오지 못했습니다.');
+            const msg = dmTemplate.includes('{선물링크}')
+                ? dmTemplate.split('{선물링크}').join(data.link)
+                : dmTemplate + '\n' + data.link;
+            const ok = await copyToClipboard(msg);
+            setLastCopiedMsg(msg);
+            setLastToken(data.token);
+            setDispStats((s) => s
+                ? { ...s, remaining: data.remaining ?? Math.max(0, s.remaining - 1), dispensed: s.dispensed + 1 }
+                : s);
+            setDispResult(ok
+                ? `✅ 복사 완료 — 코드 ${data.token.slice(0, 6)}··· · 남은 코드 ${data.remaining}개`
+                : '⚠️ 자동 복사가 안 됐어요. 아래 [같은 메시지 다시 복사]를 눌러주세요. (코드는 이미 배정됨 — 새로 누르지 마세요)');
+        } catch (e: any) {
+            setDispResult('❌ ' + (e?.message || '실패했습니다.'));
+        } finally {
+            setDispensing(false);
+        }
+    };
+
+    const handleRecopy = async () => {
+        if (!lastCopiedMsg) return;
+        const ok = await copyToClipboard(lastCopiedMsg);
+        setDispResult(ok
+            ? `✅ 같은 메시지 다시 복사됨 — 코드 ${lastToken.slice(0, 6)}···`
+            : '⚠️ 복사 실패 — 아래 메시지를 길게 눌러 직접 복사해주세요.');
+    };
+
     const loadGrantHistory = useCallback(async () => {
         if (!authed) return;
         try {
@@ -316,8 +400,9 @@ export default function AdminPage() {
         if (tab === 'history') loadHistory();
         if (tab === 'pastors') loadPastors();
         if (tab === 'gift') loadGrantHistory();
+        if (tab === 'dispenser') loadDispenser();
         if (tab === 'recent') loadRecent(0);
-    }, [authed, tab, loadHistory, loadGrantHistory, loadPastors, loadRecent, loadStats]);
+    }, [authed, tab, loadHistory, loadGrantHistory, loadDispenser, loadPastors, loadRecent, loadStats]);
 
     // ── 로그인 ──
     // 비밀번호는 서버로만 보낸다. 맞으면 서버가 httpOnly 쿠키를 심어준다(여기서는 못 읽는다).
@@ -708,6 +793,7 @@ export default function AdminPage() {
                     <button style={tab === 'send' ? styles.tabActive : styles.tab} onClick={() => setTab('send')}>푸시 알림 보내기</button>
                     <button style={tab === 'history' ? styles.tabActive : styles.tab} onClick={() => setTab('history')}>발송 이력</button>
                     <button style={tab === 'gift' ? styles.tabActive : styles.tab} onClick={() => setTab('gift')}>이용권 보내기</button>
+                    <button style={tab === 'dispenser' ? styles.tabActive : styles.tab} onClick={() => setTab('dispenser')}>DM 선물</button>
                     <button style={tab === 'pastors' ? styles.tabActive : styles.tab} onClick={() => setTab('pastors')}>사역자·교회</button>
                     <button style={tab === 'recent' ? styles.tabActive : styles.tab} onClick={() => setTab('recent')}>최근 가입자</button>
                     <button style={tab === 'stats' ? styles.tabActive : styles.tab} onClick={() => setTab('stats')}>통계</button>
@@ -1160,6 +1246,75 @@ export default function AdminPage() {
                                     >다음 100명 →</button>
                                 </div>
                             </>
+                        )}
+                    </div>
+                )}
+
+                {tab === 'dispenser' && (
+                    <div style={styles.card}>
+                        <h2 style={styles.cardTitle}>DM 선물 코드 — 결과 공유 이벤트</h2>
+                        <p style={styles.cardDesc}>
+                            [복사하기]를 누르면 아래 본문에 선물 링크가 끼워진 메시지가 클립보드로 들어가고,
+                            그 코드는 발송됨으로 표시돼 다시 나오지 않아요. 인스타 DM에 붙여넣기만 하면 됩니다.
+                        </p>
+
+                        {dispStats && (
+                            <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' as const }}>
+                                <div style={{ flex: 1, minWidth: 100, padding: 12, borderRadius: 12, backgroundColor: '#eef2ff', textAlign: 'center' as const }}>
+                                    <div style={{ fontSize: 22, fontWeight: 900, color: '#6366f1' }}>{dispStats.remaining}</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>남은 코드</div>
+                                </div>
+                                <div style={{ flex: 1, minWidth: 100, padding: 12, borderRadius: 12, backgroundColor: '#fef9c3', textAlign: 'center' as const }}>
+                                    <div style={{ fontSize: 22, fontWeight: 900, color: '#ca8a04' }}>{dispStats.dispensed}</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>발송됨(미수령)</div>
+                                </div>
+                                <div style={{ flex: 1, minWidth: 100, padding: 12, borderRadius: 12, backgroundColor: '#dcfce7', textAlign: 'center' as const }}>
+                                    <div style={{ fontSize: 22, fontWeight: 900, color: '#16a34a' }}>{dispStats.claimed}</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>수령 완료</div>
+                                </div>
+                            </div>
+                        )}
+
+                        <label style={styles.label}>DM 본문 (수정 가능 — {'{선물링크}'} 자리에 링크가 들어감)</label>
+                        <textarea
+                            value={dmTemplate}
+                            onChange={(e) => setDmTemplate(e.target.value)}
+                            rows={8}
+                            style={{ ...styles.input, resize: 'vertical' as const, lineHeight: 1.6, fontFamily: 'inherit' }}
+                        />
+
+                        <div style={styles.btnRow}>
+                            <button
+                                onClick={handleDispense}
+                                disabled={dispensing || (dispStats !== null && dispStats.remaining === 0)}
+                                style={dispensing || (dispStats !== null && dispStats.remaining === 0) ? styles.disabledBtn : styles.primaryBtn}
+                            >
+                                {dispensing ? '가져오는 중…' : '📋 복사하기 (다음 코드)'}
+                            </button>
+                            {lastCopiedMsg && (
+                                <button onClick={handleRecopy} style={styles.secondaryBtn}>
+                                    같은 메시지 다시 복사
+                                </button>
+                            )}
+                        </div>
+
+                        {dispResult && (
+                            <div style={{
+                                ...styles.resultBox,
+                                backgroundColor: dispResult.startsWith('✅') ? '#dcfce7' : dispResult.startsWith('⚠️') ? '#fef9c3' : '#fee2e2',
+                                color: dispResult.startsWith('✅') ? '#166534' : dispResult.startsWith('⚠️') ? '#854d0e' : '#991b1b',
+                            }}>
+                                {dispResult}
+                            </div>
+                        )}
+
+                        {lastCopiedMsg && (
+                            <div style={{ marginTop: 14 }}>
+                                <label style={styles.label}>마지막 복사된 메시지 (복사가 안 되면 여기서 직접 선택)</label>
+                                <div style={{ padding: 14, borderRadius: 12, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', fontSize: 13, color: '#334155', whiteSpace: 'pre-wrap' as const, lineHeight: 1.6, userSelect: 'all' as const }}>
+                                    {lastCopiedMsg}
+                                </div>
+                            </div>
                         )}
                     </div>
                 )}
