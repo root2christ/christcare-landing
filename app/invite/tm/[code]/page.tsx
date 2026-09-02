@@ -44,7 +44,7 @@ export default function JoinTogetherMem({ params }: { params: { code: string } }
           soluma 앱에서 열기
         </a>
         <a
-          href="https://apps.apple.com/app/id6748585321"
+          href="https://apps.apple.com/app/id6779090825"
           style={{
             background: '#1e293b', color: '#fff', padding: '14px 28px',
             borderRadius: 14, fontWeight: 700, textDecoration: 'none', fontSize: 15,
